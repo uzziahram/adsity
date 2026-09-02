@@ -51,6 +51,11 @@ try {
         exit;
     }
 
+    if ($user['role_name'] === 'instructor') {
+        header('Location: instructor/dashboard.php');
+        exit;
+    }
+
     if ($user['role_name'] === 'student') {
         header('Location: student/dashboard.php');
         exit;

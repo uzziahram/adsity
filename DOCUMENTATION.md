@@ -71,6 +71,13 @@ adsity/
 │   ├── config.php               # PDO database connection function getConnection()
 │   └── schema.sql               # Complete SQL schema & table definitions
 │
+├── instructor/
+│   ├── create_course.php        # Form view to publish new courses
+│   ├── create_course_function.php # Action handler to insert new courses
+│   ├── dashboard.php            # Instructor Studio dashboard view (Metrics, Courses table)
+│   ├── dashboard_function.php   # Instructor data query handler & session gate (instructor only)
+│   └── delete_course.php        # Action handler to delete an instructor's course
+│
 ├── student/
 │   ├── certificate.php          # Verified Certificate view (Print / Save as PDF)
 │   ├── certificate_function.php # Certificate lookup and verification query handler

@@ -52,7 +52,7 @@ try {
     $_SESSION['role_id']   = 2;
     $_SESSION['role_name'] = 'instructor';
 
-    header('Location: teach.php?status=success&id=' . $newId . '&message=' . urlencode('Welcome to Adsity! Your instructor account has been created.'));
+    header('Location: instructor/dashboard.php?status=success&message=' . urlencode('Welcome to Adsity Instructor Studio, ' . $result['data']['full_name'] . '!'));
     exit;
 } catch (PDOException $e) {
     header('Location: teach.php?status=error&message=' . urlencode($e->getMessage()));

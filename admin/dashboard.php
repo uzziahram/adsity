@@ -229,7 +229,7 @@ require_once __DIR__ . '/dashboard_function.php';
 
 		<div class="nav-right">
 			<a href="../index.php" class="teach-link">View Website</a>
-			<a href="../logout.php" class="btn-login" style="background-color: #475569;">Log Out</a>
+			<a href="../logout.php" class="btn-login" style="background-color: #475569;" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
 		</div>
 	</header>
 

@@ -402,7 +402,7 @@ require_once __DIR__ . '/dashboard_function.php';
 			<span style="font-weight: 700; color: var(--primary-green); font-size: 0.9rem;">
 				👤 <?= htmlspecialchars($student['full_name'] ?? 'Student') ?>
 			</span>
-			<a href="../logout.php" class="btn-login" style="background-color: #475569;">Log Out</a>
+			<a href="../logout.php" class="btn-login" style="background-color: #475569;" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
 		</div>
 	</header>
 

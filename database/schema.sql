@@ -41,7 +41,9 @@ CREATE TABLE IF NOT EXISTS courses (
     category VARCHAR(100),
     thumbnail VARCHAR(255) NULL,
     total_lessons INT DEFAULT 10,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    instructor_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_courses_instructors FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- 4. Enrollments Table
