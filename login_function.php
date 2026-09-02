@@ -1,0 +1,64 @@
+<?php
+
+session_start();
+
+require 'database/config.php';
+require 'validation.php';
+
+if (!isset($_POST['login'])) {
+    header('Location: login.php');
+    exit;
+}
+
+$result = validateLoginInput($_POST);
+$errors = $result['errors'];
+
+if (!empty($errors)) {
+    $message = implode(' ', $errors);
+    header('Location: login.php?status=error&message=' . urlencode($message));
+    exit;
+}
+
+try {
+    $pdo = getConnection();
+
+    $sql = "SELECT u.id, u.full_name, u.email, u.password, u.role_id, r.name AS role_name 
+            FROM users u 
+            JOIN roles r ON u.role_id = r.id 
+            WHERE u.email = :email 
+            LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':email', $result['data']['email']);
+    $stmt->execute();
+
+    $user = $stmt->fetch();
+
+    if (!$user || $user['password'] !== $result['data']['password']) {
+        header('Location: login.php?status=error&message=' . urlencode('Invalid email or password.'));
+        exit;
+    }
+
+    // Set user session data
+    $_SESSION['user_id']   = $user['id'];
+    $_SESSION['full_name'] = $user['full_name'];
+    $_SESSION['email']     = $user['email'];
+    $_SESSION['role_id']   = $user['role_id'];
+    $_SESSION['role_name'] = $user['role_name'];
+
+    // Role-based redirection
+    if ($user['role_name'] === 'admin') {
+        header('Location: admin/dashboard.php');
+        exit;
+    }
+
+    if ($user['role_name'] === 'student') {
+        header('Location: student/dashboard.php');
+        exit;
+    }
+
+    header('Location: index.php?status=success&message=' . urlencode('Welcome back, ' . $user['full_name'] . '!'));
+    exit;
+} catch (PDOException $e) {
+    header('Location: login.php?status=error&message=' . urlencode($e->getMessage()));
+    exit;
+}
