@@ -67,22 +67,33 @@ adsity/
 │       ├── user-check.svg
 │       └── users.svg
 │
+├── admin/
+│   ├── admindashboard.css       # Dedicated stylesheet for Admin Dashboard
+│   ├── dashboard.php            # Admin Dashboard view (KPIs, teacher & student monitoring tables)
+│   ├── dashboard_function.php   # Admin data handler, queries & session gate (admin only)
+│   └── delete_user.php          # Action handler to delete student or teacher records
+│
 ├── database/
 │   ├── config.php               # PDO database connection function getConnection()
 │   └── schema.sql               # Complete SQL schema & table definitions
 │
 ├── instructor/
+│   ├── create_course.css        # Dedicated stylesheet for Multi-Video Course Studio
 │   ├── create_course.php        # Form view to publish new courses
 │   ├── create_course_function.php # Action handler to insert new courses
 │   ├── dashboard.php            # Instructor Studio dashboard view (Metrics, Courses table)
 │   ├── dashboard_function.php   # Instructor data query handler & session gate (instructor only)
-│   └── delete_course.php        # Action handler to delete an instructor's course
+│   ├── delete_course.php        # Action handler to delete an instructor's course
+│   └── instructordashboard.css  # Dedicated stylesheet for Instructor Dashboard
 │
 ├── student/
+│   ├── certificate.css          # Dedicated stylesheet for Verified Certificate & Print view
 │   ├── certificate.php          # Verified Certificate view (Print / Save as PDF)
 │   ├── certificate_function.php # Certificate lookup and verification query handler
 │   ├── dashboard.php            # Student Dashboard view (In-Progress, Completed, Certificates)
 │   ├── dashboard_function.php   # Student data query handler & session gate (student only)
+│   ├── studentdashboard.css     # Dedicated stylesheet for Student Dashboard
+│   ├── submit_exam.css          # Dedicated stylesheet for Final Exam / Project submission
 │   ├── submit_exam.php          # Final project / exam submission form (GitHub repo / File / Live URL)
 │   └── submit_exam_function.php # Project upload & certificate issuance handler
 │
@@ -93,6 +104,7 @@ adsity/
 │   │           └── {course_id}/ # Uploaded lesson MP4 video files
 │   └── submissions/             # Uploaded student project exam submissions
 │
+├── courses.css                  # Dedicated stylesheet for Course Catalog & Category filters
 ├── courses.php                  # Course Catalog with search keyword & category filters
 ├── courses_function.php         # Courses query handler with dynamic SQL filters
 ├── DOCUMENTATION.md             # Detailed project technical documentation

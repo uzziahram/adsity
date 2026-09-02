@@ -9,71 +9,11 @@ require_once __DIR__ . '/submit_exam_function.php';
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Submit Final Project - Adsity</title>
 	<link rel="stylesheet" href="../style.css">
+	<link rel="stylesheet" href="submit_exam.css">
 	<!-- Google Font -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<style>
-		.exam-wrapper {
-			min-height: calc(100vh - 160px);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 40px 20px;
-			position: relative;
-		}
-
-		.exam-card {
-			background-color: #ffffff;
-			border: 1px solid #e2e8f0;
-			border-radius: 20px;
-			padding: 36px;
-			max-width: 640px;
-			width: 100%;
-			box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
-		}
-
-		.exam-badge-type {
-			display: inline-flex;
-			align-items: center;
-			gap: 8px;
-			background-color: #e0f2fe;
-			color: #0284c7;
-			font-size: 0.8rem;
-			font-weight: 700;
-			padding: 5px 14px;
-			border-radius: 9999px;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			margin-bottom: 12px;
-		}
-
-		.instructions-box {
-			background-color: #f8fafc;
-			border-left: 4px solid #27D662;
-			border-radius: 8px;
-			padding: 18px 20px;
-			margin: 20px 0 24px 0;
-		}
-
-		.instructions-title {
-			font-size: 0.85rem;
-			font-weight: 800;
-			color: #0f172a;
-			text-transform: uppercase;
-			letter-spacing: 0.05em;
-			margin-bottom: 6px;
-			display: flex;
-			align-items: center;
-			gap: 6px;
-		}
-
-		.instructions-content {
-			font-size: 0.95rem;
-			color: #334155;
-			line-height: 1.6;
-		}
-	</style>
 </head>
 
 <body class="student-dashboard-body">

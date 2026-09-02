@@ -1,0 +1,173 @@
+/* Verified Certificate Stylesheet */
+
+.cert-page {
+	background-color: #0b1410;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 20px;
+}
+
+.cert-actions {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.btn-back {
+	background-color: #334155;
+	color: #ffffff;
+	padding: 10px 20px;
+	border-radius: 8px;
+	text-decoration: none;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.btn-print {
+	background-color: var(--primary-green);
+	color: #ffffff;
+	border: none;
+	padding: 10px 24px;
+	border-radius: 8px;
+	font-weight: 700;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: inherit;
+}
+
+/* Certificate Frame */
+.cert-frame {
+	width: 100%;
+	max-width: 850px;
+	background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+	border: 12px solid #14221b;
+	outline: 3px solid #27D662;
+	border-radius: 8px;
+	padding: 48px;
+	position: relative;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+	text-align: center;
+}
+
+.cert-logo {
+	height: 48px;
+	margin-bottom: 16px;
+}
+
+.cert-header {
+	font-family: 'Cinzel', serif;
+	font-size: 2.2rem;
+	font-weight: 900;
+	color: #0f172a;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: 8px;
+}
+
+.cert-subtitle {
+	font-size: 1rem;
+	color: #64748b;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	margin-bottom: 24px;
+}
+
+.cert-presented {
+	font-size: 0.95rem;
+	color: #475569;
+	font-style: italic;
+	margin-bottom: 8px;
+}
+
+.cert-recipient {
+	font-family: 'Raleway', sans-serif;
+	font-size: 2.3rem;
+	font-weight: 800;
+	color: #0284c7;
+	border-bottom: 2px solid #e2e8f0;
+	display: inline-block;
+	padding: 0 30px 8px 30px;
+	margin-bottom: 20px;
+}
+
+.cert-text {
+	font-size: 1.05rem;
+	color: #334155;
+	max-width: 600px;
+	margin: 0 auto 30px auto;
+	line-height: 1.6;
+}
+
+.cert-course {
+	font-weight: 800;
+	color: #0f172a;
+}
+
+.cert-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-top: 40px;
+	padding-top: 24px;
+	border-top: 1px solid #e2e8f0;
+}
+
+.cert-detail {
+	text-align: left;
+}
+
+.cert-label {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	color: #94a3b8;
+	letter-spacing: 0.05em;
+}
+
+.cert-value {
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: #0f172a;
+}
+
+.cert-seal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.seal-badge {
+	width: 60px;
+	height: 60px;
+	background-color: #27D662;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #ffffff;
+	font-weight: 800;
+	font-size: 0.75rem;
+	border: 3px dashed #ffffff;
+	box-shadow: 0 0 0 4px #27D662;
+}
+
+@media print {
+	.cert-actions {
+		display: none;
+	}
+	.cert-page {
+		background-color: transparent;
+		padding: 0;
+	}
+	.cert-frame {
+		box-shadow: none;
+		border-width: 6px;
+	}
+}
