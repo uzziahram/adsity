@@ -82,7 +82,16 @@ adsity/
 │   ├── certificate.php          # Verified Certificate view (Print / Save as PDF)
 │   ├── certificate_function.php # Certificate lookup and verification query handler
 │   ├── dashboard.php            # Student Dashboard view (In-Progress, Completed, Certificates)
-│   └── dashboard_function.php   # Student data query handler & session gate (student only)
+│   ├── dashboard_function.php   # Student data query handler & session gate (student only)
+│   ├── submit_exam.php          # Final project / exam submission form (GitHub repo / File / Live URL)
+│   └── submit_exam_function.php # Project upload & certificate issuance handler
+│
+├── uploads/
+│   ├── instructors/             # Instructor storage folders partitioned by instructor ID
+│   │   └── {instructor_id}/
+│   │       └── courses/
+│   │           └── {course_id}/ # Uploaded lesson MP4 video files
+│   └── submissions/             # Uploaded student project exam submissions
 │
 ├── courses.php                  # Course Catalog with search keyword & category filters
 ├── courses_function.php         # Courses query handler with dynamic SQL filters

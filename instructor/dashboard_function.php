@@ -58,7 +58,29 @@ try {
         $totalCertificates += (int)$c['certificates_issued'];
     }
 
+    // 3. Fetch Student Project Submissions
+    $sqlSubmissions = "SELECT 
+                            sub.id,
+                            sub.submission_type,
+                            sub.submission_value,
+                            sub.notes,
+                            sub.status,
+                            sub.submitted_at,
+                            u.full_name AS student_name,
+                            u.email AS student_email,
+                            c.title AS course_title
+                       FROM course_submissions sub
+                       JOIN users u ON sub.user_id = u.id
+                       JOIN courses c ON sub.course_id = c.id
+                       WHERE c.instructor_id = :instructor_id
+                       ORDER BY sub.submitted_at DESC";
+    $stmtSubs = $pdo->prepare($sqlSubmissions);
+    $stmtSubs->bindValue(':instructor_id', $instructorId, PDO::PARAM_INT);
+    $stmtSubs->execute();
+    $submissions = $stmtSubs->fetchAll();
+
 } catch (PDOException $e) {
+    $submissions = [];
     $status  = 'error';
     $message = $e->getMessage();
 }

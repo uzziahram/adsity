@@ -499,10 +499,16 @@ require_once __DIR__ . '/dashboard_function.php';
 									</div>
 								</div>
 
-								<a href="../index.php" class="btn-continue-course">
-									<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0) invert(1);">
-									Continue Learning
-								</a>
+								<div style="display: flex; gap: 8px; margin-top: auto;">
+									<a href="../courses.php" class="btn-continue-course" style="flex: 1;">
+										<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0) invert(1);">
+										Learn
+									</a>
+									<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-view-cert" style="flex: 1.3; background-color: #0284c7;">
+										<img src="../assets/icons/award.svg" width="16" height="16" alt="Exam" style="filter: brightness(0) invert(1);">
+										Submit Project
+									</a>
+								</div>
 							</div>
 						</article>
 					<?php endforeach; ?>

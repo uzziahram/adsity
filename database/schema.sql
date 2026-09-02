@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS courses (
     thumbnail VARCHAR(255) NULL,
     total_lessons INT DEFAULT 10,
     instructor_id INT NULL,
+    assessment_type ENUM('github_repo', 'file_upload', 'live_url') DEFAULT 'github_repo',
+    assessment_instructions TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_courses_instructors FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -60,7 +62,33 @@ CREATE TABLE IF NOT EXISTS enrollments (
     UNIQUE KEY uq_user_course (user_id, course_id)
 );
 
--- 5. Certificates Table
+-- 5. Lessons Table (Multi-Video Curriculum)
+CREATE TABLE IF NOT EXISTS lessons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    lesson_number INT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    video_path VARCHAR(255) NOT NULL,
+    duration VARCHAR(20) DEFAULT '10:00',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_lessons_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- 6. Course Submissions Table
+CREATE TABLE IF NOT EXISTS course_submissions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
+    submission_type VARCHAR(50) NOT NULL,
+    submission_value VARCHAR(255) NOT NULL,
+    notes TEXT NULL,
+    status ENUM('approved', 'pending', 'rejected') DEFAULT 'approved',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_submissions_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_submissions_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+);
+
+-- 6. Certificates Table
 CREATE TABLE IF NOT EXISTS certificates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -68,5 +96,6 @@ CREATE TABLE IF NOT EXISTS certificates (
     certificate_code VARCHAR(50) UNIQUE NOT NULL,
     issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_cert_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_cert_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+    CONSTRAINT fk_cert_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_user_cert_course (user_id, course_id)
 );

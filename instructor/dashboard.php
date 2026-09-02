@@ -437,6 +437,99 @@ require_once __DIR__ . '/dashboard_function.php';
 			</div>
 		</section>
 
+		<!-- Student Project Submissions Section -->
+		<section class="dashboard-section">
+			<div class="section-header">
+				<h2 class="section-title">
+					<img src="../assets/icons/award.svg" width="22" height="22" alt="Submissions">
+					Student Project Submissions &amp; Deliverables
+				</h2>
+				<span class="badge-count"><?= count($submissions) ?> Submissions</span>
+			</div>
+
+			<div class="table-responsive">
+				<?php if (!empty($submissions)): ?>
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Student</th>
+								<th>Course</th>
+								<th>Exam Deliverable Type</th>
+								<th>Project Link / Deliverable</th>
+								<th>Student Notes</th>
+								<th>Submitted Date</th>
+								<th style="text-align: right;">Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ($submissions as $sub): ?>
+								<tr>
+									<td>
+										<strong><?= htmlspecialchars($sub['student_name']) ?></strong>
+										<div style="font-size: 0.8rem; color: #64748b;"><?= htmlspecialchars($sub['student_email']) ?></div>
+									</td>
+									<td>
+										<strong><?= htmlspecialchars($sub['course_title']) ?></strong>
+									</td>
+									<td>
+										<?php if ($sub['submission_type'] === 'github_repo'): ?>
+											<span style="background-color: #f1f5f9; color: #0f172a; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+												<img src="../assets/icons/github.svg" width="12" height="12" alt="GitHub">
+												GitHub Repo
+											</span>
+										<?php elseif ($sub['submission_type'] === 'file_upload'): ?>
+											<span style="background-color: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+												<img src="../assets/icons/file-text.svg" width="12" height="12" alt="File">
+												File Upload
+											</span>
+										<?php else: ?>
+											<span style="background-color: #f3e8ff; color: #7e22ce; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+												<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Live">
+												Live Demo
+											</span>
+										<?php endif; ?>
+									</td>
+									<td>
+										<?php if ($sub['submission_type'] === 'github_repo'): ?>
+											<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" style="color: #0284c7; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+												<span>Open Repository</span>
+												<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
+											</a>
+										<?php elseif ($sub['submission_type'] === 'file_upload'): ?>
+											<a href="../assets/submissions/<?= htmlspecialchars($sub['submission_value']) ?>" download style="color: #16a34a; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+												<img src="../assets/icons/download.svg" width="14" height="14" alt="Download">
+												<span>Download <?= htmlspecialchars(pathinfo($sub['submission_value'], PATHINFO_EXTENSION)) ?></span>
+											</a>
+										<?php else: ?>
+											<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" style="color: #7e22ce; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+												<span>Visit Live Site</span>
+												<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
+											</a>
+										<?php endif; ?>
+									</td>
+									<td>
+										<div style="font-size: 0.85rem; color: #475569; max-width: 200px;">
+											<?= htmlspecialchars($sub['notes'] ?? 'No notes provided') ?>
+										</div>
+									</td>
+									<td><?= date('M d, Y', strtotime($sub['submitted_at'])) ?></td>
+									<td style="text-align: right;">
+										<span style="background-color: #dcfce7; color: #16a34a; font-weight: 700; font-size: 0.8rem; padding: 4px 10px; border-radius: 9999px;">
+											✓ Approved &amp; Certified
+										</span>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php else: ?>
+					<div class="empty-state" style="padding: 32px 16px;">
+						<p style="color: #94a3b8; margin: 0;">No student project submissions yet.</p>
+					</div>
+				<?php endif; ?>
+			</div>
+		</section>
+
 	</main>
 
 	<!-- Footer -->
