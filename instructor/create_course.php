@@ -194,31 +194,21 @@ $message = $_GET['message'] ?? null;
 							</div>
 						</div>
 
-						<div class="lesson-grid">
-							<div class="form-group" style="margin-bottom: 0;">
-								<label class="form-label">Video File (MP4, WebM, OGG)</label>
-								<div class="form-input-wrapper">
-									<input 
-										type="file" 
-										name="lesson_videos[]" 
-										class="form-input" 
-										accept="video/mp4,video/webm,video/ogg" 
-										style="padding: 8px;"
-									>
-								</div>
+						<div class="form-group" style="margin-bottom: 0;">
+							<label class="form-label">Lesson Video File (MP4, WebM, OGG)</label>
+							<div class="form-input-wrapper">
+								<input 
+									type="file" 
+									name="lesson_videos[]" 
+									class="form-input lesson-video-input" 
+									accept="video/mp4,video/webm,video/ogg" 
+									style="padding: 8px;"
+									onchange="handleVideoDurationDetection(this)"
+								>
 							</div>
-
-							<div class="form-group" style="margin-bottom: 0;">
-								<label class="form-label">Duration (MM:SS)</label>
-								<div class="form-input-wrapper">
-									<input 
-										type="text" 
-										name="lesson_durations[]" 
-										class="form-input" 
-										placeholder="08:30" 
-										value="08:30"
-									>
-								</div>
+							<input type="hidden" name="lesson_durations[]" class="lesson-duration-hidden" value="">
+							<div class="duration-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; margin-top: 8px; width: fit-content;">
+								⏱️ Auto-Detected Duration: <span class="duration-text">00:00</span>
 							</div>
 						</div>
 					</div>
@@ -246,31 +236,21 @@ $message = $_GET['message'] ?? null;
 							</div>
 						</div>
 
-						<div class="lesson-grid">
-							<div class="form-group" style="margin-bottom: 0;">
-								<label class="form-label">Video File (MP4, WebM, OGG)</label>
-								<div class="form-input-wrapper">
-									<input 
-										type="file" 
-										name="lesson_videos[]" 
-										class="form-input" 
-										accept="video/mp4,video/webm,video/ogg" 
-										style="padding: 8px;"
-									>
-								</div>
+						<div class="form-group" style="margin-bottom: 0;">
+							<label class="form-label">Lesson Video File (MP4, WebM, OGG)</label>
+							<div class="form-input-wrapper">
+								<input 
+									type="file" 
+									name="lesson_videos[]" 
+									class="form-input lesson-video-input" 
+									accept="video/mp4,video/webm,video/ogg" 
+									style="padding: 8px;"
+									onchange="handleVideoDurationDetection(this)"
+								>
 							</div>
-
-							<div class="form-group" style="margin-bottom: 0;">
-								<label class="form-label">Duration (MM:SS)</label>
-								<div class="form-input-wrapper">
-									<input 
-										type="text" 
-										name="lesson_durations[]" 
-										class="form-input" 
-										placeholder="12:45" 
-										value="12:45"
-									>
-								</div>
+							<input type="hidden" name="lesson_durations[]" class="lesson-duration-hidden" value="">
+							<div class="duration-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; margin-top: 8px; width: fit-content;">
+								⏱️ Auto-Detected Duration: <span class="duration-text">00:00</span>
 							</div>
 						</div>
 					</div>
@@ -300,7 +280,7 @@ $message = $_GET['message'] ?? null;
 		</div>
 	</main>
 
-	<!-- Dynamic Lesson Script -->
+	<!-- Dynamic Lesson & Automatic Duration Detection Script -->
 	<script>
 		const container = document.getElementById('lessonsContainer');
 		const btnAdd = document.getElementById('btnAddLesson');
@@ -320,6 +300,45 @@ $message = $_GET['message'] ?? null;
 			const total = items.length;
 			const adBreaks = Math.max(0, total - 1);
 			adSummary.innerHTML = `Curriculum: <strong>${total} lessons</strong> • Automated Sponsor Ad Breaks: <strong>${adBreaks} interstitial ${adBreaks === 1 ? 'break' : 'breaks'}</strong>.`;
+		}
+
+		// Automatic Video Duration Detection via HTML5 Video Metadata API
+		function handleVideoDurationDetection(fileInput) {
+			const file = fileInput.files[0];
+			if (!file) return;
+
+			const parent = fileInput.closest('.lesson-item');
+			const badge = parent.querySelector('.duration-badge');
+			const text = parent.querySelector('.duration-text');
+			const hidden = parent.querySelector('.lesson-duration-hidden');
+
+			const video = document.createElement('video');
+			video.preload = 'metadata';
+
+			video.onloadedmetadata = function() {
+				window.URL.revokeObjectURL(video.src);
+				const totalSecs = Math.round(video.duration);
+				const hrs = Math.floor(totalSecs / 3600);
+				const mins = Math.floor((totalSecs % 3600) / 60);
+				const secs = totalSecs % 60;
+
+				let formatted = '';
+				if (hrs > 0) {
+					formatted = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+				} else {
+					formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+				}
+
+				if (hidden) hidden.value = formatted;
+				if (text) text.textContent = formatted;
+				if (badge) badge.style.display = 'inline-flex';
+			};
+
+			video.onerror = function() {
+				if (hidden) hidden.value = '10:00';
+			};
+
+			video.src = URL.createObjectURL(file);
 		}
 
 		btnAdd.addEventListener('click', () => {
@@ -347,30 +366,21 @@ $message = $_GET['message'] ?? null;
 						>
 					</div>
 				</div>
-				<div class="lesson-grid">
-					<div class="form-group" style="margin-bottom: 0;">
-						<label class="form-label">Video File (MP4, WebM, OGG)</label>
-						<div class="form-input-wrapper">
-							<input 
-								type="file" 
-								name="lesson_videos[]" 
-								class="form-input" 
-								accept="video/mp4,video/webm,video/ogg" 
-								style="padding: 8px;"
-							>
-						</div>
+				<div class="form-group" style="margin-bottom: 0;">
+					<label class="form-label">Lesson Video File (MP4, WebM, OGG)</label>
+					<div class="form-input-wrapper">
+						<input 
+							type="file" 
+							name="lesson_videos[]" 
+							class="form-input lesson-video-input" 
+							accept="video/mp4,video/webm,video/ogg" 
+							style="padding: 8px;"
+							onchange="handleVideoDurationDetection(this)"
+						>
 					</div>
-					<div class="form-group" style="margin-bottom: 0;">
-						<label class="form-label">Duration (MM:SS)</label>
-						<div class="form-input-wrapper">
-							<input 
-								type="text" 
-								name="lesson_durations[]" 
-								class="form-input" 
-								placeholder="10:00" 
-								value="10:00"
-							>
-						</div>
+					<input type="hidden" name="lesson_durations[]" class="lesson-duration-hidden" value="">
+					<div class="duration-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; margin-top: 8px; width: fit-content;">
+						⏱️ Auto-Detected Duration: <span class="duration-text">00:00</span>
 					</div>
 				</div>
 			`;

@@ -1,6 +1,7 @@
 <?php
-
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Protect Student Dashboard: Must be logged in as student
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {

@@ -19,19 +19,23 @@ require_once __DIR__ . '/submit_exam_function.php';
 <body class="student-dashboard-body">
 
 	<!-- Navigation Header -->
-	<header class="navbar">
-		<div class="nav-left">
-			<a href="../index.php" class="logo">
-				<span class="logo-icon">
-					<img class="icon" src="../assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo">
-				</span>
+	<header class="student-navbar">
+		<div class="student-nav-left">
+			<a href="../index.php" class="student-nav-logo" title="Adsity Home">
+				<img src="../assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo">
 			</a>
-			<span style="font-weight: 700; color: #0f172a; font-size: 1.05rem;">Final Project Assessment</span>
+			<span style="font-weight: 800; color: #0f172a; font-size: 1.05rem;">Final Project Assessment</span>
 		</div>
 
-		<div class="nav-right">
-			<a href="dashboard.php" class="teach-link">Back to Dashboard</a>
-			<a href="../logout.php" class="btn-login" style="background-color: #475569;" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
+		<div class="student-nav-right">
+			<a href="dashboard.php" class="student-btn-dashboard">
+				<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Back" style="filter: brightness(0) saturate(100%) invert(42%) sepia(85%) saturate(2891%) hue-rotate(182deg) brightness(94%) contrast(87%);">
+				Back to Dashboard
+			</a>
+			<a href="../logout.php" class="student-btn-logout" onclick="return confirm('Are you sure you want to log out?');">
+				<img src="../assets/icons/arrow-left.svg" width="14" height="14" alt="Logout" style="filter: brightness(0) saturate(100%) invert(42%) sepia(13%) saturate(1072%) hue-rotate(182deg) brightness(94%) contrast(87%);">
+				<span>Log Out</span>
+			</a>
 		</div>
 	</header>
 
@@ -39,10 +43,10 @@ require_once __DIR__ . '/submit_exam_function.php';
 		<div class="exam-card">
 			<a href="dashboard.php" class="back-home-link">
 				<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Back">
-				Back to Dashboard
+				Back to Learning Portal
 			</a>
 
-			<div style="margin-top: 16px; margin-bottom: 8px;">
+			<div style="margin-top: 20px; margin-bottom: 8px;">
 				<?php if (($course['assessment_type'] ?? '') === 'github_repo'): ?>
 					<span class="exam-badge-type">
 						<img src="../assets/icons/github.svg" width="14" height="14" alt="GitHub">
@@ -60,11 +64,11 @@ require_once __DIR__ . '/submit_exam_function.php';
 					</span>
 				<?php endif; ?>
 
-				<h1 style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+				<h1 style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.01em;">
 					<?= htmlspecialchars($course['title'] ?? 'Final Assessment') ?>
 				</h1>
-				<p style="color: #64748b; font-size: 0.95rem;">
-					Complete your instructor's project requirements below to verify your skills and unlock your official Adsity Certificate.
+				<p style="color: #64748b; font-size: 0.95rem; line-height: 1.6;">
+					Complete your instructor's deliverable requirements below to verify your practical skills and unlock your official Adsity Certificate.
 				</p>
 			</div>
 
@@ -81,7 +85,7 @@ require_once __DIR__ . '/submit_exam_function.php';
 
 			<!-- Status Alerts -->
 			<?php if ($status === 'error'): ?>
-				<div class="alert alert--error" style="margin-bottom: 20px;">
+				<div class="alert alert--error" style="margin-bottom: 24px;">
 					<img src="../assets/icons/alert-circle.svg" width="20" height="20" alt="Error">
 					<span><?= htmlspecialchars($message ?? 'An error occurred during submission.') ?></span>
 				</div>
@@ -91,8 +95,8 @@ require_once __DIR__ . '/submit_exam_function.php';
 				<input type="hidden" name="course_id" value="<?= htmlspecialchars($course['id']) ?>">
 
 				<?php if (($course['assessment_type'] ?? '') === 'github_repo'): ?>
-					<div class="form-group">
-						<label for="github_url" class="form-label">GitHub Repository URL</label>
+					<div class="form-group" style="margin-bottom: 20px;">
+						<label for="github_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">GitHub Repository URL</label>
 						<div class="form-input-wrapper">
 							<input 
 								type="url" 
@@ -101,13 +105,14 @@ require_once __DIR__ . '/submit_exam_function.php';
 								class="form-input" 
 								placeholder="https://github.com/your-username/your-repository" 
 								required
+								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
 							>
 						</div>
 					</div>
 
 				<?php elseif (($course['assessment_type'] ?? '') === 'file_upload'): ?>
-					<div class="form-group">
-						<label for="project_file" class="form-label">Upload Project File (ZIP, PDF, RAR, PNG, JPG)</label>
+					<div class="form-group" style="margin-bottom: 20px;">
+						<label for="project_file" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Upload Project File (ZIP, PDF, RAR, PNG, JPG)</label>
 						<div class="form-input-wrapper">
 							<input 
 								type="file" 
@@ -115,15 +120,15 @@ require_once __DIR__ . '/submit_exam_function.php';
 								name="project_file" 
 								class="form-input" 
 								accept=".zip,.rar,.tar,.gz,.pdf,.png,.jpg,.jpeg,.txt,.json" 
-								style="padding: 10px;" 
 								required
+								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; background-color: #f8fafc;"
 							>
 						</div>
 					</div>
 
 				<?php else: ?>
-					<div class="form-group">
-						<label for="live_url" class="form-label">Live Project / Website Demo URL</label>
+					<div class="form-group" style="margin-bottom: 20px;">
+						<label for="live_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Live Project / Website Demo URL</label>
 						<div class="form-input-wrapper">
 							<input 
 								type="url" 
@@ -132,13 +137,14 @@ require_once __DIR__ . '/submit_exam_function.php';
 								class="form-input" 
 								placeholder="https://your-project.vercel.app or https://yourdomain.com" 
 								required
+								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
 							>
 						</div>
 					</div>
 				<?php endif; ?>
 
-				<div class="form-group">
-					<label for="notes" class="form-label">Submission Notes &amp; Comments (Optional)</label>
+				<div class="form-group" style="margin-bottom: 28px;">
+					<label for="notes" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Submission Notes &amp; Comments (Optional)</label>
 					<div class="form-input-wrapper">
 						<textarea 
 							id="notes" 
@@ -146,13 +152,13 @@ require_once __DIR__ . '/submit_exam_function.php';
 							class="form-input" 
 							rows="3" 
 							placeholder="Mention any credentials, setup instructions, or notes for your instructor..." 
-							style="resize: vertical;"
+							style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; resize: vertical;"
 						></textarea>
 					</div>
 				</div>
 
-				<button type="submit" name="submit_assessment" class="btn-auth-submit" style="background-color: var(--primary-green);">
-					<img src="../assets/icons/award.svg" width="18" height="18" alt="Award" style="filter: brightness(0) invert(1);">
+				<button type="submit" name="submit_assessment" class="btn-submit-assessment">
+					<img src="../assets/icons/award.svg" width="18" height="18" alt="Award" style="filter: brightness(0);">
 					Submit Project &amp; Claim Certificate
 				</button>
 			</form>
@@ -160,12 +166,12 @@ require_once __DIR__ . '/submit_exam_function.php';
 	</main>
 
 	<!-- Footer -->
-	<footer class="footer">
-		<div class="footer-bottom">
-			<div class="footer-bottom-inner">
-				<img src="../assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo" class="footer-bottom-logo-img">
-				<p class="footer-copyright">&copy; 2026 Adsity Education. All rights reserved.</p>
-			</div>
+	<footer class="student-footer" style="padding: 24px 32px; background-color: #ffffff;">
+		<p>&copy; 2026 Adsity Education. All rights reserved.</p>
+		<div class="student-footer-links">
+			<a href="dashboard.php">My Dashboard</a>
+			<a href="../courses.php">Explore Courses</a>
+			<a href="../index.php">Home</a>
 		</div>
 	</footer>
 

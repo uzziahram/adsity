@@ -258,7 +258,16 @@ flowchart TD
    - **Completed Cards:** Completion date and "View Certificate" button.
    - **My Certificates:** Verification codes and direct links to [`student/certificate.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/certificate.php).
 
-### C. Instructor Application
+### C. Instructor Studio & Multi-Video Course Publishing
+1. Instructor navigates to [`instructor/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/dashboard.php) and clicks **"Create New Course"** to open [`instructor/create_course.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course.php).
+2. The instructor enters course details, selects the assessment type (`github_repo`, `file_upload`, or `live_url`), and builds the video curriculum.
+3. **Automatic Video Duration Detection**:
+   - The instructor is **not** asked to manually choose or type a duration.
+   - When a video file (`.mp4`, `.webm`, `.ogg`) is selected, the browser automatically inspects the video file metadata via the HTML5 Video Metadata API and displays a live badge (e.g. `⏱️ Auto-Detected Duration: 08:45`).
+   - On submission, [`instructor/create_course_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course_function.php) executes `ffprobe` to verify the exact duration from the uploaded file and stores it into the `lessons` table.
+4. Uploaded videos are organized locally under `uploads/instructors/{instructor_id}/courses/{course_id}/`.
+
+### D. Instructor Application
 1. Instructor submits application at [`teach.php`](file:///home/ugenella/coding/xampp-projects/adsity/teach.php).
 2. [`teach_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/teach_function.php) validates inputs, registers user with `role_id = 2` (`instructor`), sets session data, and provides success feedback.
 

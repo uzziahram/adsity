@@ -1,22 +1,112 @@
-/* Student Final Project Assessment Stylesheet */
+/* ==========================================================================
+   Student Final Project Assessment Stylesheet
+   ========================================================================== */
+
+.student-navbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 32px;
+	background-color: #ffffff;
+	border-bottom: 1px solid #e2e8f0;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+
+.student-nav-left {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.student-nav-logo img {
+	height: 38px;
+	width: auto;
+	display: block;
+	object-fit: contain;
+}
+
+.student-nav-right {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.student-btn-dashboard {
+	text-decoration: none;
+	color: #0284c7;
+	font-weight: 700;
+	font-size: 0.88rem;
+	padding: 8px 14px;
+	border-radius: 8px;
+	transition: background-color 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.student-btn-dashboard:hover {
+	background-color: #e0f2fe;
+}
+
+.student-btn-logout {
+	background-color: #f1f5f9;
+	color: #64748b;
+	border: 1px solid #e2e8f0;
+	padding: 8px 16px;
+	border-radius: 9999px;
+	font-size: 0.85rem;
+	font-weight: 700;
+	text-decoration: none;
+	transition: all 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.student-btn-logout:hover {
+	background-color: #fee2e2;
+	border-color: #fca5a5;
+	color: #dc2626;
+}
 
 .exam-wrapper {
-	min-height: calc(100vh - 160px);
+	min-height: calc(100vh - 140px);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 40px 20px;
-	position: relative;
+	background-color: #f8fafc;
 }
 
 .exam-card {
 	background-color: #ffffff;
 	border: 1px solid #e2e8f0;
 	border-radius: 20px;
-	padding: 36px;
-	max-width: 640px;
+	padding: 40px;
+	max-width: 680px;
 	width: 100%;
-	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+	box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+}
+
+.back-home-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #64748b;
+	font-weight: 700;
+	font-size: 0.88rem;
+	text-decoration: none;
+	padding: 6px 12px;
+	border-radius: 8px;
+	background-color: #f1f5f9;
+	transition: all 0.2s ease;
+}
+
+.back-home-link:hover {
+	color: #0f172a;
+	background-color: #e2e8f0;
 }
 
 .exam-badge-type {
@@ -26,20 +116,23 @@
 	background-color: #e0f2fe;
 	color: #0284c7;
 	font-size: 0.8rem;
-	font-weight: 700;
+	font-weight: 800;
 	padding: 5px 14px;
 	border-radius: 9999px;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	margin-bottom: 12px;
+	margin-bottom: 14px;
 }
 
 .instructions-box {
 	background-color: #f8fafc;
-	border-left: 4px solid #27D662;
-	border-radius: 8px;
-	padding: 18px 20px;
-	margin: 20px 0 24px 0;
+	border-left: 4px solid var(--primary-green);
+	border-radius: 12px;
+	padding: 20px 22px;
+	margin: 24px 0 28px 0;
+	border-top: 1px solid #f1f5f9;
+	border-right: 1px solid #f1f5f9;
+	border-bottom: 1px solid #f1f5f9;
 }
 
 .instructions-title {
@@ -47,15 +140,41 @@
 	font-weight: 800;
 	color: #0f172a;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	margin-bottom: 6px;
+	letter-spacing: 0.06em;
+	margin-bottom: 8px;
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 }
 
 .instructions-content {
 	font-size: 0.95rem;
 	color: #334155;
-	line-height: 1.6;
+	line-height: 1.65;
+}
+
+.btn-submit-assessment {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+	background-color: var(--primary-green);
+	color: #0b1410;
+	font-weight: 800;
+	font-size: 1rem;
+	padding: 14px 24px;
+	border-radius: 12px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-family: inherit;
+	box-shadow: 0 4px 14px rgba(39, 214, 98, 0.35);
+}
+
+.btn-submit-assessment:hover {
+	background-color: var(--primary-green-hover);
+	color: #ffffff;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(39, 214, 98, 0.45);
 }

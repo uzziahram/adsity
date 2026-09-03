@@ -26,7 +26,7 @@ require_once __DIR__ . '/courses_function.php';
 					<img class="icon" src="./assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo">
 				</span>
 			</a>
-			<a href="courses.php" class="explore-btn" style="color: var(--primary-green); font-weight: 800;">Explore</a>
+			<a href="courses.php" class="explore-btn">Explore</a>
 			<div class="search-bar">
 				<span class="search-icon">&#128269;</span>
 				<input type="text" placeholder="Search for Courses">

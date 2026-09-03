@@ -44,71 +44,91 @@ $id      = $_GET['id'] ?? null;
 		</div>
 	</header>
 
-	<!-- Main Auth Container -->
-	<main class="auth-wrapper">
-		<div class="auth-bg-blob auth-bg-blob--blue"></div>
-		<div class="auth-bg-blob auth-bg-blob--green"></div>
+	<!-- Main Auth Container (Full-Screen Split Layout) -->
+	<main class="auth-split-wrapper">
+		<!-- Left Image Hero Side -->
+		<div class="auth-image-side">
+			<img src="./assets/student_sign_up.jpg" alt="Student Learning on Adsity" class="auth-image-hero-bg">
+			<div class="auth-image-overlay"></div>
 
-		<div class="auth-card">
-			<a href="index.php" class="back-home-link">
-				<img src="./assets/icons/arrow-left.svg" width="16" height="16" alt="Back">
-				Back to Home
-			</a>
-
-			<div class="auth-card__header">
-				<h1 class="auth-title">Welcome Back</h1>
-				<p class="auth-subtitle">Log in to continue learning and track your certificates.</p>
+			<div class="auth-image-top">
+				<a href="index.php" class="auth-brand-back-btn">
+					<img src="./assets/icons/arrow-left.svg" width="16" height="16" alt="Back" style="filter: brightness(0) invert(1);">
+					Back to Home
+				</a>
 			</div>
 
-			<?php if ($status === 'success'): ?>
-				<div class="alert alert--success">
-					<img src="./assets/icons/check-circle.svg" width="20" height="20" alt="Success">
-					<span><?= htmlspecialchars($message ?? 'Logged in successfully!') ?></span>
-				</div>
-			<?php elseif ($status === 'error'): ?>
-				<div class="alert alert--error">
-					<img src="./assets/icons/alert-circle.svg" width="20" height="20" alt="Error">
-					<span><?= htmlspecialchars($message ?? 'Invalid credentials.') ?></span>
-				</div>
-			<?php endif; ?>
-
-			<form action="login_function.php" method="POST" class="auth-form">
-				<div class="form-group">
-					<label for="email" class="form-label">Email Address</label>
-					<div class="form-input-wrapper">
-						<input 
-							type="email" 
-							id="email" 
-							name="email" 
-							class="form-input" 
-							placeholder="name@example.com" 
-							required
-						>
+			<div class="auth-image-bottom">
+				<div class="auth-image-glass-card">
+					<h2 class="auth-image-card-title">Welcome back to Adsity</h2>
+					<p class="auth-image-card-desc">Resume your enrolled courses, track multi-video lesson modules, and download your earned certificates.</p>
+					<div class="auth-image-card-badges">
+						<span class="auth-image-card-badge">🎓 100% Free Learning</span>
+						<span class="auth-image-card-badge">📜 Verified Certificates</span>
+						<span class="auth-image-card-badge">📺 Ad-Sponsored</span>
 					</div>
 				</div>
+			</div>
+		</div>
 
-				<div class="form-group">
-					<label for="password" class="form-label">Password</label>
-					<div class="form-input-wrapper">
-						<input 
-							type="password" 
-							id="password" 
-							name="password" 
-							class="form-input" 
-							placeholder="Enter your password" 
-							required
-						>
-					</div>
+		<!-- Right Auth Form Side -->
+		<div class="auth-form-side">
+			<div class="auth-form-container">
+				<div class="auth-form-header">
+					<h2 class="auth-title">Log In to Your Account</h2>
+					<p class="auth-subtitle">Enter your credentials below to access your student or instructor dashboard.</p>
 				</div>
 
-				<button type="submit" name="login" class="btn-auth-submit" style="background-color: var(--primary-blue);">
-					Log In
-					<img src="./assets/icons/arrow-right.svg" width="18" height="18" alt="Arrow" style="filter: brightness(0) invert(1);">
-				</button>
-			</form>
+				<?php if ($status === 'success'): ?>
+					<div class="alert alert--success">
+						<img src="./assets/icons/check-circle.svg" width="20" height="20" alt="Success">
+						<span><?= htmlspecialchars($message ?? 'Logged in successfully!') ?></span>
+					</div>
+				<?php elseif ($status === 'error'): ?>
+					<div class="alert alert--error">
+						<img src="./assets/icons/alert-circle.svg" width="20" height="20" alt="Error">
+						<span><?= htmlspecialchars($message ?? 'Invalid credentials.') ?></span>
+					</div>
+				<?php endif; ?>
 
-			<div class="auth-card__footer">
-				Don't have an account yet? <a href="signup.php">Sign Up</a>
+				<form action="login_function.php" method="POST" class="auth-form">
+					<div class="form-group">
+						<label for="email" class="form-label">Email Address</label>
+						<div class="form-input-wrapper">
+							<input 
+								type="email" 
+								id="email" 
+								name="email" 
+								class="form-input form-input--blue" 
+								placeholder="name@example.com" 
+								required
+							>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label for="password" class="form-label">Password</label>
+						<div class="form-input-wrapper">
+							<input 
+								type="password" 
+								id="password" 
+								name="password" 
+								class="form-input form-input--blue" 
+								placeholder="Enter your password" 
+								required
+							>
+						</div>
+					</div>
+
+					<button type="submit" name="login" class="btn-auth-submit btn-auth-submit--blue">
+						Log In to Dashboard
+						<img src="./assets/icons/arrow-right.svg" width="18" height="18" alt="Arrow" style="filter: brightness(0) invert(1);">
+					</button>
+				</form>
+
+				<div class="auth-form-footer">
+					Don't have an account yet? <a href="signup.php">Create a free student account</a>
+				</div>
 			</div>
 		</div>
 	</main>

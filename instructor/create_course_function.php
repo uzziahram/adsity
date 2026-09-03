@@ -77,15 +77,32 @@ try {
                   VALUES (:course_id, :lesson_number, :title, :video_path, :duration)";
     $stmtLesson = $pdo->prepare($sqlLesson);
 
+    // Helper function to detect video duration from uploaded file via ffprobe
+    function detectVideoDurationFromFile($filePath) {
+        if (file_exists($filePath)) {
+            $escaped = escapeshellarg($filePath);
+            $cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {$escaped} 2>/dev/null";
+            $output = trim(shell_exec($cmd) ?? '');
+            if ($output !== '' && is_numeric($output)) {
+                $totalSecs = (int)round((float)$output);
+                $hrs = floor($totalSecs / 3600);
+                $mins = floor(($totalSecs % 3600) / 60);
+                $secs = $totalSecs % 60;
+                if ($hrs > 0) {
+                    return sprintf('%02d:%02d:%02d', $hrs, $mins, $secs);
+                }
+                return sprintf('%02d:%02d', $mins, $secs);
+            }
+        }
+        return null;
+    }
+
     foreach ($lessonTitles as $index => $lessonTitle) {
         $lessonNumber = $index + 1;
         $titleClean   = trim($lessonTitle);
-        $duration     = trim($lessonDurations[$index] ?? '10:00');
-        if ($duration === '') {
-            $duration = '10:00';
-        }
-
-        $videoPath = 'assets/ad/sample_ad.mp4'; // Default fallback video
+        $clientDuration = trim($lessonDurations[$index] ?? '');
+        $duration     = $clientDuration !== '' ? $clientDuration : '10:00';
+        $videoPath    = 'assets/ad/sample_ad.mp4'; // Default fallback video
 
         // Check if an actual video file was uploaded for this lesson
         if (
@@ -102,6 +119,12 @@ try {
 
                 if (move_uploaded_file($tmpPath, $targetFile)) {
                     $videoPath = 'uploads/instructors/' . $instructorId . '/courses/' . $courseId . '/' . $safeName;
+
+                    // Detect exact duration using ffprobe
+                    $detectedDuration = detectVideoDurationFromFile($targetFile);
+                    if ($detectedDuration) {
+                        $duration = $detectedDuration;
+                    }
                 }
             }
         }
