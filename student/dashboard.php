@@ -258,14 +258,21 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="../courses.php" class="btn-continue-course">
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
 											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
 											Learn
 										</a>
-										<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
-											<img src="../assets/icons/award.svg" width="16" height="16" alt="Exam" style="filter: brightness(0) invert(1);">
-											Submit Project
-										</a>
+										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
+											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
+												<img src="../assets/icons/award.svg" width="16" height="16" alt="Exam" style="filter: brightness(0) invert(1);">
+												Submit Project
+											</a>
+										<?php else: ?>
+											<span class="btn-submit-project btn-submit-locked" title="Finish all lessons to unlock final project submission">
+												<img src="../assets/icons/lock.svg" width="14" height="14" alt="Locked" style="filter: brightness(0) saturate(100%) invert(42%) sepia(13%) saturate(1072%) hue-rotate(182deg) brightness(94%) contrast(87%);">
+												Project Locked
+											</span>
+										<?php endif; ?>
 									</div>
 								</div>
 							</article>
@@ -335,14 +342,21 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="../courses.php" class="btn-continue-course">
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
 											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
 											Learn
 										</a>
-										<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
-											<img src="../assets/icons/award.svg" width="16" height="16" alt="Exam" style="filter: brightness(0) invert(1);">
-											Submit Project
-										</a>
+										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
+											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
+												<img src="../assets/icons/award.svg" width="16" height="16" alt="Exam" style="filter: brightness(0) invert(1);">
+												Submit Project
+											</a>
+										<?php else: ?>
+											<span class="btn-submit-project btn-submit-locked" title="Finish all lessons to unlock final project submission">
+												<img src="../assets/icons/lock.svg" width="14" height="14" alt="Locked" style="filter: brightness(0) saturate(100%) invert(42%) sepia(13%) saturate(1072%) hue-rotate(182deg) brightness(94%) contrast(87%);">
+												Project Locked
+											</span>
+										<?php endif; ?>
 									</div>
 								</div>
 							</article>

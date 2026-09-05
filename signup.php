@@ -1,7 +1,8 @@
 <?php
-$status  = $_GET['status'] ?? null;
-$message = $_GET['message'] ?? null;
-$id      = $_GET['id'] ?? null;
+$status         = $_GET['status'] ?? null;
+$message        = $_GET['message'] ?? null;
+$id             = $_GET['id'] ?? null;
+$redirectCourse = isset($_GET['redirect_course']) ? (int)$_GET['redirect_course'] : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,6 +72,9 @@ $id      = $_GET['id'] ?? null;
 				<?php endif; ?>
 
 				<form action="signup_function.php" method="POST" class="auth-form">
+					<?php if ($redirectCourse > 0): ?>
+						<input type="hidden" name="redirect_course" value="<?= $redirectCourse ?>">
+					<?php endif; ?>
 					<div class="form-group">
 						<label for="full_name" class="form-label">Full Name</label>
 						<div class="form-input-wrapper">
@@ -135,7 +139,7 @@ $id      = $_GET['id'] ?? null;
 				</form>
 
 				<div class="auth-form-footer">
-					Already have an account? <a href="login.php">Log In</a>
+					Already have an account? <a href="login.php<?= $redirectCourse > 0 ? '?redirect_course=' . $redirectCourse : '' ?>">Log In</a>
 				</div>
 			</div>
 		</div>

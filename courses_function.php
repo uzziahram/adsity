@@ -47,6 +47,16 @@ try {
     $stmt->execute();
     $courses = $stmt->fetchAll();
 
+    // Fetch enrolled course IDs if logged-in student
+    $enrolledCourseIds = [];
+    if ($isLoggedIn && $userRole === 'student') {
+        $stmtEnr = $pdo->prepare("SELECT course_id FROM enrollments WHERE user_id = :uid");
+        $stmtEnr->bindValue(':uid', $_SESSION['user_id'], PDO::PARAM_INT);
+        $stmtEnr->execute();
+        $enrolledCourseIds = $stmtEnr->fetchAll(PDO::FETCH_COLUMN);
+    }
+
 } catch (PDOException $e) {
     $courses = [];
+    $enrolledCourseIds = [];
 }

@@ -67,6 +67,11 @@ try {
     }
 
     if ($user['role_name'] === 'student') {
+        $redirectCourse = isset($_POST['redirect_course']) ? (int)$_POST['redirect_course'] : 0;
+        if ($redirectCourse > 0) {
+            header('Location: course_details.php?id=' . $redirectCourse);
+            exit;
+        }
         header('Location: student/dashboard.php');
         exit;
     }

@@ -37,8 +37,27 @@ try {
         exit;
     }
 
+    // Check enrollment and completion
+    $stmtEnr = $pdo->prepare("SELECT id, progress_percent, status FROM enrollments WHERE user_id = :uid AND course_id = :cid LIMIT 1");
+    $stmtEnr->bindValue(':uid', $studentId, PDO::PARAM_INT);
+    $stmtEnr->bindValue(':cid', $courseId, PDO::PARAM_INT);
+    $stmtEnr->execute();
+    $enrollment = $stmtEnr->fetch();
+
+    if (!$enrollment) {
+        header('Location: dashboard.php?status=error&message=' . urlencode('You must enroll in this course first before viewing or submitting final deliverables.'));
+        exit;
+    }
+
+    $isCourseFinished = ((int)($enrollment['progress_percent'] ?? 0) >= 100) || (($enrollment['status'] ?? '') === 'completed');
+
     // Handle Form Submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_assessment'])) {
+        if (!$isCourseFinished) {
+            header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('You cannot submit your project until you have finished all lessons in the course.'));
+            exit;
+        }
+
         $assessmentType = $course['assessment_type'] ?? 'github_repo';
         $notes          = trim($_POST['notes'] ?? '');
         $submissionVal  = '';

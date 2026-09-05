@@ -91,77 +91,98 @@ require_once __DIR__ . '/submit_exam_function.php';
 				</div>
 			<?php endif; ?>
 
-			<form action="submit_exam.php" method="POST" enctype="multipart/form-data" class="auth-form">
-				<input type="hidden" name="course_id" value="<?= htmlspecialchars($course['id']) ?>">
-
-				<?php if (($course['assessment_type'] ?? '') === 'github_repo'): ?>
-					<div class="form-group" style="margin-bottom: 20px;">
-						<label for="github_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">GitHub Repository URL</label>
-						<div class="form-input-wrapper">
-							<input 
-								type="url" 
-								id="github_url" 
-								name="github_url" 
-								class="form-input" 
-								placeholder="https://github.com/your-username/your-repository" 
-								required
-								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
-							>
-						</div>
+			<?php if (!$isCourseFinished): ?>
+				<div class="locked-submission-card" style="background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 40px 24px; text-align: center; margin-top: 24px;">
+					<div style="width: 64px; height: 64px; border-radius: 50%; background-color: #fef2f2; border: 1px solid #fee2e2; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+						<img src="../assets/icons/lock.svg" width="30" height="30" alt="Locked" style="filter: brightness(0) saturate(100%) invert(32%) sepia(85%) saturate(2891%) hue-rotate(344deg) brightness(98%) contrast(92%);">
 					</div>
-
-				<?php elseif (($course['assessment_type'] ?? '') === 'file_upload'): ?>
-					<div class="form-group" style="margin-bottom: 20px;">
-						<label for="project_file" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Upload Project File (ZIP, PDF, RAR, PNG, JPG)</label>
-						<div class="form-input-wrapper">
-							<input 
-								type="file" 
-								id="project_file" 
-								name="project_file" 
-								class="form-input" 
-								accept=".zip,.rar,.tar,.gz,.pdf,.png,.jpg,.jpeg,.txt,.json" 
-								required
-								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; background-color: #f8fafc;"
-							>
-						</div>
+					<h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Final Project Submission is Locked</h2>
+					<p style="color: #64748b; font-size: 0.98rem; max-width: 520px; margin: 0 auto 18px auto; line-height: 1.6;">
+						You must finish watching all lessons in this course before you can submit your final project deliverable.
+					</p>
+					<div style="display: inline-flex; align-items: center; gap: 8px; background-color: #f1f5f9; padding: 8px 18px; border-radius: 9999px; font-size: 0.88rem; font-weight: 700; color: #334155; margin-bottom: 24px;">
+						<span>Current Progress: <?= (int)$enrollment['progress_percent'] ?>% Completed</span>
 					</div>
-
-				<?php else: ?>
-					<div class="form-group" style="margin-bottom: 20px;">
-						<label for="live_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Live Project / Website Demo URL</label>
-						<div class="form-input-wrapper">
-							<input 
-								type="url" 
-								id="live_url" 
-								name="live_url" 
-								class="form-input" 
-								placeholder="https://your-project.vercel.app or https://yourdomain.com" 
-								required
-								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
-							>
-						</div>
-					</div>
-				<?php endif; ?>
-
-				<div class="form-group" style="margin-bottom: 28px;">
-					<label for="notes" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Submission Notes &amp; Comments (Optional)</label>
-					<div class="form-input-wrapper">
-						<textarea 
-							id="notes" 
-							name="notes" 
-							class="form-input" 
-							rows="3" 
-							placeholder="Mention any credentials, setup instructions, or notes for your instructor..." 
-							style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; resize: vertical;"
-						></textarea>
+					<div>
+						<a href="../course_details.php?id=<?= urlencode($course['id']) ?>" class="btn-submit-assessment" style="display: inline-flex; width: auto; text-decoration: none; padding: 12px 28px; background-color: #0284c7; color: #ffffff;">
+							<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0) invert(1);">
+							<span>Resume Course Lessons</span>
+						</a>
 					</div>
 				</div>
+			<?php else: ?>
+				<form action="submit_exam.php" method="POST" enctype="multipart/form-data" class="auth-form">
+					<input type="hidden" name="course_id" value="<?= htmlspecialchars($course['id']) ?>">
 
-				<button type="submit" name="submit_assessment" class="btn-submit-assessment">
-					<img src="../assets/icons/award.svg" width="18" height="18" alt="Award" style="filter: brightness(0);">
-					Submit Project &amp; Claim Certificate
-				</button>
-			</form>
+					<?php if (($course['assessment_type'] ?? '') === 'github_repo'): ?>
+						<div class="form-group" style="margin-bottom: 20px;">
+							<label for="github_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">GitHub Repository URL</label>
+							<div class="form-input-wrapper">
+								<input 
+									type="url" 
+									id="github_url" 
+									name="github_url" 
+									class="form-input" 
+									placeholder="https://github.com/your-username/your-repository" 
+									required
+									style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
+								>
+							</div>
+						</div>
+
+					<?php elseif (($course['assessment_type'] ?? '') === 'file_upload'): ?>
+						<div class="form-group" style="margin-bottom: 20px;">
+							<label for="project_file" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Upload Project File (ZIP, PDF, RAR, PNG, JPG)</label>
+							<div class="form-input-wrapper">
+								<input 
+									type="file" 
+									id="project_file" 
+									name="project_file" 
+									class="form-input" 
+									accept=".zip,.rar,.tar,.gz,.pdf,.png,.jpg,.jpeg,.txt,.json" 
+									required
+									style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; background-color: #f8fafc;"
+								>
+							</div>
+						</div>
+
+					<?php else: ?>
+						<div class="form-group" style="margin-bottom: 20px;">
+							<label for="live_url" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Live Project / Website Demo URL</label>
+							<div class="form-input-wrapper">
+								<input 
+									type="url" 
+									id="live_url" 
+									name="live_url" 
+									class="form-input" 
+									placeholder="https://your-project.vercel.app or https://yourdomain.com" 
+									required
+									style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem;"
+								>
+							</div>
+						</div>
+					<?php endif; ?>
+
+					<div class="form-group" style="margin-bottom: 28px;">
+						<label for="notes" class="form-label" style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: block;">Submission Notes (Optional)</label>
+						<div class="form-input-wrapper">
+							<textarea 
+								id="notes" 
+								name="notes" 
+								class="form-input" 
+								rows="3" 
+								placeholder="Mention any credentials, setup instructions, or notes for your instructor..." 
+								style="width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.92rem; resize: vertical;"
+							></textarea>
+						</div>
+					</div>
+
+					<button type="submit" name="submit_assessment" class="btn-submit-assessment">
+						<img src="../assets/icons/award.svg" width="18" height="18" alt="Award" style="filter: brightness(0);">
+						Submit Project &amp; Claim Certificate
+					</button>
+				</form>
+			<?php endif; ?>
 		</div>
 	</main>
 

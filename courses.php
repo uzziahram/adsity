@@ -112,20 +112,26 @@ require_once __DIR__ . '/courses_function.php';
 
 		<?php if (!empty($courses)): ?>
 			<div class="explore-courses-grid">
-				<?php foreach ($courses as $c): ?>
+				<?php foreach ($courses as $c): 
+					$isEnrolledInThis = in_array((int)$c['id'], array_map('intval', $enrolledCourseIds));
+				?>
 					<article class="explore-course-card">
-						<div class="explore-course-thumb">
+						<a href="course_details.php?id=<?= $c['id'] ?>" class="explore-course-thumb" style="display: block; text-decoration: none;">
 							<?php
 							$thumbSrc = !empty($c['thumbnail']) && str_starts_with($c['thumbnail'], 'uploads/')
 								? './' . $c['thumbnail']
 								: './assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
 							?>
-							<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>">
+							<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" onerror="this.src='./assets/adsity_assets/Web_Development_Basics.png'">
 							<span class="explore-course-category"><?= htmlspecialchars($c['category']) ?></span>
-						</div>
+						</a>
 
 						<div class="explore-course-body">
-							<h2 class="explore-course-title"><?= htmlspecialchars($c['title']) ?></h2>
+							<h2 class="explore-course-title">
+								<a href="course_details.php?id=<?= $c['id'] ?>" style="color: inherit; text-decoration: none;">
+									<?= htmlspecialchars($c['title']) ?>
+								</a>
+							</h2>
 							<p class="explore-course-desc"><?= htmlspecialchars($c['description']) ?></p>
 
 							<div class="explore-course-meta">
@@ -136,10 +142,17 @@ require_once __DIR__ . '/courses_function.php';
 								</span>
 							</div>
 
-							<a href="signup.php" class="btn-enroll-course">
-								<span>Enroll for Free</span>
-								<img src="./assets/icons/arrow-right.svg" width="16" height="16" alt="Enroll" style="filter: brightness(0) invert(1);">
-							</a>
+							<?php if ($isEnrolledInThis): ?>
+								<a href="course_details.php?id=<?= $c['id'] ?>" class="btn-enroll-course" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%);">
+									<span>In Progress (View)</span>
+									<img src="./assets/icons/arrow-right.svg" width="16" height="16" alt="View" style="filter: brightness(0) invert(1);">
+								</a>
+							<?php else: ?>
+								<a href="course_details.php?id=<?= $c['id'] ?>" class="btn-enroll-course">
+									<span>View Course & Enroll</span>
+									<img src="./assets/icons/arrow-right.svg" width="16" height="16" alt="Enroll" style="filter: brightness(0) invert(1);">
+								</a>
+							<?php endif; ?>
 						</div>
 					</article>
 				<?php endforeach; ?>
