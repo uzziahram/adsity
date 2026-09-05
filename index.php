@@ -234,7 +234,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--white">
-							<img src="./assets/adsity_assets/python-logo-master-v3-TM 1.png" alt="Python logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/python_logo.png" alt="Python logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Build data pipelines, automate workflows, and power AI models with a versatile language.</p>
 					</div>
@@ -250,7 +250,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--white">
-							<img src="./assets/adsity_assets/images 2.jpg" alt="JavaScript logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/javascript_logo.jpg" alt="JavaScript logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Drive web frontends, backends, and desktop apps with a language that runs everywhere.</p>
 					</div>
@@ -266,7 +266,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--black">
-							<img src="./assets/adsity_assets/9b4ee057076232fb57c48cf80947f8a7 1.jpg" alt="React logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/react_logo.jpg" alt="React logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Build fast, reusable UI components for web applications with a popular JavaScript library.</p>
 					</div>
@@ -283,7 +283,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--navy">
-							<img src="./assets/adsity_assets/8167fbf1c5c31df8aba81d46ee3663ab 1.jpg" alt="AWS logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/aws_logo.jpg" alt="AWS logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Deploy scalable infrastructure, services, and applications on a leading cloud platform.</p>
 					</div>
@@ -299,7 +299,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--dark-muted">
-							<img src="./assets/adsity_assets/adf731026063bc2361c144bba050d01b 1.jpg" alt="UI / UX design mockups" class="skill-card__img">
+							<img src="./assets/adsity_assets/ui_ux_design.jpg" alt="UI / UX design mockups" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Craft intuitive interfaces that delight users and drive conversion through research and testing.</p>
 					</div>
@@ -315,7 +315,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--white">
-							<img src="./assets/adsity_assets/0ba1a49d4ed0e18b70faf8e457135cd6 1.jpg" alt="Docker logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/docker_logo.jpg" alt="Docker logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Package applications into consistent, portable containers for reliable delivery.</p>
 					</div>
@@ -332,7 +332,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--deep-blue">
-							<img src="./assets/adsity_assets/ea79fd6d733545d9832ccc7f42ebdb47 1.jpg" alt="Cyber Security logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/cybersecurity_shield.jpg" alt="Cyber Security logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Protect systems, networks, and data from threats with secure design and incident response.</p>
 					</div>
@@ -348,7 +348,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 							</span>
 						</div>
 						<div class="skill-card__panel skill-card__panel--vivid-blue">
-							<img src="./assets/adsity_assets/blockchain-logo-e1473250514936 1.png" alt="Blockchain logo" class="skill-card__img">
+							<img src="./assets/adsity_assets/blockchain_logo.png" alt="Blockchain logo" class="skill-card__img">
 						</div>
 						<p class="skill-card__desc">Build decentralized applications, smart contracts, and secure ledger systems.</p>
 					</div>

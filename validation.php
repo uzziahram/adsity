@@ -53,7 +53,6 @@ function validateSignupInput(array $post): array
         'data'   => [
             'full_name' => $fullName,
             'email'     => $email,
-            'password'  => $password,
         ],
     ];
 }
@@ -73,43 +72,15 @@ function validateLoginInput(array $post): array
     return [
         'errors' => $errors,
         'data'   => [
-            'email'    => $email,
-            'password' => $password,
+            'email' => $email,
         ],
     ];
 }
 
 function validateTeacherSignupInput(array $post): array
 {
-    $fullName        = trim($post['full_name'] ?? '');
-    $email           = trim($post['email'] ?? '');
-    $password        = $post['password'] ?? '';
-    $confirmPassword = $post['confirm_password'] ?? '';
-    $terms           = isset($post['terms']);
-
-    $errors = array_filter([
-        validateRequired($fullName, 'Full Name'),
-        validateRequired($email, 'Email Address'),
-        validateRequired($password, 'Password'),
-        $email !== '' ? validateEmailFormat($email) : null,
-        $password !== '' ? validateMinLength($password, 'Password', 6) : null,
-        $password !== '' ? validatePasswordMatch($password, $confirmPassword) : null,
-        validateTerms($terms),
-    ]);
-    $errors = array_values($errors);
-
-    if (empty($errors)) {
-        $fullName = htmlspecialchars($fullName);
-    }
-
-    return [
-        'errors' => $errors,
-        'data'   => [
-            'full_name' => $fullName,
-            'email'     => $email,
-            'password'  => $password,
-            'role_id'   => 2,
-        ],
-    ];
+    $result = validateSignupInput($post);
+    $result['data']['role_id'] = 2;
+    return $result;
 }
 

@@ -33,15 +33,21 @@ try {
         exit;
     }
 
+    $rawPassword = $_POST['password'] ?? '';
+    $hashedPassword = password_hash($rawPassword, PASSWORD_DEFAULT);
+
     $sql = "INSERT INTO users (full_name, email, password, role_id)
             VALUES (:full_name, :email, :password, :role_id)";
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':full_name', $result['data']['full_name']);
     $stmt->bindValue(':email', $result['data']['email']);
-    $stmt->bindValue(':password', $result['data']['password']);
+    $stmt->bindValue(':password', $hashedPassword);
     $stmt->bindValue(':role_id', 3, PDO::PARAM_INT); // 3 = student
     $stmt->execute();
+
+    // Immediately purge sensitive credentials and plain-text passwords from memory
+    unset($rawPassword, $hashedPassword, $_POST['password'], $_POST['confirm_password']);
 
     $newId = $pdo->lastInsertId();
 

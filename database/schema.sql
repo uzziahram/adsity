@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS users (
     CONSTRAINT fk_users_roles FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Seed Default Admin Account
+-- Seed Default Admin Account (password: admin123 hashed via PASSWORD_DEFAULT)
 INSERT INTO users (full_name, email, password, role_id)
-SELECT 'Administrator', 'admin@adsity.org', 'admin123', 1
+SELECT 'Administrator', 'admin@adsity.org', '$2y$10$BLSCQZeQ8xPK0zNeEbwytOoUJV.jxYZxBlLKnbeXltwhg3MOhVRUG', 1
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@adsity.org');
 
 -- 3. Courses Table

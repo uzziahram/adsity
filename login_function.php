@@ -32,8 +32,18 @@ try {
     $stmt->execute();
 
     $user = $stmt->fetch();
+    $inputPassword = $_POST['password'] ?? '';
 
-    if (!$user || $user['password'] !== $result['data']['password']) {
+    $passwordValid = $user && password_verify($inputPassword, $user['password']);
+
+
+    // Immediately purge sensitive credentials and password hash from memory
+    if ($user) {
+        unset($user['password']);
+    }
+    unset($inputPassword, $_POST['password']);
+
+    if (!$passwordValid) {
         header('Location: login.php?status=error&message=' . urlencode('Invalid email or password.'));
         exit;
     }

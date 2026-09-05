@@ -107,11 +107,11 @@ adsity/
 ├── courses.css                  # Dedicated stylesheet for Course Catalog & Category filters
 ├── courses.php                  # Course Catalog with search keyword & category filters
 ├── courses_function.php         # Courses query handler with dynamic SQL filters
-├── DOCUMENTATION.md             # Detailed project technical documentation
 ├── index.php                    # Adsity landing page / homepage
 ├── login.php                    # User authentication login view
 ├── login_function.php           # Login validation, credential verification & session initialization
 ├── logout.php                   # Session destruction & logout redirection handler
+├── README.md                    # Detailed project technical documentation & architecture guide
 ├── signup.php                   # Student registration view
 ├── signup_function.php          # Student registration handler & auto-login
 ├── style.css                    # Global application stylesheet & responsive design system
@@ -193,7 +193,7 @@ erDiagram
 | `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Unique User ID |
 | `full_name` | `VARCHAR(100)` | `NOT NULL` | User full name |
 | `email` | `VARCHAR(150)` | `NOT NULL, UNIQUE` | User login email |
-| `password` | `VARCHAR(255)` | `NOT NULL` | User password |
+| `password` | `VARCHAR(255)` | `NOT NULL` | Hashed password (`PASSWORD_DEFAULT` / bcrypt) |
 | `role_id` | `INT` | `NOT NULL, DEFAULT 3, FK` | References `roles(id)` |
 | `created_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account registration timestamp |
 
@@ -203,29 +203,29 @@ erDiagram
 | `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Course ID |
 | `title` | `VARCHAR(150)` | `NOT NULL` | Course Title |
 | `description`| `TEXT` | `NULL` | Detailed course overview |
-| `category` | `VARCHAR(100)` | `NULL` | Category tag (e.g. *Security*, *Development*) |
-| `thumbnail` | `VARCHAR(255)` | `NULL` | Filename inside `assets/adsity_assets/` |
-| `total_lessons`| `INT` | `DEFAULT 10` | Total lessons in the course |
+| `category` | `VARCHAR(100)` | `NULL` | Topic category |
+| `thumbnail`| `VARCHAR(255)` | `NULL` | Image asset path |
+| `total_lessons` | `INT` | `DEFAULT 10` | Total lessons count |
 | `created_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Course creation timestamp |
 
 #### 4. `enrollments` Table
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Enrollment ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `progress_percent`| `INT` | `DEFAULT 0` | Progress (0 - 100%) |
-| `status` | `ENUM` | `'in_progress', 'completed'` | Current enrollment state |
-| `enrolled_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Enrollment timestamp |
-| `completed_at`| `TIMESTAMP` | `NULL` | Completion timestamp |
+| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` |
+| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` |
+| `progress_percent` | `INT` | `DEFAULT 0` | Completion percentage (0 - 100) |
+| `status` | `ENUM` | `'in_progress', 'completed'` | Current study state |
+| `enrolled_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Enrollment date |
+| `completed_at` | `TIMESTAMP` | `NULL` | Course completion date |
 
 #### 5. `certificates` Table
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Certificate Record ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `certificate_code`| `VARCHAR(50)`| `NOT NULL, UNIQUE` | Unique credential ID (e.g. `ADS-2026-WD-88421`) |
+| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Certificate ID |
+| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` |
+| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` |
+| `certificate_code` | `VARCHAR(50)` | `NOT NULL, UNIQUE` | Public verification code |
 | `issued_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Certificate issuance timestamp |
 
 ---
@@ -240,18 +240,18 @@ flowchart TD
     Submit --> Validate{Validation Passed?}
     Validate -->|No| ErrRedirect[Redirect to login.php?status=error]
     Validate -->|Yes| QueryUser[Query users joined with roles]
-    QueryUser --> PassCheck{Password Matches?}
+    QueryUser --> PassCheck{password_verify matches?}
     PassCheck -->|No| ErrRedirect
     PassCheck -->|Yes| SetSession[Set $_SESSION user_id, full_name, email, role_name]
     SetSession --> RoleBranch{Check role_name}
     RoleBranch -->|admin| AdminRedirect[admin/dashboard.php]
     RoleBranch -->|student| StudentRedirect[student/dashboard.php]
-    RoleBranch -->|instructor| IndexRedirect[index.php]
+    RoleBranch -->|instructor| IndexRedirect[instructor/dashboard.php]
 ```
 
 ### B. Student Registration & Dashboard
 1. Visitor submits form at [`signup.php`](file:///home/ugenella/coding/xampp-projects/adsity/signup.php).
-2. [`signup_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/signup_function.php) validates inputs, inserts record into `users` with `role_id = 3`, sets session variables, and automatically logs the student in.
+2. [`signup_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/signup_function.php) validates inputs, securely hashes the password via `password_hash(..., PASSWORD_DEFAULT)`, inserts record into `users` with `role_id = 3`, sets session variables, and automatically logs the student in.
 3. Student lands on [`student/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/dashboard.php) which displays:
    - **Metrics:** Active courses, completed courses, and earned certificates counts.
    - **In Progress Cards:** Progress bar, percentage, lessons finished, and "Continue Learning" button.
@@ -299,7 +299,7 @@ Located in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity
 - `validateTerms(bool $termsAccepted): ?string` &mdash; Ensures Terms of Service agreement checkbox is checked.
 - `validateSignupInput(array $post): array` &mdash; Aggregates student signup validation errors and sanitized data.
 - `validateLoginInput(array $post): array` &mdash; Aggregates login input validation.
-- `validateTeacherSignupInput(array $post): array` &mdash; Aggregates instructor registration validation.
+- `validateTeacherSignupInput(array $post): array` &mdash; Aggregates instructor registration validation (delegates to `validateSignupInput` with `role_id = 2`).
 
 ---
 
@@ -316,12 +316,14 @@ Import the database schema and default seeds:
 /opt/lampp/bin/mysql -u root -S /opt/lampp/var/mysql/mysql.sock < database/schema.sql
 ```
 
-### Seed Accounts for Testing
+### Pre-configured Administrator Account
 
 | Role | Email | Password | Target Dashboard |
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@adsity.org` | `admin123` | `http://localhost:81/projects/adsity/admin/dashboard.php` |
-| **Student** | `uzziah@gmail.com` | `password123` | `http://localhost:81/projects/adsity/student/dashboard.php` |
+
+> [!NOTE]
+> Instructors can be registered at [`teach.php`](file:///home/ugenella/coding/xampp-projects/adsity/teach.php) and Students can be registered at [`signup.php`](file:///home/ugenella/coding/xampp-projects/adsity/signup.php). All new passwords will be automatically hashed with `PASSWORD_DEFAULT`.
 
 ---
 
