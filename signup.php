@@ -19,30 +19,6 @@ $id      = $_GET['id'] ?? null;
 
 <body class="auth-page">
 
-	<!-- Navigation Header -->
-	<header class="navbar">
-		<div class="nav-left">
-			<a href="index.php" class="logo">
-				<span class="logo-icon">
-					<img class="icon" src="./assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo">
-				</span>
-			</a>
-			<a href="courses.php" class="explore-btn">Explore</a>
-			<form action="courses.php" method="GET" class="search-bar">
-				<button type="submit" style="background: none; border: none; cursor: pointer; padding: 0;" class="search-icon">&#128269;</button>
-				<input type="text" name="search" placeholder="Search for Courses">
-			</form>
-		</div>
-
-		<div class="nav-right">
-			<a href="teach.php" class="teach-link">Teach on Adsity</a>
-			<a href="login.php" class="btn-login">Log In</a>
-			<a href="signup.php" class="btn-signup">Sign Up</a>
-			<div class="lang-globe" title="Change Language">
-				<img src="./assets/icons/globe.svg" width="18" height="18" alt="Language" style="display: block; filter: brightness(0) invert(1);">
-			</div>
-		</div>
-	</header>
 
 	<!-- Main Auth Container (Full-Screen Split Layout) -->
 	<main class="auth-split-wrapper">
@@ -75,6 +51,9 @@ $id      = $_GET['id'] ?? null;
 		<div class="auth-form-side">
 			<div class="auth-form-container">
 				<div class="auth-form-header">
+					<a href="index.php" class="auth-logo-link" title="Return to Adsity Home">
+						<img src="./assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo" class="auth-logo-img">
+					</a>
 					<h2 class="auth-title">Create Your Student Account</h2>
 					<p class="auth-subtitle">Get started in less than a minute and begin learning immediately.</p>
 				</div>
@@ -166,15 +145,6 @@ $id      = $_GET['id'] ?? null;
 		</div>
 	</main>
 
-	<!-- Footer -->
-	<footer class="footer">
-		<div class="footer-bottom">
-			<div class="footer-bottom-inner">
-				<img src="./assets/adsity_assets/Adsity_Logo.png" alt="Adsity Logo" class="footer-bottom-logo-img">
-				<p class="footer-copyright">&copy; 2026 Adsity, Org. All rights reserved.</p>
-			</div>
-		</div>
-	</footer>
 
 </body>
 </html>
