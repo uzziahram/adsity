@@ -20,6 +20,40 @@ function validatePasswordMatch(string $password, string $confirmPassword): ?stri
     return $password !== $confirmPassword ? "Passwords do not match." : null;
 }
 
+/**
+ * Validates password criteria with independent if checks.
+ * You can comment out any individual if statement below if you do not want to enforce that specific check.
+ */
+function validatePassword(string $password, int $minLength = 8): ?string
+{
+    // 1. Minimum length check (comment out if not needed)
+    if (strlen($password) < $minLength) {
+        return "Password must be at least $minLength characters long.";
+    }
+
+    // 2. Uppercase letter check (comment out if not needed)
+    if (!preg_match('/[A-Z]/', $password)) {
+        return "Password must contain at least one uppercase letter (A-Z).";
+    }
+
+    // 3. Lowercase letter check (comment out if not needed)
+    if (!preg_match('/[a-z]/', $password)) {
+        return "Password must contain at least one lowercase letter (a-z).";
+    }
+
+    // 4. Number check (comment out if not needed)
+    if (!preg_match('/[0-9]/', $password)) {
+        return "Password must contain at least one number (0-9).";
+    }
+
+    // 5. Special character check (comment out if not needed)
+    if (!preg_match('/[!@#$%^&*()\-_=+{};:,<.>]/', $password)) {
+        return "Password must contain at least one special character (e.g. !@#$%^&*).";
+    }
+
+    return null;
+}
+
 function validateTerms(bool $termsAccepted): ?string
 {
     return !$termsAccepted ? "You must agree to the Terms of Service to sign up." : null;
@@ -37,7 +71,7 @@ function validateSignupInput(array $post): array
         validateRequired($email, 'Email Address'),
         validateRequired($password, 'Password'),
         $email !== '' ? validateEmailFormat($email) : null,
-        $password !== '' ? validateMinLength($password, 'Password', 6) : null,
+        $password !== '' ? validatePassword($password, 8) : null,
         $password !== '' ? validatePasswordMatch($password, $confirmPassword) : null,
     ]);
     $errors = array_values($errors);
