@@ -36,6 +36,7 @@
 ```
 adsity/
 ├── admin/
+│   ├── admindashboard.css       # Dedicated stylesheet for Admin Dashboard
 │   ├── dashboard.php            # Admin Dashboard view (KPIs, teacher & student monitoring tables)
 │   ├── dashboard_function.php   # Admin data handler, queries & session gate (admin only)
 │   └── delete_user.php          # Action handler to delete student or teacher records
@@ -66,12 +67,6 @@ adsity/
 │       ├── trash.svg
 │       ├── user-check.svg
 │       └── users.svg
-│
-├── admin/
-│   ├── admindashboard.css       # Dedicated stylesheet for Admin Dashboard
-│   ├── dashboard.php            # Admin Dashboard view (KPIs, teacher & student monitoring tables)
-│   ├── dashboard_function.php   # Admin data handler, queries & session gate (admin only)
-│   └── delete_user.php          # Action handler to delete student or teacher records
 │
 ├── database/
 │   ├── config.php               # PDO database connection function getConnection()
@@ -288,7 +283,149 @@ flowchart TD
 
 ---
 
-## 6. Input Validation Architecture
+## 6. Login Authentication System
+
+Adsity features a multi-tiered, secure login authentication system built directly into procedural PHP with PDO database abstraction. It enforces strong cryptographic verification, role-based access control (RBAC), and defense-in-depth memory hygiene.
+
+### Architecture & Key Components
+
+The authentication subsystem is partitioned across four primary modules:
+
+| Component | File | Responsibility |
+| :--- | :--- | :--- |
+| **View / Interface** | [`login.php`](file:///home/ugenella/coding/xampp-projects/adsity/login.php) | User login interface with split-screen branding, feedback alerts, and credential form. |
+| **Authentication Controller** | [`login_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/login_function.php) | Request validation, PDO query execution, password verification, memory cleanup, session initialization, and role routing. |
+| **Input Validation** | [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity/validation.php) | Server-side format enforcement (email format via `filter_var`, required field checks). |
+| **Database Connection** | [`database/config.php`](file:///home/ugenella/coding/xampp-projects/adsity/database/config.php) | PDO singleton-style connection factory configuring strict error reporting (`ERRMODE_EXCEPTION`) and prepared statement defaults. |
+
+---
+
+### Step-by-Step Authentication Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User Browser
+    participant LoginView as login.php
+    participant AuthCtrl as login_function.php
+    participant Val as validation.php
+    participant DB as MariaDB (users + roles)
+    participant Session as PHP $_SESSION
+
+    User->>LoginView: Submits Email & Password
+    LoginView->>AuthCtrl: POST /login_function.php (name="login")
+    
+    Note over AuthCtrl: Step 1: Guard check (isset($_POST['login']))
+    AuthCtrl->>Val: validateLoginInput($_POST)
+    Val-->>AuthCtrl: Return sanitized data or validation errors
+    
+    alt Validation Failed
+        AuthCtrl-->>LoginView: Redirect ?status=error&message=...
+    else Validation Succeeded
+        AuthCtrl->>DB: Prepared SELECT with JOIN roles WHERE email = :email
+        DB-->>AuthCtrl: Return user row (id, password, role_name, etc.)
+        
+        Note over AuthCtrl: Step 4: password_verify(inputPassword, user.password)
+        Note over AuthCtrl: Step 5: unset($user['password'], $inputPassword)
+        
+        alt Invalid Credentials (User missing OR password mismatch)
+            AuthCtrl-->>LoginView: Redirect ?status=error&message=Invalid+email+or+password.
+        else Credentials Valid
+            AuthCtrl->>Session: Store user_id, full_name, email, role_id, role_name
+            Note over AuthCtrl: Step 8: Evaluate role_name for redirection
+            alt role == 'admin'
+                AuthCtrl-->>User: HTTP 302 Redirect -> admin/dashboard.php
+            else role == 'instructor'
+                AuthCtrl-->>User: HTTP 302 Redirect -> instructor/dashboard.php
+            else role == 'student'
+                AuthCtrl-->>User: HTTP 302 Redirect -> student/dashboard.php
+            else Default
+                AuthCtrl-->>User: HTTP 302 Redirect -> index.php
+            end
+        end
+    end
+```
+
+#### Detailed Flow Breakdown:
+
+1. **Request Origin Guard (`isset($_POST['login'])`)**:
+   - The controller checks if the incoming request is a valid POST submission triggered by the form's submit button.
+   - Direct GET requests or bot crawling attempts to [`login_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/login_function.php) are immediately rejected with a redirect back to [`login.php`](file:///home/ugenella/coding/xampp-projects/adsity/login.php).
+
+2. **Input Sanitization & Server-Side Validation (`validateLoginInput`)**:
+   - Both `email` and `password` fields are validated as required.
+   - The email is trimmed and verified against RFC standards using `filter_var($value, FILTER_VALIDATE_EMAIL)`.
+   - If validation fails, error messages are encoded in query parameters and rendered in error alerts on the form.
+
+3. **Parameterized Database Lookup (SQL Injection Defense)**:
+   - The user lookup executes a single, parameterized query joining `users` with the `roles` table:
+     ```php
+     $sql = "SELECT u.id, u.full_name, u.email, u.password, u.role_id, r.name AS role_name 
+             FROM users u 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE u.email = :email 
+             LIMIT 1";
+     $stmt = $pdo->prepare($sql);
+     $stmt->bindValue(':email', $result['data']['email']);
+     $stmt->execute();
+     ```
+   - Using PDO prepared statements with `:email` binding ensures user input is never interpolated directly into the SQL string, neutralizing SQL injection vectors.
+
+4. **Cryptographic Password Verification**:
+   - Passwords are authenticated using PHP's native `password_verify($inputPassword, $user['password'])`.
+   - Hashes are created during registration using `password_hash($password, PASSWORD_DEFAULT)` (Bcrypt).
+   - `password_verify` automatically extracts the cost and salt embedded within the hash string and performs constant-time cryptographic comparison, mitigating timing attacks.
+
+5. **In-Memory Credential Purging (Credential Hygiene)**:
+   - Immediately following `password_verify()`, the raw input password and the database hash are erased from the PHP runtime memory:
+     ```php
+     if ($user) {
+         unset($user['password']);
+     }
+     unset($inputPassword, $_POST['password']);
+     ```
+   - This prevents sensitive plain-text passwords or hashes from persisting in memory or leaking in the event of an unhandled exception or debug dump.
+
+6. **Anti-User Enumeration Generic Error Messaging**:
+   - Whether the email does not exist in the database or the password does not match, the exact same error is returned:
+     ```
+     "Invalid email or password."
+     ```
+   - This prevents malicious actors from distinguishing between registered and non-registered email addresses through trial-and-error.
+
+7. **Session State Initialization**:
+   - Upon successful credential verification, a secure server-side session is established and populated with authentication claims:
+     ```php
+     $_SESSION['user_id']   = $user['id'];
+     $_SESSION['full_name'] = $user['full_name'];
+     $_SESSION['email']     = $user['email'];
+     $_SESSION['role_id']   = $user['role_id'];
+     $_SESSION['role_name'] = $user['role_name'];
+     ```
+
+8. **Role-Based Access Control (RBAC) Redirection**:
+   - The user is redirected to their dedicated portal based on `$_SESSION['role_name']`:
+     - **`admin`** &rarr; [`admin/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/admin/dashboard.php)
+     - **`instructor`** &rarr; [`instructor/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/dashboard.php)
+     - **`student`** &rarr; [`student/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/dashboard.php)
+     - **Default fallback** &rarr; [`index.php`](file:///home/ugenella/coding/xampp-projects/adsity/index.php)
+
+---
+
+### Security Safeguards Matrix
+
+| Threat Vector | Mitigation Strategy | Implementation |
+| :--- | :--- | :--- |
+| **SQL Injection (SQLi)** | Prepared Statements & Parameter Binding | PDO `prepare()` and `bindValue(':email', ...)` |
+| **Credential Cracking** | One-way Cryptographic Hashing | `password_hash()` and `password_verify()` with `PASSWORD_DEFAULT` |
+| **Memory Dump Leakage** | Explicit Credential Unsetting | `unset($user['password'], $inputPassword, $_POST['password'])` |
+| **User Account Enumeration** | Unified Error Messages | `"Invalid email or password."` for all authentication failures |
+| **Privilege Escalation** | Role-Based Access Control (RBAC) | Strict session validation (`role_name`) guarding each dashboard route |
+| **Cross-Site Scripting (XSS)** | Output Encoding | HTML escaping via `htmlspecialchars()` on all dynamic alert notices |
+
+---
+
+## 7. Input Validation Architecture
 
 Located in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity/validation.php):
 
@@ -303,7 +440,7 @@ Located in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity
 
 ---
 
-## 7. Setup & Local Testing Guide
+## 8. Setup & Local Testing Guide
 
 ### Prerequisites
 - XAMPP / LAMPP installed on Linux.
@@ -327,7 +464,7 @@ Import the database schema and default seeds:
 
 ---
 
-## 8. Summary of Vector Assets
+## 9. Summary of Vector Assets
 
 All vector icons are organized as standalone SVGs inside [`assets/icons/`](file:///home/ugenella/coding/xampp-projects/adsity/assets/icons/):
 

@@ -2,6 +2,10 @@
 
 session_start();
 
+// echo '<pre>';
+// print_r($_SESSION);
+// echo '</pre>';
+
 // Protect Admin Panel: Must be logged in as admin
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
     header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
