@@ -49,9 +49,9 @@ try {
     $stmtEnroll->bindValue(':course_id', $courseId, PDO::PARAM_INT);
     $stmtEnroll->execute();
 
-    // Redirect to student dashboard with success message
-    $successMsg = 'Successfully enrolled in "' . $course['title'] . '"! Welcome aboard.';
-    header('Location: dashboard.php?status=success&message=' . urlencode($successMsg));
+    // Redirect to course details page with success message and prominent video player button
+    $successMsg = 'Successfully enrolled in "' . $course['title'] . '"! Click below to start the course.';
+    header('Location: ../course_details.php?id=' . $courseId . '&status=success&message=' . urlencode($successMsg));
     exit;
 
 } catch (PDOException $e) {

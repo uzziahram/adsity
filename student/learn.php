@@ -178,30 +178,6 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 						preload="auto"
 					></video>
 
-					<!-- Ad Overlay Controls & Wellness Reminder -->
-					<div class="ad-overlay-layer">
-						<div class="ad-overlay-top">
-							<span class="ad-sponsor-pill">
-								<span class="ad-pulse-dot"></span>
-								Ad Session
-							</span>
-							<div class="ad-countdown-pill" id="adCountdownBadge">
-								Lesson starts in <strong id="adTimerText">15s</strong>
-							</div>
-						</div>
-
-						<!-- Wellness Break Notification -->
-						<div class="ad-wellness-box">
-							<div class="ad-wellness-icon">💧</div>
-							<div class="ad-wellness-content">
-								<div class="ad-wellness-title">Take a Quick Sip of Water &amp; Stretch!</div>
-								<div class="ad-wellness-sub">
-									Our sponsor keeps this verified course 100% free. Your lesson will start automatically.
-								</div>
-							</div>
-						</div>
-					</div>
-
 					<!-- Big Play Trigger for Browsers Blocking Autoplay -->
 					<div id="adPlayOverlayBtn" class="play-trigger-overlay" style="display: none;">
 						<button type="button" class="btn-big-play" onclick="startAdPlayback()">
@@ -240,6 +216,30 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 					</div>
 				</div>
 
+			</div>
+
+			<!-- Wellness Break Notification (Positioned below the video player) -->
+			<div id="wellnessBreakBanner" class="wellness-break-banner">
+				<div class="wellness-banner-left">
+					<div class="wellness-icon-box">
+						<svg class="wellness-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="rgba(2, 132, 199, 0.2)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+						</svg>
+					</div>
+					<div class="wellness-text-stack">
+						<h3 class="wellness-break-title">Take a Quick Sip of Water &amp; Stretch!</h3>
+						<p class="wellness-break-desc">
+							Our sponsor keeps this verified course 100% free. Your lesson will start automatically once this session ends.
+						</p>
+					</div>
+				</div>
+
+				<div class="wellness-banner-right">
+					<div class="wellness-status-chip">
+						<span class="wellness-live-dot"></span>
+						<span>Lesson Starting Soon</span>
+					</div>
+				</div>
 			</div>
 
 			<!-- Lesson Information & Action Bar Below Player -->
@@ -418,8 +418,8 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 		// DOM Elements
 		const adPlayerWrapper     = document.getElementById('adPlayerWrapper');
 		const adVideo             = document.getElementById('adVideoPlayer');
-		const adTimerText         = document.getElementById('adTimerText');
 		const adPlayOverlayBtn    = document.getElementById('adPlayOverlayBtn');
+		const wellnessBanner      = document.getElementById('wellnessBreakBanner');
 
 		const lessonPlayerWrapper = document.getElementById('lessonPlayerWrapper');
 		const lessonVideo         = document.getElementById('lessonVideoPlayer');
@@ -435,17 +435,7 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 			});
 		}
 
-		// Update countdown timer while ad plays
-		function updateAdCountdown() {
-			if (adVideo.duration) {
-				const remaining = Math.max(0, Math.ceil(adVideo.duration - adVideo.currentTime));
-				adTimerText.textContent = `${remaining}s`;
-			}
-		}
-		adVideo.addEventListener('timeupdate', updateAdCountdown);
-		adVideo.addEventListener('loadedmetadata', updateAdCountdown);
-
-		// Enforce unskippable sponsor break
+		// Enforce unskippable sponsor ad
 		adVideo.addEventListener('contextmenu', (e) => e.preventDefault());
 		adVideo.addEventListener('keydown', (e) => {
 			if (['ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
@@ -453,14 +443,39 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 			}
 		});
 
-		// 2. When Sponsor Ad Ends: Seamlessly switch to Lesson Video at 00:00
+		// 2. When Sponsor Ad Ends: Record ad activity & credit instructor, then switch to Lesson Video at 00:00
 		adVideo.addEventListener('ended', () => {
+			recordAdActivity();
 			transitionFromAdToLesson();
 		});
+
+		function recordAdActivity() {
+			fetch('record_ad_activity.php', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					course_id: COURSE_ID,
+					lesson_id: CURRENT_LESSON_ID,
+					duration_watched: Math.round(adVideo.currentTime || 15)
+				})
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.success && !data.already_recorded) {
+					console.log('Ad activity recorded: $' + data.amount_earned + ' credited to instructor.');
+				}
+			})
+			.catch(err => console.error('Failed to log ad activity:', err));
+		}
 
 		function transitionFromAdToLesson() {
 			adPlayerWrapper.style.display = 'none';
 			lessonPlayerWrapper.style.display = 'block';
+
+			// Hide wellness break banner when lesson starts
+			if (wellnessBanner) {
+				wellnessBanner.style.display = 'none';
+			}
 
 			// Start from the beginning (00:00) per requirement
 			lessonVideo.currentTime = 0;

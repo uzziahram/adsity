@@ -225,7 +225,7 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 					<div class="courses-grid">
 						<?php foreach (array_slice($inProgress, 0, 3) as $course): ?>
 							<article class="course-card">
-								<div class="course-thumb-wrapper">
+								<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="course-thumb-wrapper" style="display: block; text-decoration: none;">
 									<?php
 									$thumbSrc = !empty($course['thumbnail']) && str_starts_with($course['thumbnail'], 'uploads/')
 										? '../' . $course['thumbnail']
@@ -238,10 +238,14 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
 									>
 									<span class="course-category-tag"><?= htmlspecialchars($course['category'] ?? 'Course') ?></span>
-								</div>
+								</a>
 
 								<div class="course-card-content">
-									<h3 class="course-card-title"><?= htmlspecialchars($course['title']) ?></h3>
+									<h3 class="course-card-title">
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" style="color: inherit; text-decoration: none;">
+											<?= htmlspecialchars($course['title']) ?>
+										</a>
+									</h3>
 									<p class="course-card-desc"><?= htmlspecialchars($course['description'] ?? 'Comprehensive practical learning course.') ?></p>
 
 									<div class="progress-container">
@@ -258,9 +262,9 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="learn.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
-											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
-											Learn
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
+											<img src="../assets/icons/book-open.svg" width="16" height="16" alt="Details" style="filter: brightness(0);">
+											<span>Course Details</span>
 										</a>
 										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
 											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
@@ -304,7 +308,7 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 					<div class="courses-grid">
 						<?php foreach ($inProgress as $course): ?>
 							<article class="course-card">
-								<div class="course-thumb-wrapper">
+								<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="course-thumb-wrapper" style="display: block; text-decoration: none;">
 									<?php
 									$thumbSrc = !empty($course['thumbnail']) && str_starts_with($course['thumbnail'], 'uploads/')
 										? '../' . $course['thumbnail']
@@ -317,10 +321,14 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
 									>
 									<span class="course-category-tag"><?= htmlspecialchars($course['category'] ?? 'Course') ?></span>
-								</div>
+								</a>
 
 								<div class="course-card-content">
-									<h3 class="course-card-title"><?= htmlspecialchars($course['title']) ?></h3>
+									<h3 class="course-card-title">
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" style="color: inherit; text-decoration: none;">
+											<?= htmlspecialchars($course['title']) ?>
+										</a>
+									</h3>
 									<p class="course-card-desc"><?= htmlspecialchars($course['description'] ?? 'Comprehensive practical learning course.') ?></p>
 
 									<div class="progress-container">
@@ -337,9 +345,9 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="learn.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
-											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
-											Learn
+										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
+											<img src="../assets/icons/book-open.svg" width="16" height="16" alt="Details" style="filter: brightness(0);">
+											<span>Course Details</span>
 										</a>
 										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
 											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
@@ -383,7 +391,7 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 					<div class="courses-grid">
 						<?php foreach ($completedCourses as $completed): ?>
 							<article class="course-card">
-								<div class="course-thumb-wrapper">
+								<a href="../course_details.php?id=<?= urlencode($completed['course_id']) ?>" class="course-thumb-wrapper" style="display: block; text-decoration: none;">
 									<?php
 									$thumbSrc = !empty($completed['thumbnail']) && str_starts_with($completed['thumbnail'], 'uploads/')
 										? '../' . $completed['thumbnail']
@@ -396,10 +404,14 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
 									>
 									<span class="course-category-tag course-category-tag--completed">Completed ✓</span>
-								</div>
+								</a>
 
 								<div class="course-card-content">
-									<h3 class="course-card-title"><?= htmlspecialchars($completed['title']) ?></h3>
+									<h3 class="course-card-title">
+										<a href="../course_details.php?id=<?= urlencode($completed['course_id']) ?>" style="color: inherit; text-decoration: none;">
+											<?= htmlspecialchars($completed['title']) ?>
+										</a>
+									</h3>
 									<p class="course-card-desc"><?= htmlspecialchars($completed['description'] ?? 'Course completed successfully.') ?></p>
 
 									<div class="course-completed-date">

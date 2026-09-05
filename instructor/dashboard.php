@@ -112,9 +112,9 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 					<button type="button" class="sidebar-nav-item" data-tab="revenue" onclick="switchTab('revenue')">
 						<div class="sidebar-nav-item-left">
 							<img src="../assets/icons/dollar-sign.svg" class="sidebar-nav-icon" alt="Revenue">
-							<span>Ad Revenue &amp; Splits</span>
+							<span>Ad Revenue &amp; Logs</span>
 						</div>
-						<span class="sidebar-badge-share">70%</span>
+						<span class="sidebar-badge-share">$<?= number_format((float)($wallet['total_earned'] ?? 0), 2) ?></span>
 					</button>
 
 					<div class="sidebar-group-label" style="margin-top: 22px;">Explore Platform</div>
@@ -223,11 +223,11 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 
 					<div class="stat-card">
 						<div class="stat-icon-box stat-icon-box--amber">
-							<img src="../assets/icons/award.svg" width="24" height="24" alt="Certificates">
+							<img src="../assets/icons/video.svg" width="24" height="24" alt="Ad Views">
 						</div>
 						<div>
-							<div class="stat-number"><?= $totalCertificates ?></div>
-							<div class="stat-label">Certificates Issued</div>
+							<div class="stat-number"><?= number_format($totalAdViews) ?></div>
+							<div class="stat-label">Ad Views Logged</div>
 						</div>
 					</div>
 
@@ -236,8 +236,8 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 							<img src="../assets/icons/dollar-sign.svg" width="24" height="24" alt="Revenue">
 						</div>
 						<div>
-							<div class="stat-number">70%</div>
-							<div class="stat-label">Ad Revenue Share</div>
+							<div class="stat-number">$<?= number_format((float)($wallet['total_earned'] ?? 0), 2) ?></div>
+							<div class="stat-label">Total Ad Earnings</div>
 						</div>
 					</div>
 				</div>
@@ -278,9 +278,13 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														? '../' . $c['thumbnail']
 														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
 													?>
-													<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-img-link" title="View <?= htmlspecialchars($c['title']) ?>">
+														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													</a>
 													<div>
-														<strong><?= htmlspecialchars($c['title']) ?></strong>
+														<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-link">
+															<strong><?= htmlspecialchars($c['title']) ?></strong>
+														</a>
 														<div style="font-size: 0.8rem; color: #64748b;"><?= htmlspecialchars(substr($c['description'], 0, 55)) ?>...</div>
 													</div>
 												</div>
@@ -297,13 +301,19 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 											</td>
 											<td><?= date('M d, Y', strtotime($c['created_at'])) ?></td>
 											<td style="text-align: right;">
-												<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course?');" style="display: inline;">
-													<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
-													<button type="submit" name="delete_course" class="btn-delete">
-														<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
-														Delete
-													</button>
-												</form>
+												<div class="btn-action-group" style="justify-content: flex-end;">
+													<a href="course_overview.php?id=<?= $c['id'] ?>" class="btn-view-course">
+														<img src="../assets/icons/eye.svg" width="13" height="13" alt="View">
+														View
+													</a>
+													<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course?');" style="display: inline;">
+														<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
+														<button type="submit" name="delete_course" class="btn-delete">
+															<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
+															Delete
+														</button>
+													</form>
+												</div>
 											</td>
 										</tr>
 									<?php endforeach; ?>
@@ -456,9 +466,13 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														? '../' . $c['thumbnail']
 														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
 													?>
-													<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-img-link" title="View <?= htmlspecialchars($c['title']) ?>">
+														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													</a>
 													<div>
-														<strong style="font-size: 1rem;"><?= htmlspecialchars($c['title']) ?></strong>
+														<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-link">
+															<strong style="font-size: 1rem;"><?= htmlspecialchars($c['title']) ?></strong>
+														</a>
 														<div style="font-size: 0.82rem; color: #64748b; margin-top: 3px; max-width: 320px;"><?= htmlspecialchars($c['description']) ?></div>
 													</div>
 												</div>
@@ -480,13 +494,19 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 											</td>
 											<td><?= date('M d, Y', strtotime($c['created_at'])) ?></td>
 											<td style="text-align: right;">
-												<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course? This cannot be undone.');" style="display: inline;">
-													<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
-													<button type="submit" name="delete_course" class="btn-delete">
-														<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
-														Delete
-													</button>
-												</form>
+												<div class="btn-action-group" style="justify-content: flex-end;">
+													<a href="course_overview.php?id=<?= $c['id'] ?>" class="btn-view-course">
+														<img src="../assets/icons/eye.svg" width="13" height="13" alt="View">
+														View
+													</a>
+													<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course? This cannot be undone.');" style="display: inline;">
+														<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
+														<button type="submit" name="delete_course" class="btn-delete">
+															<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
+															Delete
+														</button>
+													</form>
+												</div>
 											</td>
 										</tr>
 									<?php endforeach; ?>
@@ -618,57 +638,116 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 						<div>
 							<h2 class="section-title">
 								<img src="../assets/icons/dollar-sign.svg" width="22" height="22" alt="Revenue">
-								Ad Revenue Share &amp; Monetization Analytics
+								Ad Revenue &amp; Activity Logs
 							</h2>
-							<p class="section-subtitle">How your ad-supported courses generate revenue on Adsity.</p>
+							<p class="section-subtitle">Track your earned sponsor revenue from student ad views in real time.</p>
 						</div>
 					</div>
 
+					<!-- Wallet Balance Hero Card -->
 					<div class="revenue-hero-card">
 						<div class="revenue-hero-content">
-							<span class="partner-tier-pill">Tier 1 Creator Partner</span>
-							<h3 class="revenue-hero-heading">70% Ad Revenue Share</h3>
+							<span class="partner-tier-pill">Creator Monetization Wallet</span>
+							<h3 class="revenue-hero-heading">$<?= number_format((float)($wallet['available_balance'] ?? 0), 2) ?> Available Balance</h3>
 							<p class="revenue-hero-text">
-								Adsity connects premium sponsor ads between each sequential lesson video. 70% of generated ad revenues are allocated directly to you as course creator, while keeping education 100% free for students.
+								You earn <strong>$0.05</strong> for every completed 15-second sponsor ad session watched by students before each lesson. Courses stay 100% free for learners while rewarding your educational content.
 							</p>
 						</div>
 						<div class="revenue-metric-badge">
-							<div class="metric-big-value">70%</div>
-							<div class="metric-sub-label">Partner Revenue Split</div>
+							<div class="metric-big-value">$<?= number_format((float)($wallet['total_earned'] ?? 0), 2) ?></div>
+							<div class="metric-sub-label">Total Lifetime Earned</div>
 						</div>
 					</div>
 
+					<!-- Analytics Breakdown Grid -->
 					<div class="analytics-grid">
 						<div class="analytic-card">
 							<div class="analytic-card-header">
-								<img src="../assets/icons/video.svg" width="20" height="20" alt="Video">
-								<span>15s Mid-Roll Ad Placements</span>
+								<img src="../assets/icons/dollar-sign.svg" width="20" height="20" alt="Rate">
+								<span>Fixed Payout Rate</span>
 							</div>
 							<p class="analytic-card-text">
-								Seamless 15-second sponsor ads play between sequential lessons with unskippable timers and click-through sponsor badges.
+								<strong>$0.05 / Ad Session</strong> earned automatically upon every verified student ad completion.
 							</p>
 						</div>
 
 						<div class="analytic-card">
 							<div class="analytic-card-header">
-								<img src="../assets/icons/users.svg" width="20" height="20" alt="Students">
-								<span>Active Audience Reach</span>
+								<img src="../assets/icons/video.svg" width="20" height="20" alt="Views">
+								<span>Ad Views Logged</span>
 							</div>
 							<p class="analytic-card-text">
-								<strong><?= $totalStudents ?></strong> total enrolled students across <strong><?= $totalCourses ?></strong> published courses watching your content.
+								<strong><?= number_format($totalAdViews) ?></strong> total verified ad sessions completed by your enrolled students.
 							</p>
 						</div>
 
 						<div class="analytic-card">
 							<div class="analytic-card-header">
-								<img src="../assets/icons/award.svg" width="20" height="20" alt="Certificates">
-								<span>Completion Rate</span>
+								<img src="../assets/icons/award.svg" width="20" height="20" alt="Paid">
+								<span>Withdrawn to Date</span>
 							</div>
 							<p class="analytic-card-text">
-								<strong><?= $totalCertificates ?></strong> verified certificates generated, demonstrating deep student engagement and retention.
+								<strong>$<?= number_format((float)($wallet['total_withdrawn'] ?? 0), 2) ?></strong> total funds disbursed from your wallet account.
 							</p>
 						</div>
 					</div>
+
+					<!-- Real-Time Ad Activity Logs Table -->
+					<div style="margin-top: 36px;">
+						<div class="section-header">
+							<div>
+								<h3 class="section-title" style="font-size: 1.15rem;">
+									<img src="../assets/icons/file-text.svg" width="20" height="20" alt="Logs">
+									Recent Ad Activity Logs
+								</h3>
+								<p class="section-subtitle">Itemized audit log of student ad sessions credited to your wallet.</p>
+							</div>
+						</div>
+
+						<div class="table-responsive">
+							<?php if (!empty($adActivityLogs)): ?>
+								<table class="data-table">
+									<thead>
+										<tr>
+											<th>Timestamp</th>
+											<th>Student</th>
+											<th>Course</th>
+											<th>Lesson</th>
+											<th>Duration</th>
+											<th>Amount Credited</th>
+											<th>Status</th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php foreach ($adActivityLogs as $log): ?>
+											<tr>
+												<td><?= date('M d, Y h:i A', strtotime($log['created_at'])) ?></td>
+												<td>
+													<strong><?= htmlspecialchars($log['student_name']) ?></strong>
+												</td>
+												<td><?= htmlspecialchars($log['course_title']) ?></td>
+												<td>Lesson <?= str_pad($log['lesson_number'], 2, '0', STR_PAD_LEFT) ?></td>
+												<td><?= (int)$log['ad_duration_seconds'] ?>s</td>
+												<td>
+													<strong style="color: #16a34a;">+$<?= number_format((float)$log['amount_earned'], 2) ?></strong>
+												</td>
+												<td>
+													<span class="badge badge--success" style="background-color: #dcfce7; color: #166534; font-weight: 800; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem;">✓ Settled</span>
+												</td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+							<?php else: ?>
+								<div class="empty-state-box" style="text-align: center; padding: 40px 20px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px;">
+									<img src="../assets/icons/dollar-sign.svg" width="36" height="36" alt="Empty" style="opacity: 0.35; margin-bottom: 12px;">
+									<h4 style="margin: 0 0 6px 0; color: #0f172a; font-weight: 800;">No Ad Activities Logged Yet</h4>
+									<p style="margin: 0; color: #64748b; font-size: 0.88rem;">When students watch video lessons in your courses, their verified ad views will log here automatically.</p>
+								</div>
+							<?php endif; ?>
+						</div>
+					</div>
+
 				</section>
 			</div>
 

@@ -227,115 +227,107 @@ body.classroom-body {
 	height: 100%;
 }
 
-.ad-overlay-layer {
-	position: absolute;
-	top: 0;
-	left: 0;
+/* ============================================================
+   WELLNESS BREAK BANNER (Positioned below video player)
+   ============================================================ */
+.wellness-break-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	max-width: 1100px;
+	margin: 16px auto 0 auto;
 	width: 100%;
-	height: 100%;
-	pointer-events: none;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	padding: 20px;
-	background: linear-gradient(180deg, rgba(15,23,42,0.65) 0%, rgba(15,23,42,0) 30%, rgba(15,23,42,0) 60%, rgba(15,23,42,0.75) 100%);
+	background-color: #ffffff;
+	border: 1px solid var(--classroom-border);
+	border-radius: 14px;
+	padding: 16px 22px;
+	box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+	animation: fadeInBanner 0.35s ease-out;
 }
 
-.ad-overlay-top {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.ad-sponsor-pill {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	background-color: rgba(15, 23, 42, 0.85);
-	backdrop-filter: blur(8px);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	color: #fbbf24;
-	font-size: 0.82rem;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	padding: 6px 14px;
-	border-radius: 9999px;
-}
-
-.ad-pulse-dot {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background-color: #f59e0b;
-	box-shadow: 0 0 8px #f59e0b;
-	animation: pulseAd 1.5s infinite;
-}
-
-@keyframes pulseAd {
-	0%, 100% { opacity: 1; transform: scale(1); }
-	50% { opacity: 0.4; transform: scale(1.3); }
-}
-
-.ad-countdown-pill {
-	background-color: rgba(15, 23, 42, 0.85);
-	backdrop-filter: blur(8px);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	color: #ffffff;
-	font-size: 0.85rem;
-	font-weight: 700;
-	padding: 6px 16px;
-	border-radius: 9999px;
-}
-
-.ad-countdown-pill strong {
-	color: #38bdf8;
-	font-weight: 900;
-}
-
-/* Wellness Break Notification (Light & Clean floating frosted box) */
-.ad-wellness-box {
-	align-self: center;
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	background: rgba(255, 255, 255, 0.96);
-	backdrop-filter: blur(12px);
-	border: 1px solid #cbd5e1;
-	padding: 14px 22px;
-	border-radius: 12px;
-	box-shadow: 0 10px 28px rgba(15, 23, 42, 0.22);
-	max-width: 580px;
-	animation: fadeInWellness 0.5s ease;
-}
-
-@keyframes fadeInWellness {
-	from { opacity: 0; transform: translateY(10px); }
+@keyframes fadeInBanner {
+	from { opacity: 0; transform: translateY(-6px); }
 	to { opacity: 1; transform: translateY(0); }
 }
 
-.ad-wellness-icon {
-	font-size: 2rem;
-	line-height: 1;
+.wellness-banner-left {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	min-width: 0;
+}
+
+.wellness-icon-box {
+	width: 48px;
+	height: 48px;
+	min-width: 48px;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+	color: #0284c7;
+	border: 1px solid #7dd3fc;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);
 	flex-shrink: 0;
 }
 
-.ad-wellness-content {
+.wellness-icon-svg {
+	display: block;
+}
+
+.wellness-text-stack {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	min-width: 0;
 }
 
-.ad-wellness-title {
-	font-size: 0.95rem;
+.wellness-break-title {
+	font-size: 1.05rem;
 	font-weight: 800;
-	color: var(--primary-blue);
+	color: var(--text-primary);
+	margin: 0 0 3px 0;
+	line-height: 1.3;
 }
 
-.ad-wellness-sub {
-	font-size: 0.82rem;
-	color: var(--text-secondary);
-	line-height: 1.4;
+.wellness-break-desc {
+	font-size: 0.84rem;
+	color: var(--text-muted);
+	line-height: 1.45;
+	margin: 0;
+}
+
+.wellness-banner-right {
+	flex-shrink: 0;
+}
+
+.wellness-status-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background-color: #f8fafc;
+	color: #334155;
+	border: 1px solid var(--classroom-border);
+	padding: 7px 14px;
+	border-radius: 9999px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.wellness-live-dot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background-color: var(--primary-blue);
+	box-shadow: 0 0 6px rgba(2, 132, 199, 0.6);
+	animation: pulseLiveDot 1.4s infinite;
+}
+
+@keyframes pulseLiveDot {
+	0%, 100% { opacity: 1; transform: scale(1); }
+	50% { opacity: 0.4; transform: scale(1.25); }
 }
 
 /* Play Trigger for Autoplay block */
@@ -471,7 +463,7 @@ body.classroom-body {
 	align-items: center;
 	justify-content: space-between;
 	max-width: 1100px;
-	margin: 20px auto 16px auto;
+	margin: 16px auto 16px auto;
 	width: 100%;
 	background-color: #ffffff;
 	border: 1px solid var(--classroom-border);
@@ -901,6 +893,22 @@ body.classroom-body {
 @media (max-width: 640px) {
 	.classroom-main {
 		padding: 12px;
+	}
+
+	.wellness-break-banner {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		padding: 14px 16px;
+	}
+
+	.wellness-banner-right {
+		width: 100%;
+	}
+
+	.wellness-status-chip {
+		width: 100%;
+		justify-content: center;
 	}
 
 	.lesson-info-bar {

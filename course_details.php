@@ -267,22 +267,36 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 					<div class="lessons-timeline-list">
 						<?php if (!empty($lessons)): ?>
 							<?php foreach ($lessons as $idx => $lesson): ?>
-								<div class="lesson-row-card">
-									<div class="lesson-num-badge">
-										<?= str_pad($lesson['lesson_number'] ?? ($idx + 1), 2, '0', STR_PAD_LEFT) ?>
-									</div>
-									<div class="lesson-details">
-										<div class="lesson-title-text"><?= htmlspecialchars($lesson['title']) ?></div>
-										<div class="lesson-meta-line">
-											<span class="lesson-format-tag">
-												<img src="./assets/icons/play.svg" width="12" height="12" alt="Play">
-												Video Lesson
-											</span>
-											<span class="lesson-duration-tag">⏱️ <?= htmlspecialchars($lesson['duration'] ?: '10:00') ?></span>
-											<span class="lesson-sponsor-tag">Includes 15s Ad Session</span>
+								<?php if ($isEnrolled): ?>
+									<a href="student/learn.php?course_id=<?= $course['id'] ?>&lesson_id=<?= $lesson['id'] ?>" class="lesson-row-card" style="text-decoration: none; color: inherit;">
+								<?php else: ?>
+									<div class="lesson-row-card">
+								<?php endif; ?>
+										<div class="lesson-num-badge">
+											<?= str_pad($lesson['lesson_number'] ?? ($idx + 1), 2, '0', STR_PAD_LEFT) ?>
 										</div>
+										<div class="lesson-details">
+											<div class="lesson-title-text"><?= htmlspecialchars($lesson['title']) ?></div>
+											<div class="lesson-meta-line">
+												<span class="lesson-format-tag">
+													<img src="./assets/icons/play.svg" width="12" height="12" alt="Play">
+													Video Lesson
+												</span>
+												<span class="lesson-duration-tag">⏱️ <?= htmlspecialchars($lesson['duration'] ?: '10:00') ?></span>
+												<span class="lesson-sponsor-tag">Includes 15s Ad Session</span>
+											</div>
+										</div>
+										<?php if ($isEnrolled): ?>
+											<div class="lesson-play-arrow" style="margin-left: auto; color: #16a34a; font-weight: 800; display: flex; align-items: center; gap: 4px; font-size: 0.85rem;">
+												<span>Play</span>
+												<img src="./assets/icons/arrow-right.svg" width="14" height="14" alt="Play" style="opacity: 0.8;">
+											</div>
+										<?php endif; ?>
+								<?php if ($isEnrolled): ?>
+									</a>
+								<?php else: ?>
 									</div>
-								</div>
+								<?php endif; ?>
 							<?php endforeach; ?>
 						<?php else: ?>
 							<!-- Fallback for legacy seeded courses without individual lesson rows -->
@@ -394,8 +408,8 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 								</div>
 
 								<a href="student/learn.php?course_id=<?= $course['id'] ?>" class="btn-enroll-action btn-enroll-action--resume">
-									<span>Continue Learning in Classroom</span>
-									<img src="./assets/icons/arrow-right.svg" width="18" height="18" alt="Go" style="filter: brightness(0) invert(1);">
+									<img src="./assets/icons/play.svg" width="18" height="18" alt="Play" style="filter: brightness(0) invert(1);">
+									<span>Start Lesson</span>
 								</a>
 							<?php else: ?>
 								<form action="student/enroll_function.php" method="POST">

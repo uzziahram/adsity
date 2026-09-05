@@ -79,8 +79,57 @@ try {
     $stmtSubs->execute();
     $submissions = $stmtSubs->fetchAll();
 
+    // 4. Fetch Instructor Wallet & Earnings Summary
+    $stmtWallet = $pdo->prepare("SELECT total_earned, available_balance, total_withdrawn FROM instructor_wallets WHERE instructor_id = :iid LIMIT 1");
+    $stmtWallet->bindValue(':iid', $instructorId, PDO::PARAM_INT);
+    $stmtWallet->execute();
+    $wallet = $stmtWallet->fetch();
+
+    if (!$wallet) {
+        $wallet = [
+            'total_earned'      => '0.00',
+            'available_balance' => '0.00',
+            'total_withdrawn'   => '0.00'
+        ];
+    }
+
+    // 5. Total Ad Activity Views count
+    $stmtViews = $pdo->prepare("SELECT COUNT(*) AS total_views FROM ad_activity_logs WHERE instructor_id = :iid");
+    $stmtViews->bindValue(':iid', $instructorId, PDO::PARAM_INT);
+    $stmtViews->execute();
+    $totalAdViews = (int)($stmtViews->fetchColumn() ?: 0);
+
+    // 6. Recent Ad Activity Logs (Last 20)
+    $sqlAdLogs = "SELECT 
+                    aal.id,
+                    aal.amount_earned,
+                    aal.ad_duration_seconds,
+                    aal.created_at,
+                    c.title AS course_title,
+                    l.lesson_number,
+                    l.title AS lesson_title,
+                    u.full_name AS student_name
+                  FROM ad_activity_logs aal
+                  JOIN courses c ON aal.course_id = c.id
+                  JOIN lessons l ON aal.lesson_id = l.id
+                  JOIN users u ON aal.student_id = u.id
+                  WHERE aal.instructor_id = :iid
+                  ORDER BY aal.created_at DESC
+                  LIMIT 20";
+    $stmtAdLogs = $pdo->prepare($sqlAdLogs);
+    $stmtAdLogs->bindValue(':iid', $instructorId, PDO::PARAM_INT);
+    $stmtAdLogs->execute();
+    $adActivityLogs = $stmtAdLogs->fetchAll();
+
 } catch (PDOException $e) {
-    $submissions = [];
+    $submissions    = [];
+    $adActivityLogs = [];
+    $wallet = [
+        'total_earned'      => '0.00',
+        'available_balance' => '0.00',
+        'total_withdrawn'   => '0.00'
+    ];
+    $totalAdViews = 0;
     $status  = 'error';
     $message = $e->getMessage();
 }
