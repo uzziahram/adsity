@@ -61,17 +61,23 @@ try {
     // 3. Fetch Student Project Submissions
     $sqlSubmissions = "SELECT 
                             sub.id,
+                            sub.user_id,
+                            sub.course_id,
                             sub.submission_type,
                             sub.submission_value,
                             sub.notes,
+                            sub.instructor_feedback,
                             sub.status,
+                            sub.reviewed_at,
                             sub.submitted_at,
                             u.full_name AS student_name,
                             u.email AS student_email,
-                            c.title AS course_title
+                            c.title AS course_title,
+                            cert.certificate_code
                        FROM course_submissions sub
                        JOIN users u ON sub.user_id = u.id
                        JOIN courses c ON sub.course_id = c.id
+                       LEFT JOIN certificates cert ON cert.course_id = sub.course_id AND cert.user_id = sub.user_id
                        WHERE c.instructor_id = :instructor_id
                        ORDER BY sub.submitted_at DESC";
     $stmtSubs = $pdo->prepare($sqlSubmissions);
@@ -121,9 +127,30 @@ try {
     $stmtAdLogs->execute();
     $adActivityLogs = $stmtAdLogs->fetchAll();
 
+    // 7. Fetch Instructor Payout Requests History
+    $sqlPayouts = "SELECT 
+                        id,
+                        amount,
+                        payout_method,
+                        payout_details,
+                        instructor_notes,
+                        admin_notes,
+                        transaction_reference,
+                        status,
+                        created_at,
+                        processed_at
+                   FROM payout_requests
+                   WHERE instructor_id = :iid
+                   ORDER BY created_at DESC";
+    $stmtPayouts = $pdo->prepare($sqlPayouts);
+    $stmtPayouts->bindValue(':iid', $instructorId, PDO::PARAM_INT);
+    $stmtPayouts->execute();
+    $payoutRequests = $stmtPayouts->fetchAll();
+
 } catch (PDOException $e) {
     $submissions    = [];
     $adActivityLogs = [];
+    $payoutRequests = [];
     $wallet = [
         'total_earned'      => '0.00',
         'available_balance' => '0.00',

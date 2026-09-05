@@ -72,7 +72,7 @@ $initials = strtoupper(substr($instructorName, 0, 1));
 				<div class="instructor-user-avatar"><?= $initials ?></div>
 				<span class="instructor-user-name"><?= htmlspecialchars($instructorName) ?></span>
 			</div>
-			<a href="../logout.php" class="instructor-btn-logout" onclick="return confirm('Are you sure you want to log out?');">
+			<a href="../logout.php" class="instructor-btn-logout">
 				<img src="../assets/icons/arrow-left.svg" width="14" height="14" alt="Logout">
 				<span>Log Out</span>
 			</a>
@@ -171,7 +171,7 @@ $initials = strtoupper(substr($instructorName, 0, 1));
 					<p class="perk-desc">70% creator share on all automated video ad breaks.</p>
 				</div>
 
-				<a href="../logout.php" class="btn-sidebar-logout" onclick="return confirm('Are you sure you want to log out?');">
+				<a href="../logout.php" class="btn-sidebar-logout">
 					<img src="../assets/icons/arrow-left.svg" width="15" height="15" alt="Logout">
 					<span>Log Out</span>
 				</a>
@@ -1394,5 +1394,6 @@ Complete and submit your final capstone project to demonstrate mastery of the cu
 			updateLessonNumbers();
 		});
 	</script>
+	<script src="../assets/js/logout_modal.js"></script>
 </body>
 </html>

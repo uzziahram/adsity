@@ -47,7 +47,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 				<?php else: ?>
 					<a href="student/dashboard.php" class="btn-login" style="background-color: var(--primary-green);">My Dashboard</a>
 				<?php endif; ?>
-				<a href="logout.php" class="btn-signup" style="background-color: #475569;" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
+				<a href="logout.php" class="btn-signup" style="background-color: #475569;">Log Out</a>
 			<?php else: ?>
 				<a href="login.php" class="btn-login">Log In</a>
 				<a href="signup.php" class="btn-signup">Sign Up</a>
@@ -447,6 +447,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 		</div>
 	</footer>
 
+	<script src="assets/js/logout_modal.js"></script>
 </body>
 
 </html>

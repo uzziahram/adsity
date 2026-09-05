@@ -1148,3 +1148,432 @@
 	}
 }
 
+/* ==========================================================================
+   STUDENT SUBMISSION REVIEW & MODAL STYLES
+   ========================================================================== */
+.status-pending-pill {
+	background-color: #fef3c7;
+	color: #b45309;
+	border: 1px solid rgba(217, 119, 6, 0.3);
+	font-weight: 700;
+	font-size: 0.78rem;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.status-revision-pill {
+	background-color: #ffedd5;
+	color: #c2410c;
+	border: 1px solid rgba(194, 65, 12, 0.3);
+	font-weight: 700;
+	font-size: 0.78rem;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.btn-review-modal {
+	background-color: #0284c7;
+	color: #ffffff;
+	border: none;
+	border-radius: 8px;
+	padding: 6px 14px;
+	font-size: 0.82rem;
+	font-weight: 700;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	transition: all 0.2s ease;
+	font-family: inherit;
+}
+
+.btn-review-modal:hover {
+	background-color: #0369a1;
+	transform: translateY(-1px);
+}
+
+.btn-review-modal--outline {
+	background-color: #ffffff;
+	color: #334155;
+	border: 1px solid #cbd5e1;
+}
+
+.btn-review-modal--outline:hover {
+	background-color: #f8fafc;
+	border-color: #94a3b8;
+	color: #0f172a;
+}
+
+/* Modal Styling */
+.review-modal-backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(15, 23, 42, 0.6);
+	backdrop-filter: blur(4px);
+	z-index: 2000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.review-modal-dialog {
+	background-color: #ffffff;
+	border-radius: 16px;
+	width: 100%;
+	max-width: 680px;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+	animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	display: flex;
+	flex-direction: column;
+}
+
+@keyframes modalFadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.96) translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+.review-modal-header {
+	padding: 20px 24px;
+	border-bottom: 1px solid var(--border-light);
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	position: sticky;
+	top: 0;
+	background-color: #ffffff;
+	z-index: 2;
+}
+
+.review-modal-title {
+	font-size: 1.25rem;
+	font-weight: 800;
+	color: var(--text-dark);
+	margin: 0 0 4px 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.review-modal-subtitle {
+	font-size: 0.85rem;
+	color: var(--text-muted);
+	margin: 0;
+}
+
+.review-modal-close {
+	background: none;
+	border: none;
+	font-size: 1.75rem;
+	line-height: 1;
+	color: #94a3b8;
+	cursor: pointer;
+	padding: 0;
+	transition: color 0.15s ease;
+}
+
+.review-modal-close:hover {
+	color: #0f172a;
+}
+
+.review-modal-body {
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.review-meta-card {
+	background-color: #f8fafc;
+	border: 1px solid var(--border-light);
+	border-radius: 12px;
+	padding: 16px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 16px;
+}
+
+.review-meta-item {
+	display: flex;
+	flex-direction: column;
+}
+
+.review-meta-label {
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #64748b;
+	margin-bottom: 3px;
+}
+
+.review-meta-value {
+	font-size: 0.95rem;
+	color: #0f172a;
+	word-break: break-word;
+}
+
+.review-meta-sub {
+	font-size: 0.78rem;
+	color: #64748b;
+	word-break: break-all;
+}
+
+.review-section {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.review-label {
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: #0f172a;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.review-deliverable-box {
+	background-color: #f8fafc;
+	border: 1px solid var(--border-light);
+	border-radius: 10px;
+	padding: 12px 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.review-deliverable-left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 1;
+	min-width: 200px;
+}
+
+.review-notes-box {
+	background-color: #f1f5f9;
+	border-left: 3px solid #0284c7;
+	padding: 12px 14px;
+	border-radius: 6px;
+	font-size: 0.88rem;
+	color: #334155;
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+.review-textarea {
+	width: 100%;
+	padding: 12px 14px;
+	border: 1px solid var(--border-light);
+	border-radius: 10px;
+	font-family: inherit;
+	font-size: 0.92rem;
+	box-sizing: border-box;
+	resize: vertical;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-textarea:focus {
+	outline: none;
+	border-color: #0284c7;
+	box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.review-modal-footer {
+	margin-top: 20px;
+	padding-top: 16px;
+	border-top: 1px solid var(--border-light);
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.btn-modal-cancel {
+	background: #ffffff;
+	border: 1px solid #cbd5e1;
+	color: #475569;
+	padding: 10px 18px;
+	border-radius: 8px;
+	font-weight: 700;
+	font-size: 0.88rem;
+	cursor: pointer;
+	font-family: inherit;
+	transition: all 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+	background-color: #f8fafc;
+	color: #0f172a;
+}
+
+.btn-modal-revision {
+	background-color: #fff7ed;
+	border: 1px solid #fdba74;
+	color: #c2410c;
+	padding: 10px 18px;
+	border-radius: 8px;
+	font-weight: 700;
+	font-size: 0.88rem;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-family: inherit;
+	transition: all 0.2s ease;
+}
+
+.btn-modal-revision:hover {
+	background-color: #ffedd5;
+	border-color: #f97316;
+}
+
+.btn-modal-approve {
+	background-color: #16a34a;
+	border: none;
+	color: #ffffff;
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-weight: 800;
+	font-size: 0.88rem;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-family: inherit;
+	box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+	transition: all 0.2s ease;
+}
+
+.btn-modal-approve:hover {
+	background-color: #15803d;
+	box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+	transform: translateY(-1px);
+}
+
+/* Payout & Withdrawal Styles */
+.btn-withdraw-funds {
+	background-color: var(--primary-green);
+	color: #0b1410;
+	font-weight: 800;
+	font-size: 0.95rem;
+	padding: 10px 20px;
+	border-radius: 10px;
+	border: none;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s ease;
+	font-family: inherit;
+	box-shadow: 0 4px 12px rgba(39, 214, 98, 0.35);
+}
+
+.btn-withdraw-funds:hover {
+	background-color: var(--primary-green-hover);
+	color: #ffffff;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 18px rgba(39, 214, 98, 0.45);
+}
+
+.payout-min-badge {
+	background-color: rgba(0, 0, 0, 0.15);
+	color: inherit;
+	font-size: 0.72rem;
+	padding: 2px 8px;
+	border-radius: 9999px;
+	font-weight: 800;
+}
+
+.payout-methods-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.payout-method-card {
+	border: 2px solid var(--border-light);
+	border-radius: 10px;
+	padding: 12px;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	background: #ffffff;
+	user-select: none;
+}
+
+.payout-method-card input[type="radio"] {
+	display: none;
+}
+
+.payout-method-card.active,
+.payout-method-card:hover {
+	border-color: #0284c7;
+	background-color: #f0f9ff;
+}
+
+.payout-method-card.active {
+	border-width: 2px;
+	box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
+.payout-method-name {
+	font-weight: 800;
+	font-size: 0.92rem;
+	color: #0f172a;
+	margin-top: 4px;
+}
+
+.status-completed-pill {
+	background-color: #dcfce7;
+	color: #15803d;
+	border: 1px solid rgba(22, 163, 74, 0.3);
+	font-weight: 700;
+	font-size: 0.78rem;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.status-rejected-pill {
+	background-color: #fee2e2;
+	color: #dc2626;
+	border: 1px solid rgba(220, 38, 38, 0.3);
+	font-weight: 700;
+	font-size: 0.78rem;
+	padding: 4px 10px;
+	border-radius: 9999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+
+

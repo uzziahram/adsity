@@ -41,7 +41,7 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 				<div class="student-user-pill-avatar"><?= $initials ?></div>
 				<span><?= htmlspecialchars($student['full_name'] ?? 'Student') ?></span>
 			</div>
-			<a href="../logout.php" class="student-btn-logout" onclick="return confirm('Are you sure you want to log out?');">
+			<a href="../logout.php" class="student-btn-logout">
 				<img src="../assets/icons/arrow-left.svg" width="14" height="14" alt="Logout" style="filter: brightness(0) saturate(100%) invert(42%) sepia(13%) saturate(1072%) hue-rotate(182deg) brightness(94%) contrast(87%);">
 				<span>Log Out</span>
 			</a>
@@ -125,7 +125,7 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 
 			<!-- Sidebar Footer -->
 			<div class="nav-sidebar-footer">
-				<a href="../logout.php" class="btn-sidebar-logout" onclick="return confirm('Are you sure you want to log out?');">
+				<a href="../logout.php" class="btn-sidebar-logout">
 					<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Logout" style="filter: brightness(0) saturate(100%) invert(32%) sepia(85%) saturate(2891%) hue-rotate(344deg) brightness(98%) contrast(92%);">
 					<span>Log Out</span>
 				</a>
@@ -593,6 +593,6 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 			}
 		});
 	</script>
-
+	<script src="../assets/js/logout_modal.js"></script>
 </body>
 </html>

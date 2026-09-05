@@ -79,15 +79,26 @@ try {
                         COUNT(DISTINCT lc.lesson_id) AS completed_lessons_count,
                         cert.certificate_code,
                         cert.issued_at AS cert_issued_at,
+                        sub.id AS submission_id,
                         sub.submission_type,
                         sub.submission_value,
+                        sub.notes AS submission_notes,
+                        sub.instructor_feedback,
                         sub.status AS submission_status,
                         sub.submitted_at
                     FROM enrollments e
                     JOIN users u ON e.user_id = u.id
                     LEFT JOIN lesson_completions lc ON lc.user_id = u.id AND lc.course_id = e.course_id
                     LEFT JOIN certificates cert ON cert.user_id = u.id AND cert.course_id = e.course_id
-                    LEFT JOIN course_submissions sub ON sub.user_id = u.id AND sub.course_id = e.course_id
+                    LEFT JOIN (
+                        SELECT cs1.*
+                        FROM course_submissions cs1
+                        INNER JOIN (
+                            SELECT MAX(id) AS max_id
+                            FROM course_submissions
+                            GROUP BY user_id, course_id
+                        ) cs2 ON cs1.id = cs2.max_id
+                    ) sub ON sub.user_id = u.id AND sub.course_id = e.course_id
                     WHERE e.course_id = :cid
                     GROUP BY u.id, e.id
                     ORDER BY e.enrolled_at DESC";
@@ -188,7 +199,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 					<?= htmlspecialchars($instructor['full_name'] ?? 'Instructor') ?>
 				</span>
 			</div>
-			<a href="../logout.php" class="instructor-btn-logout" onclick="return confirm('Are you sure you want to log out?');">
+			<a href="../logout.php" class="instructor-btn-logout">
 				<img src="../assets/icons/arrow-left.svg" width="14" height="14" alt="Logout">
 				<span>Log Out</span>
 			</a>
@@ -289,7 +300,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 					<p class="perk-desc">Enjoying 70% ad revenue split for all published video lessons.</p>
 				</div>
 
-				<a href="../logout.php" class="btn-sidebar-logout" onclick="return confirm('Are you sure you want to log out?');">
+				<a href="../logout.php" class="btn-sidebar-logout">
 					<img src="../assets/icons/arrow-left.svg" width="15" height="15" alt="Logout">
 					<span>Log Out</span>
 				</a>
@@ -491,17 +502,27 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 									<!-- Project Deliverable Submission -->
 									<td>
 										<?php if (!empty($s['submission_value'])): ?>
-											<?php if ($s['submission_type'] === 'file_upload'): ?>
-												<a href="../<?= htmlspecialchars($s['submission_value']) ?>" target="_blank" style="color: var(--primary-blue); font-weight: 700; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-													<img src="../assets/icons/file-text.svg" width="14" height="14" alt="File">
-													<span>Download Archive ↗</span>
-												</a>
-											<?php else: ?>
-												<a href="<?= htmlspecialchars($s['submission_value']) ?>" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); font-weight: 700; font-size: 0.84rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-													<img src="../assets/icons/external-link.svg" width="14" height="14" alt="Link">
-													<span>View Deliverable ↗</span>
-												</a>
-											<?php endif; ?>
+											<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+												<?php if (($s['submission_status'] ?? '') === 'approved'): ?>
+													<span style="background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800;">✓ Approved</span>
+												<?php elseif (($s['submission_status'] ?? '') === 'revision_needed'): ?>
+													<span style="background-color: #ffedd5; color: #c2410c; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800;">↺ Revision Needed</span>
+												<?php else: ?>
+													<span style="background-color: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800;">Pending Review</span>
+												<?php endif; ?>
+
+												<?php if ($s['submission_type'] === 'file_upload'): ?>
+													<a href="../assets/submissions/<?= htmlspecialchars($s['submission_value']) ?>" download style="color: var(--primary-blue); font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+														<img src="../assets/icons/download.svg" width="12" height="12" alt="File">
+														<span>Download File</span>
+													</a>
+												<?php else: ?>
+													<a href="<?= htmlspecialchars($s['submission_value']) ?>" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Link">
+														<span>View Deliverable ↗</span>
+													</a>
+												<?php endif; ?>
+											</div>
 										<?php else: ?>
 											<span style="color: #94a3b8; font-size: 0.82rem; font-style: italic;">
 												<?= $pct >= 100 ? 'Pending Submission' : 'Locked' ?>
@@ -651,5 +672,6 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 			}
 		});
 	</script>
+	<script src="../assets/js/logout_modal.js"></script>
 </body>
 </html>

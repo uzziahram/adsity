@@ -95,7 +95,9 @@ CREATE TABLE IF NOT EXISTS course_submissions (
     submission_type VARCHAR(50) NOT NULL,
     submission_value VARCHAR(255) NOT NULL,
     notes TEXT NULL,
-    status ENUM('approved', 'pending', 'rejected') DEFAULT 'approved',
+    instructor_feedback TEXT NULL,
+    status ENUM('pending', 'approved', 'revision_needed', 'rejected') DEFAULT 'pending',
+    reviewed_at TIMESTAMP NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_submissions_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_submissions_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
@@ -112,3 +114,32 @@ CREATE TABLE IF NOT EXISTS certificates (
     CONSTRAINT fk_cert_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     UNIQUE KEY uq_user_cert_course (user_id, course_id)
 );
+
+-- 7. Instructor Wallets Table
+CREATE TABLE IF NOT EXISTS instructor_wallets (
+    instructor_id INT PRIMARY KEY,
+    total_earned DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    available_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_withdrawn DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_wallet_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 8. Payout / Withdrawal Requests Table
+CREATE TABLE IF NOT EXISTS payout_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    instructor_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payout_method ENUM('paypal', 'gcash', 'bank_transfer') NOT NULL,
+    payout_details TEXT NOT NULL,
+    instructor_notes TEXT NULL,
+    admin_notes TEXT NULL,
+    transaction_reference VARCHAR(100) NULL,
+    status ENUM('pending', 'completed', 'rejected') DEFAULT 'pending',
+    processed_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    CONSTRAINT fk_payout_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_payout_admin FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+

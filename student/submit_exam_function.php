@@ -51,10 +51,34 @@ try {
 
     $isCourseFinished = ((int)($enrollment['progress_percent'] ?? 0) >= 100) || (($enrollment['status'] ?? '') === 'completed');
 
+    // Fetch latest existing submission
+    $stmtSub = $pdo->prepare("SELECT * FROM course_submissions WHERE user_id = :uid AND course_id = :cid ORDER BY id DESC LIMIT 1");
+    $stmtSub->bindValue(':uid', $studentId, PDO::PARAM_INT);
+    $stmtSub->bindValue(':cid', $courseId, PDO::PARAM_INT);
+    $stmtSub->execute();
+    $latestSubmission = $stmtSub->fetch();
+
+    // Fetch existing certificate if any
+    $stmtCertCheck = $pdo->prepare("SELECT * FROM certificates WHERE user_id = :uid AND course_id = :cid LIMIT 1");
+    $stmtCertCheck->bindValue(':uid', $studentId, PDO::PARAM_INT);
+    $stmtCertCheck->bindValue(':cid', $courseId, PDO::PARAM_INT);
+    $stmtCertCheck->execute();
+    $existingCertificate = $stmtCertCheck->fetch();
+
     // Handle Form Submission
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['submit_assessment'])) {
         if (!$isCourseFinished) {
             header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('You cannot submit your project until you have finished all lessons in the course.'));
+            exit;
+        }
+
+        if ($latestSubmission && $latestSubmission['status'] === 'approved') {
+            header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Your assessment has already been approved!'));
+            exit;
+        }
+
+        if ($latestSubmission && $latestSubmission['status'] === 'pending') {
+            header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Your project deliverable is already pending review by your instructor.'));
             exit;
         }
 
@@ -109,38 +133,36 @@ try {
             $submissionVal = $uniqueFileName;
         }
 
-        // 1. Insert into course_submissions
-        $sqlSub = "INSERT INTO course_submissions (user_id, course_id, submission_type, submission_value, notes, status)
-                   VALUES (:user_id, :course_id, :submission_type, :submission_value, :notes, 'approved')";
-        $stmtSub = $pdo->prepare($sqlSub);
-        $stmtSub->bindValue(':user_id', $studentId, PDO::PARAM_INT);
-        $stmtSub->bindValue(':course_id', $courseId, PDO::PARAM_INT);
-        $stmtSub->bindValue(':submission_type', $assessmentType);
-        $stmtSub->bindValue(':submission_value', $submissionVal);
-        $stmtSub->bindValue(':notes', htmlspecialchars($notes));
-        $stmtSub->execute();
+        // Save submission as 'pending' for instructor manual grading
+        if ($latestSubmission && $latestSubmission['status'] === 'revision_needed') {
+            $sqlUpdate = "UPDATE course_submissions 
+                          SET submission_type = :submission_type, 
+                              submission_value = :submission_value, 
+                              notes = :notes, 
+                              status = 'pending', 
+                              submitted_at = CURRENT_TIMESTAMP 
+                          WHERE id = :id";
+            $stmtUpdate = $pdo->prepare($sqlUpdate);
+            $stmtUpdate->execute([
+                ':submission_type'  => $assessmentType,
+                ':submission_value' => $submissionVal,
+                ':notes'            => htmlspecialchars($notes),
+                ':id'               => $latestSubmission['id']
+            ]);
+        } else {
+            $sqlInsert = "INSERT INTO course_submissions (user_id, course_id, submission_type, submission_value, notes, status)
+                          VALUES (:user_id, :course_id, :submission_type, :submission_value, :notes, 'pending')";
+            $stmtInsert = $pdo->prepare($sqlInsert);
+            $stmtInsert->execute([
+                ':user_id'          => $studentId,
+                ':course_id'        => $courseId,
+                ':submission_type'  => $assessmentType,
+                ':submission_value' => $submissionVal,
+                ':notes'            => htmlspecialchars($notes)
+            ]);
+        }
 
-        // 2. Mark Enrollment Complete
-        $sqlEnr = "INSERT INTO enrollments (user_id, course_id, progress_percent, status, completed_at)
-                   VALUES (:user_id, :course_id, 100, 'completed', CURRENT_TIMESTAMP)
-                   ON DUPLICATE KEY UPDATE progress_percent = 100, status = 'completed', completed_at = CURRENT_TIMESTAMP";
-        $stmtEnr = $pdo->prepare($sqlEnr);
-        $stmtEnr->bindValue(':user_id', $studentId, PDO::PARAM_INT);
-        $stmtEnr->bindValue(':course_id', $courseId, PDO::PARAM_INT);
-        $stmtEnr->execute();
-
-        // 3. Generate & Issue Certificate
-        $certCode = 'ADS-' . date('Y') . '-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
-        $sqlCert = "INSERT INTO certificates (user_id, course_id, certificate_code, issued_at)
-                    VALUES (:user_id, :course_id, :certificate_code, CURRENT_TIMESTAMP)
-                    ON DUPLICATE KEY UPDATE certificate_code = VALUES(certificate_code)";
-        $stmtCert = $pdo->prepare($sqlCert);
-        $stmtCert->bindValue(':user_id', $studentId, PDO::PARAM_INT);
-        $stmtCert->bindValue(':course_id', $courseId, PDO::PARAM_INT);
-        $stmtCert->bindValue(':certificate_code', $certCode);
-        $stmtCert->execute();
-
-        header('Location: certificate.php?code=' . urlencode($certCode) . '&status=success&message=' . urlencode('Assessment passed! Your verified certificate is ready.'));
+        header('Location: submit_exam.php?course_id=' . $courseId . '&status=success&message=' . urlencode('Project deliverable submitted successfully! Your instructor will review and grade your project.'));
         exit;
     }
 
