@@ -127,10 +127,6 @@ $id      = $_GET['id'] ?? null;
 						</div>
 					</div>
 
-					<label class="form-checkbox-label">
-						<input type="checkbox" name="terms" required checked>
-						<span>I agree to Adsity's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
-					</label>
 
 					<button type="submit" name="signup" class="btn-auth-submit">
 						Sign Up for Free

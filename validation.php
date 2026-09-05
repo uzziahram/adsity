@@ -31,7 +31,6 @@ function validateSignupInput(array $post): array
     $email           = trim($post['email'] ?? '');
     $password        = $post['password'] ?? '';
     $confirmPassword = $post['confirm_password'] ?? '';
-    $terms           = isset($post['terms']);
 
     $errors = array_filter([
         validateRequired($fullName, 'Full Name'),
@@ -40,7 +39,6 @@ function validateSignupInput(array $post): array
         $email !== '' ? validateEmailFormat($email) : null,
         $password !== '' ? validateMinLength($password, 'Password', 6) : null,
         $password !== '' ? validatePasswordMatch($password, $confirmPassword) : null,
-        validateTerms($terms),
     ]);
     $errors = array_values($errors);
 

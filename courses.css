@@ -6,8 +6,8 @@
 }
 
 .explore-hero {
-	background: linear-gradient(135deg, #14221b 0%, #1a382c 100%);
-	padding: 56px 24px;
+	background: linear-gradient(135deg, rgba(20, 34, 27, 0.82) 0%, rgba(26, 56, 44, 0.85) 100%), url('assets/adsity_assets/pexels-cottonbro-6209565.jpg') center/cover no-repeat;
+	padding: 64px 24px;
 	color: #ffffff;
 	text-align: center;
 	position: relative;
