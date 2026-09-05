@@ -115,7 +115,12 @@ require_once __DIR__ . '/courses_function.php';
 				<?php foreach ($courses as $c): ?>
 					<article class="explore-course-card">
 						<div class="explore-course-thumb">
-							<img src="./assets/adsity_assets/<?= htmlspecialchars($c['thumbnail']) ?>" alt="<?= htmlspecialchars($c['title']) ?>">
+							<?php
+							$thumbSrc = !empty($c['thumbnail']) && str_starts_with($c['thumbnail'], 'uploads/')
+								? './' . $c['thumbnail']
+								: './assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
+							?>
+							<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>">
 							<span class="explore-course-category"><?= htmlspecialchars($c['category']) ?></span>
 						</div>
 

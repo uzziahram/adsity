@@ -273,7 +273,12 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 										<tr>
 											<td>
 												<div class="course-table-cell">
-													<img src="../assets/adsity_assets/<?= htmlspecialchars($c['thumbnail']) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													<?php
+													$thumbSrc = !empty($c['thumbnail']) && str_starts_with($c['thumbnail'], 'uploads/')
+														? '../' . $c['thumbnail']
+														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
+													?>
+													<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
 													<div>
 														<strong><?= htmlspecialchars($c['title']) ?></strong>
 														<div style="font-size: 0.8rem; color: #64748b;"><?= htmlspecialchars(substr($c['description'], 0, 55)) ?>...</div>
@@ -446,7 +451,12 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 										<tr>
 											<td>
 												<div class="course-table-cell">
-													<img src="../assets/adsity_assets/<?= htmlspecialchars($c['thumbnail']) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+													<?php
+													$thumbSrc = !empty($c['thumbnail']) && str_starts_with($c['thumbnail'], 'uploads/')
+														? '../' . $c['thumbnail']
+														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
+													?>
+													<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
 													<div>
 														<strong style="font-size: 1rem;"><?= htmlspecialchars($c['title']) ?></strong>
 														<div style="font-size: 0.82rem; color: #64748b; margin-top: 3px; max-width: 320px;"><?= htmlspecialchars($c['description']) ?></div>

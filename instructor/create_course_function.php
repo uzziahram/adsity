@@ -9,6 +9,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instruct
 
 require_once __DIR__ . '/../database/config.php';
 
+// Check if upload exceeded post_max_size
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST)) {
+    header('Location: create_course.php?status=error&message=' . urlencode('Uploaded files exceeded server limit (' . ini_get('post_max_size') . '). Please upload smaller video files.'));
+    exit;
+}
+
 if (!isset($_POST['create_course'])) {
     header('Location: create_course.php');
     exit;
@@ -28,6 +34,21 @@ $instructorId = $_SESSION['user_id'];
 // 1. Basic validation
 if ($title === '' || $category === '' || $description === '') {
     header('Location: create_course.php?status=error&message=' . urlencode('Please fill out all required course fields.'));
+    exit;
+}
+
+if (!isset($_FILES['course_thumbnail']) || $_FILES['course_thumbnail']['error'] !== UPLOAD_ERR_OK) {
+    header('Location: create_course.php?status=error&message=' . urlencode('Please upload a course cover thumbnail image.'));
+    exit;
+}
+
+$thumbFile = $_FILES['course_thumbnail']['name'];
+$thumbTmp  = $_FILES['course_thumbnail']['tmp_name'];
+$thumbExt  = strtolower(pathinfo($thumbFile, PATHINFO_EXTENSION));
+$allowedImgExts = ['jpg', 'jpeg', 'png', 'webp'];
+
+if (!in_array($thumbExt, $allowedImgExts)) {
+    header('Location: create_course.php?status=error&message=' . urlencode('Invalid thumbnail format. Please upload a PNG, JPG, or WEBP image.'));
     exit;
 }
 
@@ -53,7 +74,7 @@ try {
     $stmt->bindValue(':title', htmlspecialchars($title));
     $stmt->bindValue(':description', htmlspecialchars($description));
     $stmt->bindValue(':category', htmlspecialchars($category));
-    $stmt->bindValue(':thumbnail', $thumbnail);
+    $stmt->bindValue(':thumbnail', 'Web_Development_Basics.png');
     $stmt->bindValue(':total_lessons', $totalLessons, PDO::PARAM_INT);
     $stmt->bindValue(':instructor_id', $instructorId, PDO::PARAM_INT);
     $stmt->bindValue(':assessment_type', $assessmentType);
@@ -62,12 +83,27 @@ try {
 
     $courseId = $pdo->lastInsertId();
 
-    // 3. Create Instructor-specific directory: uploads/instructors/{instructor_id}/courses/{course_id}/
+    // 3. Create Instructor-specific directory structure:
+    // uploads/instructors/{instructor_id}/{course_id}/thumbnail/
     $instructorDir = __DIR__ . '/../uploads/instructors/' . $instructorId . '/';
-    $courseDir     = $instructorDir . 'courses/' . $courseId . '/';
+    $courseDir     = $instructorDir . $courseId . '/';
+    $thumbnailDir  = $courseDir . 'thumbnail/';
 
-    if (!is_dir($courseDir)) {
-        mkdir($courseDir, 0777, true);
+    if (!is_dir($thumbnailDir)) {
+        mkdir($thumbnailDir, 0777, true);
+    }
+
+    $safeThumbName   = 'thumbnail_' . time() . '.' . $thumbExt;
+    $targetThumbPath = $thumbnailDir . $safeThumbName;
+
+    if (move_uploaded_file($thumbTmp, $targetThumbPath)) {
+        $finalThumbnail = 'uploads/instructors/' . $instructorId . '/' . $courseId . '/thumbnail/' . $safeThumbName;
+
+        $updateThumbStmt = $pdo->prepare("UPDATE courses SET thumbnail = :thumbnail WHERE id = :id");
+        $updateThumbStmt->execute([
+            ':thumbnail' => $finalThumbnail,
+            ':id'        => $courseId
+        ]);
     }
 
     // 4. Process Multi-Video Lessons
@@ -78,23 +114,25 @@ try {
     $stmtLesson = $pdo->prepare($sqlLesson);
 
     // Helper function to detect video duration from uploaded file via ffprobe
-    function detectVideoDurationFromFile($filePath) {
-        if (file_exists($filePath)) {
-            $escaped = escapeshellarg($filePath);
-            $cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {$escaped} 2>/dev/null";
-            $output = trim(shell_exec($cmd) ?? '');
-            if ($output !== '' && is_numeric($output)) {
-                $totalSecs = (int)round((float)$output);
-                $hrs = floor($totalSecs / 3600);
-                $mins = floor(($totalSecs % 3600) / 60);
-                $secs = $totalSecs % 60;
-                if ($hrs > 0) {
-                    return sprintf('%02d:%02d:%02d', $hrs, $mins, $secs);
+    if (!function_exists('detectVideoDurationFromFile')) {
+        function detectVideoDurationFromFile($filePath) {
+            if (file_exists($filePath)) {
+                $escaped = escapeshellarg($filePath);
+                $cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {$escaped} 2>/dev/null";
+                $output = trim(shell_exec($cmd) ?? '');
+                if ($output !== '' && is_numeric($output)) {
+                    $totalSecs = (int)round((float)$output);
+                    $hrs = floor($totalSecs / 3600);
+                    $mins = floor(($totalSecs % 3600) / 60);
+                    $secs = $totalSecs % 60;
+                    if ($hrs > 0) {
+                        return sprintf('%02d:%02d:%02d', $hrs, $mins, $secs);
+                    }
+                    return sprintf('%02d:%02d', $mins, $secs);
                 }
-                return sprintf('%02d:%02d', $mins, $secs);
             }
+            return null;
         }
-        return null;
     }
 
     foreach ($lessonTitles as $index => $lessonTitle) {
@@ -118,7 +156,7 @@ try {
                 $targetFile  = $courseDir . $safeName;
 
                 if (move_uploaded_file($tmpPath, $targetFile)) {
-                    $videoPath = 'uploads/instructors/' . $instructorId . '/courses/' . $courseId . '/' . $safeName;
+                    $videoPath = 'uploads/instructors/' . $instructorId . '/' . $courseId . '/' . $safeName;
 
                     // Detect exact duration using ffprobe
                     $detectedDuration = detectVideoDurationFromFile($targetFile);

@@ -226,8 +226,13 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 						<?php foreach (array_slice($inProgress, 0, 3) as $course): ?>
 							<article class="course-card">
 								<div class="course-thumb-wrapper">
+									<?php
+									$thumbSrc = !empty($course['thumbnail']) && str_starts_with($course['thumbnail'], 'uploads/')
+										? '../' . $course['thumbnail']
+										: '../assets/adsity_assets/' . ($course['thumbnail'] ?: 'Web_Development_Basics.png');
+									?>
 									<img 
-										src="../assets/adsity_assets/<?= htmlspecialchars($course['thumbnail'] ?: 'Web_Development_Basics.png') ?>" 
+										src="<?= htmlspecialchars($thumbSrc) ?>" 
 										alt="<?= htmlspecialchars($course['title']) ?>" 
 										class="course-thumb-img"
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
@@ -298,8 +303,13 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 						<?php foreach ($inProgress as $course): ?>
 							<article class="course-card">
 								<div class="course-thumb-wrapper">
+									<?php
+									$thumbSrc = !empty($course['thumbnail']) && str_starts_with($course['thumbnail'], 'uploads/')
+										? '../' . $course['thumbnail']
+										: '../assets/adsity_assets/' . ($course['thumbnail'] ?: 'Web_Development_Basics.png');
+									?>
 									<img 
-										src="../assets/adsity_assets/<?= htmlspecialchars($course['thumbnail'] ?: 'Web_Development_Basics.png') ?>" 
+										src="<?= htmlspecialchars($thumbSrc) ?>" 
 										alt="<?= htmlspecialchars($course['title']) ?>" 
 										class="course-thumb-img"
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
@@ -370,8 +380,13 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 						<?php foreach ($completedCourses as $completed): ?>
 							<article class="course-card">
 								<div class="course-thumb-wrapper">
+									<?php
+									$thumbSrc = !empty($completed['thumbnail']) && str_starts_with($completed['thumbnail'], 'uploads/')
+										? '../' . $completed['thumbnail']
+										: '../assets/adsity_assets/' . ($completed['thumbnail'] ?: 'Web_Development_Basics.png');
+									?>
 									<img 
-										src="../assets/adsity_assets/<?= htmlspecialchars($completed['thumbnail'] ?: 'Web_Development_Basics.png') ?>" 
+										src="<?= htmlspecialchars($thumbSrc) ?>" 
 										alt="<?= htmlspecialchars($completed['title']) ?>" 
 										class="course-thumb-img"
 										onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'"
