@@ -157,6 +157,22 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 			<span class="breadcrumb-current"><?= htmlspecialchars($course['title']) ?></span>
 		</nav>
 
+		<?php 
+		$status  = $_GET['status'] ?? null;
+		$message = $_GET['message'] ?? null;
+		?>
+		<?php if ($status === 'success'): ?>
+			<div class="alert alert--success" style="margin-bottom: 20px;">
+				<img src="./assets/icons/check-circle.svg" width="20" height="20" alt="Success">
+				<span><?= htmlspecialchars($message ?? 'Action completed successfully.') ?></span>
+			</div>
+		<?php elseif ($status === 'error'): ?>
+			<div class="alert alert--error" style="margin-bottom: 20px;">
+				<img src="./assets/icons/alert-circle.svg" width="20" height="20" alt="Error">
+				<span><?= htmlspecialchars($message ?? 'An error occurred.') ?></span>
+			</div>
+		<?php endif; ?>
+
 		<!-- 2-Column Course Layout -->
 		<div class="details-grid">
 
@@ -245,7 +261,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 					</div>
 
 					<p class="section-subtext">
-						Learn sequentially through practical video lessons with integrated 15-second sponsor breaks that keep your learning 100% free.
+						Learn sequentially through practical video lessons with integrated 15-second ad sessions that keep your learning 100% free.
 					</p>
 
 					<div class="lessons-timeline-list">
@@ -263,7 +279,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 												Video Lesson
 											</span>
 											<span class="lesson-duration-tag">⏱️ <?= htmlspecialchars($lesson['duration'] ?: '10:00') ?></span>
-											<span class="lesson-sponsor-tag">Includes 15s Sponsor Break</span>
+											<span class="lesson-sponsor-tag">Includes 15s Ad Session</span>
 										</div>
 									</div>
 								</div>
@@ -377,8 +393,8 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 									</div>
 								</div>
 
-								<a href="student/dashboard.php" class="btn-enroll-action btn-enroll-action--resume">
-									<span>Go to Student Dashboard</span>
+								<a href="student/learn.php?course_id=<?= $course['id'] ?>" class="btn-enroll-action btn-enroll-action--resume">
+									<span>Continue Learning in Classroom</span>
 									<img src="./assets/icons/arrow-right.svg" width="18" height="18" alt="Go" style="filter: brightness(0) invert(1);">
 								</a>
 							<?php else: ?>

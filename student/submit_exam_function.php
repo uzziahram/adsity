@@ -52,7 +52,7 @@ try {
     $isCourseFinished = ((int)($enrollment['progress_percent'] ?? 0) >= 100) || (($enrollment['status'] ?? '') === 'completed');
 
     // Handle Form Submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_assessment'])) {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['submit_assessment'])) {
         if (!$isCourseFinished) {
             header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('You cannot submit your project until you have finished all lessons in the course.'));
             exit;

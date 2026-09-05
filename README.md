@@ -81,38 +81,42 @@ adsity/
 │   ├── delete_course.php        # Action handler to delete an instructor's course
 │   └── instructordashboard.css  # Dedicated stylesheet for Instructor Dashboard
 │
+├── course_details.css           # Dedicated stylesheet for Course Overview & Enrollment page
+├── course_details.php           # Course Overview page (Thumbnail, Lesson Syllabus, Final Output, Enroll CTA)
+├── courses.css                  # Dedicated stylesheet for Course Catalog & Category filters
+├── courses.php                  # Course Catalog with search keyword & category filters
+├── courses_function.php         # Courses query handler with dynamic SQL filters & enrollment state
+├── index.php                    # Adsity landing page / homepage
+├── login.php                    # User authentication login view (supports redirect_course)
+├── login_function.php           # Login validation, credential verification & role routing
+├── logout.php                   # Session destruction & logout redirection handler
+├── README.md                    # Detailed project technical documentation & architecture guide
+├── signup.php                   # Student registration view (supports redirect_course)
+├── signup_function.php          # Student registration handler & auto-login
+├── style.css                    # Global application stylesheet & responsive design system
+├── teach.php                    # Instructor application & registration view
+├── teach_function.php           # Instructor registration handler & session assignment
+├── validation.php               # Centralized input validation functions
+│
 ├── student/
 │   ├── certificate.css          # Dedicated stylesheet for Verified Certificate & Print view
 │   ├── certificate.php          # Verified Certificate view (Print / Save as PDF)
 │   ├── certificate_function.php # Certificate lookup and verification query handler
 │   ├── dashboard.php            # Student Dashboard view (In-Progress, Completed, Certificates)
 │   ├── dashboard_function.php   # Student data query handler & session gate (student only)
+│   ├── enroll_function.php      # Student course enrollment backend processor
 │   ├── studentdashboard.css     # Dedicated stylesheet for Student Dashboard
 │   ├── submit_exam.css          # Dedicated stylesheet for Final Exam / Project submission
-│   ├── submit_exam.php          # Final project / exam submission form (GitHub repo / File / Live URL)
-│   └── submit_exam_function.php # Project upload & certificate issuance handler
+│   ├── submit_exam.php          # Final project / exam submission form (locked until course completion)
+│   └── submit_exam_function.php # Project upload & certificate issuance handler (with completion gate)
 │
-├── uploads/
-│   ├── instructors/             # Instructor storage folders partitioned by instructor ID
-│   │   └── {instructor_id}/
-│   │       └── courses/
-│   │           └── {course_id}/ # Uploaded lesson MP4 video files
-│   └── submissions/             # Uploaded student project exam submissions
-│
-├── courses.css                  # Dedicated stylesheet for Course Catalog & Category filters
-├── courses.php                  # Course Catalog with search keyword & category filters
-├── courses_function.php         # Courses query handler with dynamic SQL filters
-├── index.php                    # Adsity landing page / homepage
-├── login.php                    # User authentication login view
-├── login_function.php           # Login validation, credential verification & session initialization
-├── logout.php                   # Session destruction & logout redirection handler
-├── README.md                    # Detailed project technical documentation & architecture guide
-├── signup.php                   # Student registration view
-├── signup_function.php          # Student registration handler & auto-login
-├── style.css                    # Global application stylesheet & responsive design system
-├── teach.php                    # Instructor application & registration view
-├── teach_function.php           # Instructor registration handler & session assignment
-└── validation.php               # Centralized input validation functions
+└── uploads/
+    ├── instructors/             # Instructor storage partitioned by instructor ID & course ID
+    │   └── {instructor_id}/
+    │       └── {course_id}/
+    │           ├── thumbnail/   # Course cover thumbnail (thumbnail_{timestamp}.ext)
+    │           └── lesson_{n}_{timestamp}.mp4 # Uploaded lesson MP4 video files
+    └── submissions/             # Uploaded student project exam submissions
 ```
 
 ---
@@ -195,15 +199,29 @@ erDiagram
 #### 3. `courses` Table
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Course ID |
+| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Course ID (starts at `1000`) |
 | `title` | `VARCHAR(150)` | `NOT NULL` | Course Title |
 | `description`| `TEXT` | `NULL` | Detailed course overview |
 | `category` | `VARCHAR(100)` | `NULL` | Topic category |
-| `thumbnail`| `VARCHAR(255)` | `NULL` | Image asset path |
+| `thumbnail`| `VARCHAR(255)` | `NULL` | Image asset path (e.g. `uploads/instructors/{id}/{course_id}/thumbnail/...`) |
 | `total_lessons` | `INT` | `DEFAULT 10` | Total lessons count |
+| `instructor_id` | `INT` | `NULL, FK` | References `users(id)` |
+| `assessment_type` | `ENUM` | `'github_repo', 'file_upload', 'live_url'` | Deliverable submission format |
+| `assessment_instructions` | `TEXT` | `NULL` | Instructor guidelines and rubric for final deliverable |
 | `created_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Course creation timestamp |
 
-#### 4. `enrollments` Table
+#### 4. `lessons` Table (Multi-Video Curriculum)
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Unique Lesson ID |
+| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
+| `lesson_number` | `INT` | `NOT NULL` | Sequential position (`1`, `2`, `3`...) |
+| `title` | `VARCHAR(150)` | `NOT NULL` | Lesson Title |
+| `video_path` | `VARCHAR(255)` | `NOT NULL` | Relative path to uploaded MP4 file |
+| `duration` | `VARCHAR(20)` | `DEFAULT '10:00'` | Lesson duration (detected automatically) |
+| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Lesson creation timestamp |
+
+#### 5. `enrollments` Table
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Enrollment ID |
@@ -214,7 +232,7 @@ erDiagram
 | `enrolled_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Enrollment date |
 | `completed_at` | `TIMESTAMP` | `NULL` | Course completion date |
 
-#### 5. `certificates` Table
+#### 6. `certificates` Table
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Certificate ID |
@@ -253,33 +271,131 @@ flowchart TD
    - **Completed Cards:** Completion date and "View Certificate" button.
    - **My Certificates:** Verification codes and direct links to [`student/certificate.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/certificate.php).
 
-### C. Instructor Studio & Multi-Video Course Publishing
-1. Instructor navigates to [`instructor/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/dashboard.php) and clicks **"Create New Course"** to open [`instructor/create_course.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course.php).
-2. The instructor enters course details, selects the assessment type (`github_repo`, `file_upload`, or `live_url`), and builds the video curriculum.
-3. **Automatic Video Duration Detection**:
-   - The instructor is **not** asked to manually choose or type a duration.
-   - When a video file (`.mp4`, `.webm`, `.ogg`) is selected, the browser automatically inspects the video file metadata via the HTML5 Video Metadata API and displays a live badge (e.g. `⏱️ Auto-Detected Duration: 08:45`).
-   - On submission, [`instructor/create_course_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course_function.php) executes `ffprobe` to verify the exact duration from the uploaded file and stores it into the `lessons` table.
-4. Uploaded videos are organized locally under `uploads/instructors/{instructor_id}/courses/{course_id}/`.
+### C. 4-Step Course Creation Wizard (`instructor/create_course.php`)
 
-### D. Instructor Application
-1. Instructor submits application at [`teach.php`](file:///home/ugenella/coding/xampp-projects/adsity/teach.php).
-2. [`teach_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/teach_function.php) validates inputs, registers user with `role_id = 2` (`instructor`), sets session data, and provides success feedback.
+Adsity features a multi-step course creation wizard designed to streamline the publishing process:
 
-### D. Admin User Monitoring & Management
-1. Administrator logs in using `admin@adsity.org` / `admin123`.
-2. [`admin/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/admin/dashboard.php) verifies session `role_name === 'admin'` and displays:
-   - Total user metrics (Students, Teachers, All Users).
-   - **Teachers Table:** Lists all instructors with registration dates and a delete action.
-   - **Students Table:** Lists all students with registration dates and a delete action.
-3. Deletion requests are processed via [`admin/delete_user.php`](file:///home/ugenella/coding/xampp-projects/adsity/admin/delete_user.php), with built-in safeguards protecting administrator accounts from deletion.
+```
+Step 1: Course Info & Cover Thumbnail ──▶ Step 2: Sequential Curriculum ──▶ Step 3: Final Deliverable ──▶ Step 4: Student Preview & Publish
+```
 
-### E. Course Catalog & Exploration
+1. **Step 1: Course Overview & Thumbnail Upload:**
+   - Instructor provides the course title, topic category, and description.
+   - A dedicated drag-and-drop dropzone accepts `.png`, `.jpg`, `.jpeg`, or `.webp` files.
+   - Displays a live image preview badge with exact file size before proceeding.
+
+2. **Step 2: Sequential Curriculum Builder:**
+   - Starts cleanly with **Lesson 01** (title and video file selector).
+   - An **"+ Add Next Lesson"** button dynamically increments and appends Lesson 02, Lesson 03, etc., with individual remove triggers.
+   - **HTML5 Video Metadata Detection:** When a video file is picked, client-side JavaScript reads video headers directly via `URL.createObjectURL` to determine the exact duration (e.g. `12:45`) and automatically estimates the sponsor ad breaks.
+   - On submission, `ffprobe` extracts the exact duration from the uploaded file on the server.
+
+3. **Step 3: Final Exam Deliverables & Assessment:**
+   - Instructor selects the deliverable submission format:
+     - 🐙 **GitHub Repository (`github_repo`):** For code repositories and software projects.
+     - 📦 **Project File Upload (`file_upload`):** For ZIP, PDF, or raw design files.
+     - 🌐 **Live Application URL (`live_url`):** For hosted web apps, portfolios, or demos.
+   - Instructor provides detailed submission instructions and grading rubrics.
+
+4. **Step 4: Live Student Perspective Preview & Pre-Flight:**
+   - Renders a live mock catalog card.
+   - Outlines the complete lesson syllabus with interstitial 15-second sponsor ad breaks.
+   - Displays a pre-flight publication readiness checklist before the instructor clicks **"Publish Course"**.
+
+---
+
+### D. Filesystem Storage Hierarchy & File Naming Syntax
+
+When an instructor publishes a course, [`instructor/create_course_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course_function.php) creates an isolated directory structure partitioned by instructor ID and course ID:
+
+```
+uploads/instructors/{instructor_id}/{course_id}/
+├── thumbnail/
+│   └── thumbnail_{timestamp}.{ext}
+├── lesson_1_{timestamp}.mp4
+├── lesson_2_{timestamp}.mp4
+└── lesson_3_{timestamp}.mp4
+```
+
+#### Why `lesson_1_{timestamp}.mp4`?
+The filename syntax `lesson_{lessonNumber}_{time()}.{ext}` combines:
+* **`lesson_{n}`**: The sequential lesson index.
+* **`{timestamp}`**: The Unix timestamp generated by PHP's `time()` (e.g. `1788587790`).
+  1. **Collision Defense:** Prevents identical filenames from overwriting each other if an instructor re-uploads.
+  2. **Cache Busting:** Ensures students' browsers always load the newest video rather than playing an old cached version from memory.
+  3. **Filesystem Sanitization:** Prevents spaces, parentheses, or directory traversal characters from causing server errors.
+
+#### PHP Upload Size Configuration Trap (`php.ini`):
+* **`upload_max_filesize` (e.g. `250M`):** The maximum allowed size for **any single video file**.
+* **`post_max_size` (e.g. `500M`):** The combined total size of **all uploaded files + form data submitted together**.
+  > [!WARNING]
+  > When `post_max_size` is exceeded, PHP silently clears `$_POST` and `$_FILES`. Ensure `post_max_size` is always significantly larger than `upload_max_filesize * total_lessons`.
+
+---
+
+### E. Course Catalog & Exploration (`courses.php`)
 1. Users click **"Explore"** on any page or search from the top navigation bar.
-2. [`courses.php`](file:///home/ugenella/coding/xampp-projects/adsity/courses.php) renders the courses catalog with:
-   - Text search query parsing (`?search=...`).
-   - Category filtering pills (`?category=...`).
-   - Course metadata (Lessons, ad-supported free badge, and Enrollment CTA).
+2. [`courses.php`](file:///home/ugenella/coding/xampp-projects/adsity/courses.php) renders the catalog with live search (`?search=...`) and category filtering.
+3. **Smart Enrollment Detection:**
+   * If a logged-in student is already enrolled in a course, the card displays a green **"In Progress (View)"** button.
+   * If not yet enrolled, it displays **"View Course & Enroll"**.
+4. Clicking any course card opens the dedicated **Course Overview** page ([`course_details.php`](file:///home/ugenella/coding/xampp-projects/adsity/course_details.php)).
+
+---
+
+### F. Course Overview & Student Enrollment Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student as Student
+    participant Details as course_details.php
+    participant Handler as student/enroll_function.php
+    participant DB as MariaDB (enrollments)
+    participant Dash as student/dashboard.php
+
+    Student->>Details: Views course overview (Thumbnail, Syllabus, Final Output)
+    Student->>Details: Clicks "Enroll in Course"
+    Details->>Handler: POST /student/enroll_function.php (course_id)
+    Handler->>DB: INSERT into enrollments (user_id, course_id, progress=0, status='in_progress')
+    DB-->>Handler: Enrollment confirmed
+    Handler-->>Dash: Redirect with ?status=success&message=Successfully+enrolled!
+    Dash-->>Student: Displays enrolled course in "In Progress" with "Learn" button
+```
+
+1. **Course Overview ([`course_details.php`](file:///home/ugenella/coding/xampp-projects/adsity/course_details.php)):**
+   - **Thumbnail & Metadata:** Displays instructor thumbnail, course title, category, description, and instructor profile.
+   - **Sequential Syllabus:** Renders each lesson row with badge numbers (`01`, `02`...), titles, exact durations, and sponsor break tags.
+   - **Final Output Deliverable:** Displays the required submission format (GitHub Repo, File Upload, or Live URL) and assessment instructions.
+   - **Enrollment Action (Sticky Card):**
+     - Unenrolled student: Prominent **"Enroll in Course"** button.
+     - Enrolled student: Shows **"You are enrolled! (X% completed)"** and a link to their dashboard.
+     - Guest: **"Log In to Enroll"** (carries `redirect_course` to route the student right back upon authentication).
+
+2. **Enrollment Backend Processor ([`student/enroll_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/enroll_function.php)):**
+   - Enforces student authentication.
+   - Inserts record into `enrollments` (`user_id`, `course_id`, `progress_percent = 0`, `status = 'in_progress'`) with `ON DUPLICATE KEY UPDATE`.
+   - Redirects to [`student/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/dashboard.php) with a welcoming confirmation banner.
+
+---
+
+### G. Course Completion Gate for Final Project Submission
+
+To preserve academic integrity and credential value, **students cannot submit a final project until they have finished all lessons in the course**:
+
+1. **Backend Protection ([`student/submit_exam_function.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/submit_exam_function.php)):**
+   - Checks that the student is enrolled.
+   - Validates that `progress_percent >= 100` or `status = 'completed'`.
+   - Direct POST attempts with incomplete progress are rejected immediately with an error redirect.
+
+2. **Locked Deliverable View ([`student/submit_exam.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/submit_exam.php)):**
+   - If `progress_percent < 100`, the submission form is completely hidden.
+   - Renders a **"Final Project Submission is Locked"** notice with a 🔒 lock badge, current progress %, and a **"Resume Course Lessons"** button.
+   - Only unlocks the upload form once all lessons have been completed.
+
+3. **Dashboard Button States ([`student/dashboard.php`](file:///home/ugenella/coding/xampp-projects/adsity/student/dashboard.php)):**
+   - While a course is in progress (`progress < 100%`), only the clean **"Learn"** button is displayed.
+   - Once progress reaches **100%**, the **"Submit Project"** button automatically appears alongside Learn.
 
 ---
 
@@ -486,6 +602,7 @@ All vector icons are organized as standalone SVGs inside [`assets/icons/`](file:
 | `graduation-cap.svg`| Instructor badges and teacher portal identifiers |
 | `layout.svg` | UI/UX design skill badge |
 | `link.svg` | Blockchain skill badge |
+| `lock.svg` | Locked final project deliverable indicator |
 | `play.svg` | Continue learning video module button |
 | `shield-check.svg` | 100% Free ad-supported verification badge |
 | `shield.svg` | Cybersecurity skill badge |

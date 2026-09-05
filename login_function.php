@@ -69,6 +69,13 @@ try {
     if ($user['role_name'] === 'student') {
         $redirectCourse = isset($_POST['redirect_course']) ? (int)$_POST['redirect_course'] : 0;
         if ($redirectCourse > 0) {
+            // Check if already enrolled to direct straight to classroom
+            $stmtEnr = $pdo->prepare("SELECT id FROM enrollments WHERE user_id = :uid AND course_id = :cid LIMIT 1");
+            $stmtEnr->execute([':uid' => $user['id'], ':cid' => $redirectCourse]);
+            if ($stmtEnr->fetch()) {
+                header('Location: student/learn.php?course_id=' . $redirectCourse);
+                exit;
+            }
             header('Location: course_details.php?id=' . $redirectCourse);
             exit;
         }

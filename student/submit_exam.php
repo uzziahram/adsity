@@ -104,7 +104,7 @@ require_once __DIR__ . '/submit_exam_function.php';
 						<span>Current Progress: <?= (int)$enrollment['progress_percent'] ?>% Completed</span>
 					</div>
 					<div>
-						<a href="../course_details.php?id=<?= urlencode($course['id']) ?>" class="btn-submit-assessment" style="display: inline-flex; width: auto; text-decoration: none; padding: 12px 28px; background-color: #0284c7; color: #ffffff;">
+						<a href="learn.php?course_id=<?= urlencode($course['id']) ?>" class="btn-submit-assessment" style="display: inline-flex; width: auto; text-decoration: none; padding: 12px 28px; background-color: #0284c7; color: #ffffff;">
 							<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0) invert(1);">
 							<span>Resume Course Lessons</span>
 						</a>

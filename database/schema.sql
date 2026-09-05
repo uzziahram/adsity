@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS lessons (
     CONSTRAINT fk_lessons_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 
+-- 6. Lesson Completions Table (Tracks individual completed lessons per student)
+CREATE TABLE IF NOT EXISTS lesson_completions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_lc_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_lc_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    CONSTRAINT fk_lc_lessons FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_user_lesson (user_id, lesson_id)
+);
+
 -- 6. Course Submissions Table
 CREATE TABLE IF NOT EXISTS course_submissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
