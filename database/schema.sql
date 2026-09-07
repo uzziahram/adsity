@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS lesson_completions (
     UNIQUE KEY uq_user_lesson (user_id, lesson_id)
 );
 
--- 6. Course Submissions Table
+-- 7. Course Submissions Table
 CREATE TABLE IF NOT EXISTS course_submissions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS course_submissions (
     CONSTRAINT fk_submissions_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
 );
 
--- 6. Certificates Table
+-- 8. Certificates Table
 CREATE TABLE IF NOT EXISTS certificates (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS certificates (
     UNIQUE KEY uq_user_cert_course (user_id, course_id)
 );
 
--- 7. Instructor Wallets Table
+-- 9. Instructor Wallets Table
 CREATE TABLE IF NOT EXISTS instructor_wallets (
     instructor_id INT PRIMARY KEY,
     total_earned DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS instructor_wallets (
     CONSTRAINT fk_wallet_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 8. Payout / Withdrawal Requests Table
+-- 10. Payout / Withdrawal Requests Table
 CREATE TABLE IF NOT EXISTS payout_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     instructor_id INT NOT NULL,
@@ -142,4 +142,21 @@ CREATE TABLE IF NOT EXISTS payout_requests (
     CONSTRAINT fk_payout_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_payout_admin FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- 11. Ad Activity Logs Table (Tracks completed sponsor ad impressions and instructor earnings)
+CREATE TABLE IF NOT EXISTS ad_activity_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    lesson_id INT NOT NULL,
+    student_id INT NOT NULL,
+    instructor_id INT NOT NULL,
+    amount_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
+    ad_duration_seconds INT NOT NULL DEFAULT 15,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aal_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    CONSTRAINT fk_aal_lesson FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
+    CONSTRAINT fk_aal_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_aal_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 
