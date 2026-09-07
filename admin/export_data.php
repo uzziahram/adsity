@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') 
 require_once __DIR__ . '/../database/config.php';
 
 $type = trim($_GET['type'] ?? 'users');
-$allowedTypes = ['users', 'courses', 'payouts', 'certificates', 'ad_logs', 'sponsor_ads'];
+$allowedTypes = ['users', 'courses', 'payouts', 'certificates', 'ad_logs', 'sponsor_ads', 'admin_withdrawals'];
 
 if (!in_array($type, $allowedTypes, true)) {
     die('Invalid export type requested.');
@@ -69,21 +69,20 @@ try {
             break;
 
         case 'courses':
-            fputcsv($output, ['Course ID', 'Course Title', 'Category', 'Status', 'Instructor Name', 'Instructor Email', 'Lesson Count', 'Enrolled Students', 'Graduates', 'Date Created']);
+            fputcsv($output, ['Course ID', 'Title', 'Category', 'Instructor Name', 'Instructor Email', 'Status', 'Total Lessons', 'Enrolled Students', 'Certified Graduates', 'Created Date']);
             $sql = "SELECT 
                         c.id, 
                         c.title, 
-                        c.category,
-                        c.status,
+                        c.category, 
                         u.full_name AS instructor_name, 
                         u.email AS instructor_email,
-                        COUNT(DISTINCT l.id) AS actual_lessons_count,
+                        c.status,
+                        c.total_lessons,
                         COUNT(DISTINCT e.id) AS enrolled_count,
-                        COUNT(DISTINCT cert.id) AS graduates_count,
+                        COUNT(DISTINCT cert.id) AS cert_count,
                         c.created_at
                     FROM courses c
                     LEFT JOIN users u ON c.instructor_id = u.id
-                    LEFT JOIN lessons l ON l.course_id = c.id
                     LEFT JOIN enrollments e ON e.course_id = c.id
                     LEFT JOIN certificates cert ON cert.course_id = c.id
                     GROUP BY c.id
@@ -93,58 +92,63 @@ try {
                 fputcsv($output, [
                     $row['id'],
                     $row['title'],
-                    $row['category'] ?? 'General',
-                    ucfirst($row['status'] ?? 'published'),
+                    $row['category'],
                     $row['instructor_name'] ?? 'Unassigned',
-                    $row['instructor_email'] ?? '—',
-                    $row['actual_lessons_count'],
+                    $row['instructor_email'] ?? 'N/A',
+                    ucfirst($row['status'] ?? 'published'),
+                    $row['total_lessons'],
                     $row['enrolled_count'],
-                    $row['graduates_count'],
+                    $row['cert_count'],
                     $row['created_at']
                 ]);
             }
             break;
 
         case 'payouts':
-            fputcsv($output, ['Payout ID', 'Instructor Name', 'Email', 'Amount ($)', 'Payment Method', 'Destination Details', 'Status', 'Transaction Reference', 'Date Requested', 'Date Processed']);
+            fputcsv($output, ['Payout ID', 'Instructor Name', 'Instructor Email', 'Amount ($)', 'Method', 'Account Details', 'Status', 'Transaction Reference', 'Admin Notes', 'Requested Date', 'Processed Date']);
             $sql = "SELECT 
-                        p.id,
-                        u.full_name AS instructor_name,
-                        u.email AS instructor_email,
-                        p.amount,
-                        p.payout_method,
-                        p.payout_details,
-                        p.status,
-                        p.transaction_reference,
-                        p.created_at,
+                        p.id, 
+                        u.full_name AS instructor_name, 
+                        u.email AS instructor_email, 
+                        p.amount, 
+                        p.payout_method, 
+                        p.payout_details, 
+                        p.status, 
+                        p.transaction_reference, 
+                        p.admin_notes, 
+                        p.created_at, 
                         p.processed_at
                     FROM payout_requests p
                     JOIN users u ON p.instructor_id = u.id
                     ORDER BY p.id DESC";
             $stmt = $pdo->query($sql);
             while ($row = $stmt->fetch()) {
+                $details = json_decode($row['payout_details'], true) ?: [];
+                $detailStr = implode(' | ', array_map(fn($k, $v) => "$k: $v", array_keys($details), $details));
                 fputcsv($output, [
                     $row['id'],
                     $row['instructor_name'],
                     $row['instructor_email'],
                     number_format((float)$row['amount'], 2),
                     strtoupper($row['payout_method']),
-                    $row['payout_details'],
+                    $detailStr,
                     ucfirst($row['status']),
-                    $row['transaction_reference'] ?? '—',
+                    $row['transaction_reference'] ?? '',
+                    $row['admin_notes'] ?? '',
                     $row['created_at'],
-                    $row['processed_at'] ?? '—'
+                    $row['processed_at'] ?? ''
                 ]);
             }
             break;
 
         case 'certificates':
-            fputcsv($output, ['Certificate Code', 'Student Name', 'Student Email', 'Course Title', 'Category', 'Status', 'Revocation Reason', 'Issue Date']);
+            fputcsv($output, ['Cert ID', 'Certificate Code', 'Student Name', 'Student Email', 'Course Title', 'Category', 'Status', 'Revocation Reason', 'Issue Date']);
             $sql = "SELECT 
-                        cert.certificate_code,
-                        u.full_name AS student_name,
-                        u.email AS student_email,
-                        c.title AS course_title,
+                        cert.id, 
+                        cert.certificate_code, 
+                        u.full_name AS student_name, 
+                        u.email AS student_email, 
+                        c.title AS course_title, 
                         c.category,
                         cert.status,
                         cert.revocation_reason,
@@ -156,6 +160,7 @@ try {
             $stmt = $pdo->query($sql);
             while ($row = $stmt->fetch()) {
                 fputcsv($output, [
+                    $row['id'],
                     $row['certificate_code'],
                     $row['student_name'],
                     $row['student_email'],
@@ -169,7 +174,7 @@ try {
             break;
 
         case 'ad_logs':
-            fputcsv($output, ['Log ID', 'Course Title', 'Lesson Title', 'Sponsor Brand', 'Student Viewer', 'Instructor Beneficiary', 'Revenue Earned ($)', 'Duration Seconds', 'Timestamp']);
+            fputcsv($output, ['Log ID', 'Course Title', 'Lesson Title', 'Sponsor Brand', 'Student Viewer', 'Instructor Beneficiary', 'Gross CPM ($)', 'Instructor Share (65%) ($)', 'Platform Share (35%) ($)', 'Duration Seconds', 'Timestamp']);
             $sql = "SELECT 
                         aal.id,
                         c.title AS course_title,
@@ -177,7 +182,9 @@ try {
                         s_ad.sponsor_name,
                         student.full_name AS student_name,
                         inst.full_name AS instructor_name,
+                        aal.gross_cpm,
                         aal.amount_earned,
+                        aal.platform_earned,
                         aal.ad_duration_seconds,
                         aal.created_at
                     FROM ad_activity_logs aal
@@ -196,7 +203,9 @@ try {
                     $row['sponsor_name'] ?? 'Adsity Default',
                     $row['student_name'] ?? 'Guest',
                     $row['instructor_name'] ?? 'Instructor',
-                    $row['amount_earned'],
+                    number_format((float)($row['gross_cpm'] > 0 ? $row['gross_cpm'] : ($row['amount_earned'] + $row['platform_earned'])), 4),
+                    number_format((float)$row['amount_earned'], 4),
+                    number_format((float)$row['platform_earned'], 4),
                     $row['ad_duration_seconds'],
                     $row['created_at']
                 ]);
@@ -216,6 +225,29 @@ try {
                     $row['click_url'] ?? '',
                     number_format((float)$row['cpm_rate'], 4),
                     $row['total_impressions'],
+                    ucfirst($row['status']),
+                    $row['created_at']
+                ]);
+            }
+            break;
+
+        case 'admin_withdrawals':
+            fputcsv($output, ['Withdrawal ID', 'Admin Name', 'Amount ($)', 'Bank Name', 'Account Name', 'Account Number', 'Reference Trace', 'Notes', 'Status', 'Date']);
+            $sql = "SELECT aw.id, u.full_name AS admin_name, aw.amount, aw.bank_name, aw.account_name, aw.account_number, aw.transaction_reference, aw.notes, aw.status, aw.created_at 
+                    FROM admin_withdrawals aw 
+                    JOIN users u ON aw.admin_id = u.id 
+                    ORDER BY aw.id DESC";
+            $stmt = $pdo->query($sql);
+            while ($row = $stmt->fetch()) {
+                fputcsv($output, [
+                    $row['id'],
+                    $row['admin_name'],
+                    number_format((float)$row['amount'], 2),
+                    $row['bank_name'],
+                    $row['account_name'],
+                    $row['account_number'],
+                    $row['transaction_reference'],
+                    $row['notes'] ?? '',
                     ucfirst($row['status']),
                     $row['created_at']
                 ]);

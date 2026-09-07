@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "ad_unit_id": "ca-video-pub-coca-cola-01",
+    "sponsor_name": "Coca-Cola (Google AdSense)",
+    "campaign_title": "Coca-Cola Real Magic • Refresh Your Study Break",
+    "video_url": "mock_adsense/assets/sample_ad.mp4",
+    "click_url": "https://www.coca-cola.com",
+    "cpm_bid": 0.0500,
+    "duration": 15,
+    "category": "Beverages & Refreshment",
+    "status": "active"
+  }
+]

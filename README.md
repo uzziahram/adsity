@@ -52,9 +52,13 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
    - **Native File Manager Upload:** The administrator clicks the dropzone to open their operating system's native file chooser (or drags-and-drops a video file). Supported formats include MP4, WebM, and MOV up to 100MB. Files are saved securely in `uploads/ads/` with sanitized, unique names (`ad_{timestamp}_{uniqid}.{ext}`).
    - **Custom/Fallback Paths:** Admins can toggle custom paths to use bundled sample ads (`assets/ad/sample_ad.mp4`) or external video URLs.
    - **Campaign Settings:** Admin configures sponsor brand name, marketing headline, destination click URL, custom CPM rate, and initial serving status (`active` or `paused`).
-2. **Platform Monetization Economics (`platform_settings`):** Administrators configure global financial parameters:
-   - Default Ad CPM Rate ($ per completed 15-second impression)
-   - Instructor Revenue Share Split % (e.g. 70% to instructor / 30% to platform)
+2. **Mock Google AdSense for Video Network (`mock_adsense/`):**
+   - **Simulated Programmatic Network:** An isolated ad server sandbox mimicking Google AdSense for Video and the Google Interactive Media Ads (IMA) SDK.
+   - **Live Auction Endpoint (`mock_adsense/serve_ad.php`):** Serves dynamic video ad payloads in both JSON and industry-standard VAST 3.0 XML formats serving the authentic Coca-Cola Real Magic commercial campaign (`sample_ad.mp4`).
+   - **Developer Sandbox Portal (`mock_adsense/index.php`):** A dedicated Google-styled developer dashboard displaying publisher ID `pub-849201837492`, live inventory bids, and an interactive real-time auction simulator.
+3. **Platform Monetization Economics (`platform_settings`):** Administrators configure global financial parameters:
+   - Default Ad CPM Rate ($ per completed 15-second impression, default `$0.0500`)
+   - Revenue Share Split: 65% to course instructors ($0.0325 / view) and 35% to platform treasury ($0.0175 / view)
    - Anti-Spam Ad Cooldown Interval (minutes required between billable views per student per lesson)
 
 ### Phase 5: Student Discovery, Enrollment & Interactive Learning
@@ -69,7 +73,7 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
 1. **Ad Telemetry & Verification (`student/record_ad_activity.php`):** When the 15-second ad completes, an automated AJAX call dispatches impression data:
    - **Anti-Spam Verification:** Validates that the student has not recorded an impression for the same lesson within the configured cooldown window (e.g. 5 minutes).
    - **Self-Preview Guard:** Prevents instructors from generating ad revenue while previewing their own courses.
-   - **Atomic Revenue Credit:** Calculates earnings based on configured CPM and revenue share %, logs the audit record to `ad_activity_logs`, increments `sponsor_ads.total_impressions`, and deposits earnings into `instructor_wallets` (`total_earned` and `available_balance`) within an ACID database transaction.
+   - **Atomic 65/35 Revenue Split:** Calculates earnings based on configured CPM: 65% allocated to instructor and 35% allocated to platform treasury. Logs an immutable audit record in `ad_activity_logs` (`gross_cpm`, `amount_earned`, `platform_earned`), increments `sponsor_ads.total_impressions`, credits the instructor's wallet (`total_earned` and `available_balance`), and credits the platform treasury wallet (`platform_wallet` id = 1) within an ACID database transaction.
 2. **Lesson Completion Engine (`student/complete_lesson.php`):** When the lesson video concludes, completion is logged to `lesson_completions`, course progress percentage updates, and the learner progresses to the next module.
 
 ### Phase 7: Final Assessment & Project Evaluation
@@ -88,15 +92,19 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
    - Administrators can restore revoked certificates if an appeal is resolved.
 3. **Intelligent Return Routing:** The certificate return button detects the viewer's active session role (Admin, Instructor, Student) to avoid role collisions and prevent inadvertent administrative logouts.
 
-### Phase 9: Instructor Cash-Out & Administrative Disbursement
-1. **Payout Request (`instructor/request_payout_function.php`):** Instructors with an `available_balance >= $5.00` submit cash-out requests via PayPal, GCash, or Bank Transfer. A database transaction locks the balance and sets `payout_requests.status = 'pending'`.
+### Phase 9: Multi-Tier Monetization, Payouts & Treasury Cash-Out
+1. **Instructor Cash-Out (`instructor/request_payout_function.php`):** Instructors with an `available_balance >= $5.00` submit cash-out requests via PayPal, GCash, or Bank Transfer. A database transaction locks the balance and sets `payout_requests.status = 'pending'`.
 2. **Administrative Disbursement (`admin/process_payout_function.php`):**
    - **Disbursement:** The administrator reviews destination details, disburses funds through the chosen financial channel, enters a trace reference code (e.g. bank trace, PayPal transaction ID, GCash ref), and marks the request `completed`. Total withdrawn funds are updated.
    - **Rejection with Refund:** If payout details are invalid, the administrator rejects the request with mandatory explanatory notes. Locked funds are automatically refunded back to the instructor's `available_balance`.
+3. **Platform Treasury & Admin Bank Cash-Out (`admin/admin_withdraw.php`):**
+   - **Platform Treasury Tracking:** Administrators view real-time platform metrics (Gross Ad Revenue, 65% Teacher Pool, 35% Platform Treasury, and Total Withdrawn).
+   - **Direct Bank Transfer:** Administrators can withdraw accumulated platform funds directly to their designated bank account without minimum threshold constraints.
+   - **Internal Ledger Protocol:** An ACID transaction with row-level locking (`FOR UPDATE`) validates balance, deducts from `platform_wallet.available_balance`, increments `total_withdrawn`, generates a unique banking trace reference (`BNK-YYYY-XXXX`), and records the completed transfer in `admin_withdrawals`.
 
 ### Phase 10: Platform Governance, RBAC & Audit Export
 1. **User Role Management (`admin/change_role_function.php`):** Administrators can inspect any student or teacher profile, promote students to instructors (automatically provisioning wallet accounts), or demote instructors. Self-demotion by the root admin is strictly prevented.
-2. **Platform Data Export (`admin/export_data.php`):** Administrators can download real-time CSV reports (Users, Courses, Payouts, Certificates, Ad Logs, Sponsor Campaigns) with UTF-8 BOM encoding for direct opening in Microsoft Excel and spreadsheet software.
+2. **Platform Data Export (`admin/export_data.php`):** Administrators can download real-time CSV reports (Users, Courses, Instructor Payouts, Admin Bank Ledger, Certificates, Ad Logs, Sponsor Campaigns) with UTF-8 BOM encoding for direct opening in Microsoft Excel and spreadsheet software.
 3. **Safe Session Termination (`assets/js/logout_modal.js`):** Global glassmorphic logout confirmation modal prevents accidental session terminations across all user roles.
 
 ---
@@ -106,7 +114,7 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
 | Layer | Technology | Details |
 | :--- | :--- | :--- |
 | **Backend** | PHP 8.x | Native procedural PHP with PDO database abstraction, prepared statements, and transactional rollbacks |
-| **Database** | MariaDB 10.4.32 | Relational schema with 13 tables, foreign keys, cascading constraints, and unique indices |
+| **Database** | MariaDB 10.4.32 | Relational schema with 15 tables, foreign keys, cascading constraints, and unique indices |
 | **Session & Auth** | PHP Sessions (`$_SESSION`) | Role-based access control (RBAC), session gating, and credential memory purging |
 | **Media Processing** | FFmpeg (`ffprobe`) | Server-side CLI execution to detect video durations from uploaded lesson MP4s |
 | **File Upload Handling** | Native PHP Uploads | Secure file uploads for sponsor videos (MP4, WebM, MOV up to 100MB), thumbnails, and student project deliverables |
@@ -122,6 +130,7 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
 ```
 adsity/
 ├── admin/
+│   ├── admin_withdraw.php           # Platform Treasury bank withdrawal handler with balance validation
 │   ├── admindashboard.css           # Comprehensive stylesheet for Admin Control Center, sidebar, and modals
 │   ├── change_role_function.php     # RBAC action handler to alter user roles (Student <-> Instructor)
 │   ├── dashboard.php                # Admin Control Center (Overview, Courses, Payouts, Ads, Users, Analytics)
@@ -148,7 +157,14 @@ adsity/
 │
 ├── database/
 │   ├── config.php                   # PDO database connection factory with failover fallback
-│   └── schema.sql                   # Complete SQL schema & table definitions (13 relational tables)
+│   └── schema.sql                   # Complete SQL schema & table definitions (15 relational tables)
+│
+├── mock_adsense/
+│   ├── assets/
+│   │   └── sample_ad.mp4            # Sample 15-second commercial video asset
+│   ├── index.php                    # Google AdSense for Video simulated sandbox & auction tester
+│   ├── inventory.json               # Mock AdSense database of global advertisers & dynamic CPM bids
+│   └── serve_ad.php                 # Mock VAST 3.0 & JSON ad server API endpoint
 │
 ├── instructor/
 │   ├── course_overview.php          # Dedicated per-course analytics, student roster, and syllabus stats
@@ -224,7 +240,9 @@ adsity/
 | **`payout_requests`** | `id` | `instructor_id -> users(id)`, `processed_by -> users(id)` | `N : 1` with `users` (instructors), `N : 1` with `users` (admin) | Manages cash-out requests, transfer channels, receipt references, and approval state. |
 | **`sponsor_ads`** | `id` | None | `1 : N` with `ad_activity_logs` | Manages sponsor video campaigns, uploaded files, click URLs, CPM rates, and active serving status. |
 | **`platform_settings`** | `setting_key` | None | Key-value configuration repository | Controls platform-wide monetization rules (default CPM, revenue-share %, ad intervals). |
-| **`ad_activity_logs`** | `id` | `course_id -> courses(id)`, `lesson_id -> lessons(id)`, `student_id -> users(id)`, `instructor_id -> users(id)`, `ad_id -> sponsor_ads(id)` | Audit trail connecting students, instructors, lessons, and sponsor ads | Immutable log of completed sponsor ad views used to calculate and credit instructor balances. |
+| **`ad_activity_logs`** | `id` | `course_id -> courses(id)`, `lesson_id -> lessons(id)`, `student_id -> users(id)`, `instructor_id -> users(id)`, `ad_id -> sponsor_ads(id)` | Audit trail connecting students, instructors, lessons, and sponsor ads | Immutable log of completed sponsor ad views recording gross CPM, 65% instructor share, and 35% platform share. |
+| **`platform_wallet`** | `id` | None | Singleton treasury entity (`id = 1`) | Tracks platform lifetime earnings (35% ad margin), available balance, and total withdrawn to bank. |
+| **`admin_withdrawals`** | `id` | `admin_id -> users(id)` | `N : 1` with `users` (admin) | Internal ledger of administrator bank disbursements, account numbers, and trace references. |
 
 ---
 
@@ -381,9 +399,34 @@ adsity/
 | `student_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
 | `instructor_id`| `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
 | `ad_id` | `INT` | `NULL, FK` | References `sponsor_ads(id)` ON DELETE SET NULL |
-| `amount_earned`| `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0500`| Revenue share credited to instructor wallet |
+| `gross_cpm` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0500`| Gross advertiser cost per completed 15s view |
+| `amount_earned`| `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0325`| 65% Revenue share credited to instructor wallet |
+| `platform_earned`| `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0175`| 35% Revenue margin deposited to platform treasury |
 | `ad_duration_seconds` | `INT` | `NOT NULL, DEFAULT 15` | Required watch time in seconds |
 | `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Timestamp of completed ad impression |
+
+#### 14. `platform_wallet` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Singleton wallet ID (`1`) |
+| `total_earned` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Cumulative lifetime 35% platform revenue earned |
+| `available_balance` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Liquid platform treasury funds available for bank withdrawal |
+| `total_withdrawn` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Total funds disbursed to administrator bank accounts |
+| `updated_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` | Last balance modification timestamp |
+
+#### 15. `admin_withdrawals` Table
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Internal withdrawal record ID |
+| `admin_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE RESTRICT |
+| `amount` | `DECIMAL(10,2)`| `NOT NULL` | Dollar amount withdrawn from treasury |
+| `bank_name` | `VARCHAR(100)` | `NOT NULL` | Destination commercial banking institution |
+| `account_name`| `VARCHAR(150)` | `NOT NULL` | Legal account holder name |
+| `account_number`| `VARCHAR(100)` | `NOT NULL` | Destination bank account / IBAN number |
+| `transaction_reference` | `VARCHAR(100)` | `NOT NULL, UNIQUE` | Banking trace reference code (`BNK-YYYY-XXXX`) |
+| `notes` | `TEXT` | `NULL` | Administrative memo or withdrawal purpose notes |
+| `status` | `ENUM` | `'completed', 'pending', 'rejected'` | Ledger status (Default: `'completed'`) |
+| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Transfer execution timestamp |
 
 ---
 
@@ -567,28 +610,26 @@ Located in `admin/moderate_course.php` and `admin/dashboard.php` ("Course Modera
 
 ---
 
-### K. Sponsor Ad Engine & File Manager Video Upload
+### K. Google AdSense Network Engine & Monetization Rules
 
-Located in `admin/manage_ads.php` and `admin/dashboard.php` ("Sponsor Ad Engine" tab):
+Located in `admin/manage_ads.php`, `admin/dashboard.php` ("Ads & Monetization" tab), and `mock_adsense/`:
 
-1. **Interactive Native File Picker Dropzone:**
-   - Clicking "+ New Sponsor Campaign" opens `#adminNewAdModal` with `enctype="multipart/form-data"`.
-   - Clicking the dropzone triggers the user's native operating system file manager dialog (Windows Explorer, macOS Finder, Linux file chooser) filtered for MP4, WebM, and MOV videos up to 100MB.
-   - Drag-and-drop support allows dragging video files directly from the desktop into the dropzone.
-   - Real-time JavaScript feedback displays the chosen filename, calculated file size in MB, and highlights the dropzone in green.
-   - Custom URL toggle allows specifying existing paths (e.g. `assets/ad/sample_ad.mp4`) or external URLs.
-2. **Backend Video Processing & Storage:**
-   - Validates file extensions, MIME types, and server file upload limits.
-   - Saves file into `uploads/ads/` with collision-safe name `ad_{timestamp}_{uniqid}.{ext}`.
-   - Inserts record into `sponsor_ads` with initial status, click URL, and custom CPM rate.
-3. **Campaign Management:**
-   - **Toggle Status:** Instantly switch campaigns between `active` (serving to students) and `paused`.
-   - **Delete Campaign:** Removes ad record and automatically unlinks the local video file from `uploads/ads/` to prevent orphaned disk usage.
-4. **Platform Economics Configuration:**
-   - Admin can tune global monetization parameters saved to `platform_settings`:
-     - Default Ad CPM Rate ($)
-     - Instructor Revenue Share Split % (e.g. 70% Instructor / 30% Platform)
-     - Ad Cooldown Interval (Minutes between valid impressions per student per lesson)
+1. **Automated Ad Network Integration (`mock_adsense/`):**
+   - All video advertisements are sourced exclusively through the simulated Google AdSense for Video Network API (`mock_adsense/serve_ad.php`).
+   - Programmatically serves the single authentic Coca-Cola "Real Magic • Refresh Your Study Break" commercial campaign (`mock_adsense/assets/sample_ad.mp4`).
+   - Manual administrator ad creation and file uploads have been completely deprecated and removed to maintain automated programmatic delivery.
+2. **Network Feed Control & Status:**
+   - Administrators monitor connected Google AdSense inventory from the admin dashboard.
+   - Administrators can pause or activate the live ad network stream (`admin/manage_ads.php?action=toggle_status`).
+   - Accidental deletion and manual insertion are strictly locked down.
+3. **Platform Economics Configuration:**
+   - Admin configures global monetization parameters saved to `platform_settings`:
+     - Default Ad CPM Rate ($0.0500 per completed 15-second impression)
+     - Instructor Revenue Share Split % (65% Instructor / 35% Platform Treasury Margin)
+     - Ad Anti-Spam Cooldown Interval (Minutes between valid impressions per student per lesson)
+4. **Interactive AdSense Sandbox (`mock_adsense/`):**
+   - Accessible via the "AdSense Sandbox" button on the admin dashboard.
+   - Provides publisher diagnostics (Publisher ID: `pub-849201837492`), live auction test runner, and VAST 3.0 XML / JSON API feed inspections.
 
 ---
 
@@ -647,7 +688,29 @@ Located in `admin/dashboard.php` and `admin/process_payout_function.php`:
 
 ---
 
-### O. User Administration & RBAC Role Management
+### O. Platform Treasury & Administrator Bank Cash-Out
+
+Located in `admin/dashboard.php` and `admin/admin_withdraw.php`:
+
+1. **Treasury Analytics:** The Administrator Control Center monitors:
+   - **Gross Ad Revenue:** Total revenue generated across all completed 15-second sponsor views.
+   - **Teacher Revenue Pool (65%):** Funds automatically credited to instructor wallets.
+   - **Platform Treasury Balance (35%):** Unwithdrawn liquid funds accumulated in the platform treasury (`platform_wallet` singleton).
+   - **Cumulative Admin Withdrawals:** Lifetime funds disbursed to administrative bank accounts.
+2. **Bank Cash-Out Modal:** Administrators trigger a withdrawal directly into commercial banking accounts (e.g. BDO, BPI, Metrobank, Chase, Wells Fargo).
+   - **Zero Minimum Threshold:** Administrators can withdraw any amount greater than $0.00 up to available balance.
+   - **Single-Click "Withdraw Max":** Instantly populates the input field with the maximum liquid treasury balance.
+3. **Internal Ledger Protocol (`admin_withdrawals`):**
+   - Executes an atomic PDO database transaction with row-locking (`FOR UPDATE`) on `platform_wallet`.
+   - Validates that requested funds do not exceed `available_balance`.
+   - Deducts funds from `platform_wallet.available_balance` and increments `total_withdrawn`.
+   - Generates a unique tracking reference code formatted as `BNK-{YEAR}-{HEX}` (e.g. `BNK-2026-F982DA10`).
+   - Inserts an immutable record into `admin_withdrawals` with status `completed`.
+4. **Administrator Bank Transfer Ledger:** A dedicated table in the Payouts tab records every historical platform withdrawal with banking details, administrator identity, notes, and trace codes.
+
+---
+
+### P. User Administration & RBAC Role Management
 
 Located in `admin/change_role_function.php` and `admin/delete_user.php`:
 
@@ -664,7 +727,7 @@ Located in `admin/change_role_function.php` and `admin/delete_user.php`:
 
 ---
 
-### P. Platform Data Export Engine
+### Q. Platform Data Export Engine
 
 Located in `admin/export_data.php`:
 
@@ -672,14 +735,15 @@ Located in `admin/export_data.php`:
 2. Generates real-time, stream-downloadable CSV reports with UTF-8 BOM encoding for seamless Excel opening:
    - **Users Report (`type=users`):** User ID, Full Name, Email, Role, Enrolled Courses, Published Courses, Wallet Balance, Joined Date.
    - **Courses Report (`type=courses`):** Course ID, Title, Category, Instructor, Status, Total Lessons, Enrolled Students, Completed Students, Created Date.
-   - **Payouts Report (`type=payouts`):** Payout ID, Instructor, Amount, Method, Status, Transaction Reference, Created Date, Processed Date.
+   - **Instructor Payouts Report (`type=payouts`):** Payout ID, Instructor, Amount, Method, Status, Transaction Reference, Created Date, Processed Date.
+   - **Administrator Bank Ledger (`type=admin_withdrawals`):** Reference ID, Admin Name, Admin Email, Amount, Destination Bank, Account Name, Account Number, Notes, Status, Created Date.
    - **Certificates Report (`type=certificates`):** Certificate ID, Code, Student Name, Course Title, Status, Issued Date, Revoked Date, Revocation Reason.
-   - **Ad Activity Logs (`type=ad_logs`):** Log ID, Course Title, Lesson Title, Student Name, Instructor Name, Ad Campaign, Amount Earned, Duration, Timestamp.
+   - **Ad Activity Logs (`type=ad_logs`):** Log ID, Course Title, Lesson Title, Student Name, Instructor Name, Ad Campaign, Gross CPM, Teacher Share (65%), Platform Share (35%), Duration, Timestamp.
    - **Sponsor Ads (`type=sponsor_ads`):** Campaign ID, Sponsor Name, Campaign Title, Video URL, CPM Rate, Status, Total Impressions, Created Date.
 
 ---
 
-### Q. Global Logout Confirmation Modal (`assets/js/logout_modal.js`)
+### R. Global Logout Confirmation Modal (`assets/js/logout_modal.js`)
 
 - Included globally across all platform views.
 - Intercepts all clicks on links pointing to `logout.php`.

@@ -23,84 +23,7 @@ try {
     $pdo = getConnection();
 
     if ($action === 'add_ad') {
-        $sponsorName   = trim($_POST['sponsor_name'] ?? '');
-        $campaignTitle = trim($_POST['campaign_title'] ?? '');
-        $videoUrl      = trim($_POST['video_url'] ?? '');
-        $clickUrl      = trim($_POST['click_url'] ?? '');
-        $cpmRate       = max(0.0001, (float)($_POST['cpm_rate'] ?? 0.0500));
-        $status        = ($_POST['status'] ?? 'active') === 'paused' ? 'paused' : 'active';
-
-        if ($sponsorName === '' || $campaignTitle === '') {
-            header('Location: dashboard.php?status=error&message=' . urlencode('Sponsor name and campaign title are required.') . '#ads');
-            exit;
-        }
-
-        // 1. Process Video File Upload (if admin selected a file from their file manager)
-        if (isset($_FILES['ad_video_file']) && $_FILES['ad_video_file']['error'] === UPLOAD_ERR_OK) {
-            $file     = $_FILES['ad_video_file'];
-            $fileName = $file['name'];
-            $tmpPath  = $file['tmp_name'];
-            $fileSize = (int)$file['size'];
-            $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-            $allowedExts = ['mp4', 'webm', 'ogg', 'mov'];
-            if (!in_array($ext, $allowedExts, true)) {
-                header('Location: dashboard.php?status=error&message=' . urlencode('Invalid video format. Please upload MP4, WebM, or MOV.') . '#ads');
-                exit;
-            }
-
-            // Limit to 100MB
-            if ($fileSize > 100 * 1024 * 1024) {
-                header('Location: dashboard.php?status=error&message=' . urlencode('Video file exceeds maximum limit of 100MB.') . '#ads');
-                exit;
-            }
-
-            $uploadDir = __DIR__ . '/../uploads/ads/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $safeName   = 'ad_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-            $targetPath = $uploadDir . $safeName;
-
-            if (move_uploaded_file($tmpPath, $targetPath)) {
-                $videoUrl = 'uploads/ads/' . $safeName;
-            } else {
-                header('Location: dashboard.php?status=error&message=' . urlencode('Failed to write uploaded video file to server disk.') . '#ads');
-                exit;
-            }
-        } elseif (isset($_FILES['ad_video_file']) && $_FILES['ad_video_file']['error'] !== UPLOAD_ERR_NO_FILE) {
-            $uploadErrors = [
-                UPLOAD_ERR_INI_SIZE   => 'Uploaded video exceeds server upload_max_filesize limit.',
-                UPLOAD_ERR_FORM_SIZE  => 'Uploaded video exceeds MAX_FILE_SIZE limit.',
-                UPLOAD_ERR_PARTIAL    => 'Video was only partially uploaded.',
-                UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder on server.',
-                UPLOAD_ERR_CANT_WRITE => 'Failed to save file to disk.',
-                UPLOAD_ERR_EXTENSION  => 'A PHP extension interrupted video upload.',
-            ];
-            $errText = $uploadErrors[$_FILES['ad_video_file']['error']] ?? 'File upload error occurred.';
-            header('Location: dashboard.php?status=error&message=' . urlencode($errText) . '#ads');
-            exit;
-        }
-
-        // 2. Handle fallback video URL if no file was uploaded
-        if ($videoUrl === '') {
-            $videoUrl = 'assets/ad/sample_ad.mp4';
-        }
-
-        $stmt = $pdo->prepare("INSERT INTO sponsor_ads (sponsor_name, campaign_title, video_url, click_url, cpm_rate, status) 
-                               VALUES (:name, :title, :video, :click, :cpm, :status)");
-        $stmt->execute([
-            ':name'   => htmlspecialchars($sponsorName),
-            ':title'  => htmlspecialchars($campaignTitle),
-            ':video'  => htmlspecialchars($videoUrl),
-            ':click'  => $clickUrl !== '' ? htmlspecialchars($clickUrl) : null,
-            ':cpm'    => $cpmRate,
-            ':status' => $status
-        ]);
-
-        $msg = "New sponsor ad campaign '{$campaignTitle}' by {$sponsorName} created successfully.";
-        header('Location: dashboard.php?status=success&message=' . urlencode($msg) . '#ads');
+        header('Location: dashboard.php?status=error&message=' . urlencode('Manual ad creation is disabled. All advertisements are delivered exclusively via Google AdSense (mock_adsense).') . '#ads');
         exit;
 
     } elseif ($action === 'toggle_status') {
@@ -128,31 +51,7 @@ try {
         exit;
 
     } elseif ($action === 'delete_ad') {
-        $adId = (int)($_POST['ad_id'] ?? 0);
-        if ($adId <= 0) {
-            header('Location: dashboard.php?status=error&message=' . urlencode('Invalid campaign ID.') . '#ads');
-            exit;
-        }
-
-        // Check if ad exists and if video file was uploaded locally
-        $stmtCheck = $pdo->prepare("SELECT id, video_url, campaign_title FROM sponsor_ads WHERE id = :id LIMIT 1");
-        $stmtCheck->execute([':id' => $adId]);
-        $ad = $stmtCheck->fetch();
-
-        if ($ad) {
-            // Delete uploaded file if stored in uploads/ads/
-            if (!empty($ad['video_url']) && str_starts_with($ad['video_url'], 'uploads/ads/')) {
-                $filePath = __DIR__ . '/../' . $ad['video_url'];
-                if (file_exists($filePath)) {
-                    @unlink($filePath);
-                }
-            }
-
-            $stmtDelete = $pdo->prepare("DELETE FROM sponsor_ads WHERE id = :id");
-            $stmtDelete->execute([':id' => $adId]);
-        }
-
-        header('Location: dashboard.php?status=success&message=' . urlencode('Sponsor campaign deleted successfully.') . '#ads');
+        header('Location: dashboard.php?status=error&message=' . urlencode('Google AdSense network campaigns cannot be deleted. You may pause or activate the feed instead.') . '#ads');
         exit;
 
     } elseif ($action === 'update_settings') {

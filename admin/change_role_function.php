@@ -35,7 +35,7 @@ try {
     $pdo = getConnection();
 
     // Fetch user and check if target is protected root admin
-    $stmtUser = $pdo->prepare("SELECT u.id, u.full_name, u.role_id, r.name AS current_role FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = :id LIMIT 1");
+    $stmtUser = $pdo->prepare("SELECT u.id, u.full_name, u.role_id, r.name AS role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = :id LIMIT 1");
     $stmtUser->execute([':id' => $userId]);
     $user = $stmtUser->fetch();
 

@@ -107,14 +107,14 @@ try {
     // fallback
 }
 
-$adVideoSrc      = '../assets/ad/sample_ad.mp4';
-$activeAdId      = 0;
-$sponsorName     = 'Adsity Edu Partner';
-$sponsorClickUrl = '';
+$adVideoSrc      = '../mock_adsense/assets/sample_ad.mp4';
+$activeAdId      = 1;
+$sponsorName     = 'Coca-Cola (Google AdSense)';
+$sponsorClickUrl = 'https://www.coca-cola.com';
 if ($activeSponsorAd) {
     $activeAdId      = (int)$activeSponsorAd['id'];
     $sponsorName     = $activeSponsorAd['sponsor_name'];
-    $sponsorClickUrl = $activeSponsorAd['click_url'] ?? '';
+    $sponsorClickUrl = !empty($activeSponsorAd['click_url']) ? $activeSponsorAd['click_url'] : 'https://www.coca-cola.com';
     $rawAdPath       = $activeSponsorAd['video_url'];
     $adVideoSrc      = str_starts_with($rawAdPath, 'http') || str_starts_with($rawAdPath, '/')
         ? $rawAdPath
@@ -185,12 +185,24 @@ if ($activeSponsorAd) {
 				<!-- 1. SPONSOR AD CONTAINER (Plays First) -->
 				<div id="adPlayerWrapper" class="ad-player-wrapper" style="position: relative;">
 					<!-- Sponsor Badge Overlay -->
-					<div class="ad-sponsor-badge" style="position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15, 23, 42, 0.85); color: #f8fafc; padding: 6px 14px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);">
-						<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981;"></span>
-						<span>Sponsored by <?= htmlspecialchars($sponsorName) ?></span>
-						<?php if (!empty($sponsorClickUrl)): ?>
-							<a href="<?= htmlspecialchars($sponsorClickUrl) ?>" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline; margin-left: 6px; font-size: 0.78rem;">Learn More &rarr;</a>
+					<div class="ad-sponsor-badge" style="position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15, 23, 42, 0.88); color: #f8fafc; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(6px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1);">
+						<?php if (str_contains($sponsorName, 'Google AdSense')): ?>
+							<span style="background-color: #4285f4; color: #ffffff; font-size: 0.7rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.03em;">AdSense</span>
+							<span>Sponsored by <?= htmlspecialchars(str_replace('(Google AdSense)', '', $sponsorName)) ?></span>
+						<?php else: ?>
+							<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981;"></span>
+							<span>Sponsored by <?= htmlspecialchars($sponsorName) ?></span>
 						<?php endif; ?>
+						<?php if (!empty($sponsorClickUrl)): ?>
+							<a href="<?= htmlspecialchars($sponsorClickUrl) ?>" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline; margin-left: 6px; font-size: 0.78rem;">Visit Site &rarr;</a>
+						<?php endif; ?>
+					</div>
+
+					<!-- Ad Countdown Timer Badge Overlay -->
+					<div id="adTimerBadge" class="ad-timer-badge" style="position: absolute; top: 16px; right: 16px; z-index: 10; background: rgba(15, 23, 42, 0.88); color: #f8fafc; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(6px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1);">
+						<span style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Ad</span>
+						<span style="color: #64748b;">&bull;</span>
+						<span id="adCountdownSeconds" style="color: #38bdf8;">15s</span>
 					</div>
 
 					<video 
@@ -463,6 +475,15 @@ if ($activeSponsorAd) {
 		adVideo.addEventListener('keydown', (e) => {
 			if (['ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(e.key)) {
 				e.preventDefault();
+			}
+		});
+
+		// Real-time countdown timer update
+		adVideo.addEventListener('timeupdate', () => {
+			const remaining = Math.max(0, Math.ceil((adVideo.duration || 15) - adVideo.currentTime));
+			const timerEl = document.getElementById('adCountdownSeconds');
+			if (timerEl) {
+				timerEl.textContent = `${remaining}s`;
 			}
 		});
 

@@ -190,11 +190,16 @@ try {
     // 8. Platform Monetization & Analytics Metrics
     $stmtAdStats = $pdo->query("SELECT 
                                     COUNT(*) AS total_ad_impressions,
-                                    COALESCE(SUM(amount_earned), 0.00) AS total_ad_revenue
+                                    COALESCE(SUM(CASE WHEN gross_cpm > 0 THEN gross_cpm ELSE (amount_earned + platform_earned) END), 0.00) AS total_gross_revenue,
+                                    COALESCE(SUM(amount_earned), 0.00) AS total_instructor_revenue,
+                                    COALESCE(SUM(platform_earned), 0.00) AS total_platform_ad_revenue
                                 FROM ad_activity_logs");
-    $adStats = $stmtAdStats->fetch() ?: ['total_ad_impressions' => 0, 'total_ad_revenue' => 0.00];
-    $totalAdImpressions = (int)($adStats['total_ad_impressions'] ?? 0);
-    $totalAdRevenue     = (float)($adStats['total_ad_revenue'] ?? 0.00);
+    $adStats = $stmtAdStats ? $stmtAdStats->fetch() : null;
+    $totalAdImpressions     = (int)($adStats['total_ad_impressions'] ?? 0);
+    $totalGrossRevenue      = (float)($adStats['total_gross_revenue'] ?? 0.00);
+    $totalInstructorRevenue = (float)($adStats['total_instructor_revenue'] ?? 0.00);
+    $totalPlatformAdRevenue = (float)($adStats['total_platform_ad_revenue'] ?? 0.00);
+    $totalAdRevenue         = $totalGrossRevenue > 0 ? $totalGrossRevenue : $totalInstructorRevenue;
 
     // Total active enrollments and completions
     $stmtEnrollStats = $pdo->query("SELECT 
@@ -244,7 +249,9 @@ try {
     // 10. Fetch Recent Ad Activity Logs (Last 25)
     $sqlRecentAds = "SELECT 
                         aal.id,
+                        aal.gross_cpm,
                         aal.amount_earned,
+                        aal.platform_earned,
                         aal.ad_duration_seconds,
                         aal.created_at,
                         c.title AS course_title,
@@ -280,8 +287,8 @@ try {
     $stmtSettings = $pdo->query("SELECT setting_key, setting_value, description FROM platform_settings");
     $platformSettings = [
         'default_ad_cpm'               => '0.0500',
-        'instructor_rev_share_percent' => '70',
-        'platform_rev_share_percent'   => '30',
+        'instructor_rev_share_percent' => '65',
+        'platform_rev_share_percent'   => '35',
         'ad_interval_minutes'          => '5',
     ];
     if ($stmtSettings) {
@@ -289,32 +296,72 @@ try {
             $platformSettings[$row['setting_key']] = $row['setting_value'];
         }
     }
+    $instructorSharePercent = (int)($platformSettings['instructor_rev_share_percent'] ?? 65);
+    $platformSharePercent   = (int)($platformSettings['platform_rev_share_percent'] ?? 35);
+
+    // 13. Fetch Platform Treasury Wallet (id = 1)
+    $stmtPlatWallet = $pdo->query("SELECT id, total_earned, available_balance, total_withdrawn, updated_at FROM platform_wallet WHERE id = 1 LIMIT 1");
+    $platformWallet = $stmtPlatWallet ? $stmtPlatWallet->fetch() : null;
+    if (!$platformWallet) {
+        $platformWallet = [
+            'id' => 1,
+            'total_earned' => 0.0000,
+            'available_balance' => 0.0000,
+            'total_withdrawn' => 0.0000,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+    }
+    $platformTotalEarned    = (float)$platformWallet['total_earned'];
+    $platformAvailableBal   = (float)$platformWallet['available_balance'];
+    $platformTotalWithdrawn = (float)$platformWallet['total_withdrawn'];
+
+    // 14. Fetch Admin Bank Withdrawals
+    $sqlAdminWithdrawals = "SELECT aw.*, u.full_name AS admin_name, u.email AS admin_email 
+                            FROM admin_withdrawals aw 
+                            JOIN users u ON aw.admin_id = u.id 
+                            ORDER BY aw.created_at DESC";
+    $stmtAdminW = $pdo->query($sqlAdminWithdrawals);
+    $adminWithdrawals = $stmtAdminW ? $stmtAdminW->fetchAll() : [];
+    $totalAdminWithdrawalsCount = count($adminWithdrawals);
 
 } catch (PDOException $e) {
-    $adminProfile        = ['id' => 1, 'full_name' => 'Administrator', 'email' => 'admin@adsity.org'];
-    $allRoles            = [];
-    $students            = [];
-    $instructors         = [];
-    $adminsList          = [];
-    $allCourses          = [];
-    $courseCategories    = [];
-    $payoutRequests      = [];
-    $recentCertificates  = [];
-    $recentAdLogs        = [];
-    $totalStudents       = 0;
-    $totalInstructors    = 0;
-    $totalAdmins         = 0;
-    $totalUsers          = 0;
-    $totalCourses        = 0;
-    $pendingPayoutCount  = 0;
-    $pendingPayoutAmount = 0.00;
-    $totalDisbursed      = 0.00;
-    $totalAdImpressions  = 0;
-    $totalAdRevenue      = 0.00;
-    $totalEnrollments    = 0;
-    $completedEnrollments= 0;
-    $platformCompletionRate = 0;
-    $totalCertificates   = 0;
-    $status              = 'error';
-    $message             = $e->getMessage();
+    $adminProfile               = ['id' => 1, 'full_name' => 'Administrator', 'email' => 'admin@adsity.org'];
+    $allRoles                   = [];
+    $students                   = [];
+    $instructors                = [];
+    $adminsList                 = [];
+    $allCourses                 = [];
+    $courseCategories           = [];
+    $payoutRequests             = [];
+    $recentCertificates         = [];
+    $recentAdLogs               = [];
+    $allSponsorAds              = [];
+    $adminWithdrawals           = [];
+    $totalStudents              = 0;
+    $totalInstructors           = 0;
+    $totalAdmins                = 0;
+    $totalUsers                 = 0;
+    $totalCourses               = 0;
+    $totalSponsorAds            = 0;
+    $activeSponsorAds           = 0;
+    $totalAdminWithdrawalsCount = 0;
+    $pendingPayoutCount         = 0;
+    $pendingPayoutAmount        = 0.00;
+    $totalDisbursed             = 0.00;
+    $totalAdImpressions         = 0;
+    $totalAdRevenue             = 0.00;
+    $totalGrossRevenue          = 0.00;
+    $totalInstructorRevenue     = 0.00;
+    $totalPlatformAdRevenue     = 0.00;
+    $platformTotalEarned        = 0.00;
+    $platformAvailableBal       = 0.00;
+    $platformTotalWithdrawn     = 0.00;
+    $instructorSharePercent     = 65;
+    $platformSharePercent       = 35;
+    $totalEnrollments           = 0;
+    $completedEnrollments       = 0;
+    $platformCompletionRate     = 0;
+    $totalCertificates          = 0;
+    $status                     = 'error';
+    $message                    = $e->getMessage();
 }

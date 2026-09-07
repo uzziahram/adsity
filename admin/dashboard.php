@@ -236,14 +236,25 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 						</div>
 					</div>
 
-					<div class="stat-card" onclick="switchTab('analytics')" style="cursor: pointer;">
+					<div class="stat-card" onclick="switchTab('ads')" style="cursor: pointer;">
 						<div class="stat-icon-box stat-icon-box--green">
-							<img src="../assets/icons/dollar-sign.svg" width="26" height="26" alt="Ad Revenue">
+							<img src="../assets/icons/dollar-sign.svg" width="26" height="26" alt="Gross Ad Revenue">
 						</div>
 						<div>
-							<div class="stat-number">$<?= number_format($totalAdRevenue, 2) ?></div>
-							<div class="stat-label">Ad Revenue Generated</div>
-							<div class="stat-subtext">$0.05 per completed view</div>
+							<div class="stat-number">$<?= number_format($totalGrossRevenue, 2) ?></div>
+							<div class="stat-label">Gross Ad Revenue</div>
+							<div class="stat-subtext"><?= $instructorSharePercent ?>% Teachers &bull; <?= $platformSharePercent ?>% Platform</div>
+						</div>
+					</div>
+
+					<div class="stat-card" onclick="switchTab('payouts')" style="cursor: pointer;">
+						<div class="stat-icon-box stat-icon-box--emerald">
+							<img src="../assets/icons/dollar-sign.svg" width="26" height="26" alt="Platform Treasury">
+						</div>
+						<div>
+							<div class="stat-number">$<?= number_format($platformAvailableBal, 2) ?></div>
+							<div class="stat-label">Platform Treasury Balance</div>
+							<div class="stat-subtext">$<?= number_format($platformTotalEarned, 2) ?> Net (<?= $platformSharePercent ?>%) &bull; $<?= number_format($platformTotalWithdrawn, 2) ?> Out</div>
 						</div>
 					</div>
 
@@ -254,18 +265,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 						<div>
 							<div class="stat-number">$<?= number_format($pendingPayoutAmount, 2) ?></div>
 							<div class="stat-label"><?= $pendingPayoutCount ?> Pending Payout<?= $pendingPayoutCount === 1 ? '' : 's' ?></div>
-							<div class="stat-subtext">$<?= number_format($totalDisbursed, 2) ?> Total Disbursed</div>
-						</div>
-					</div>
-
-					<div class="stat-card" onclick="switchTab('analytics')" style="cursor: pointer;">
-						<div class="stat-icon-box stat-icon-box--indigo">
-							<img src="../assets/icons/award.svg" width="26" height="26" alt="Certificates">
-						</div>
-						<div>
-							<div class="stat-number"><?= number_format($totalCertificates) ?></div>
-							<div class="stat-label">Certificates Issued</div>
-							<div class="stat-subtext">Verified Platform Graduates</div>
+							<div class="stat-subtext">$<?= number_format($totalDisbursed, 2) ?> Disbursed to Teachers</div>
 						</div>
 					</div>
 				</div>
@@ -316,15 +316,23 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 
 						<div>
 							<div class="health-metric-row">
-								<span class="health-metric-label">Total Ad Revenue Credited</span>
-								<span class="health-metric-value" style="color: #16a34a;">$<?= number_format($totalAdRevenue, 2) ?></span>
+								<span class="health-metric-label">Gross Ad Revenue Generated</span>
+								<span class="health-metric-value" style="color: #16a34a; font-weight: 700;">$<?= number_format($totalGrossRevenue, 2) ?></span>
 							</div>
 							<div class="health-metric-row">
-								<span class="health-metric-label">Total Disbursed to Instructors</span>
-								<span class="health-metric-value">$<?= number_format($totalDisbursed, 2) ?></span>
+								<span class="health-metric-label">Teacher Share (<?= $instructorSharePercent ?>%) Credited</span>
+								<span class="health-metric-value">$<?= number_format($totalInstructorRevenue, 2) ?></span>
 							</div>
 							<div class="health-metric-row">
-								<span class="health-metric-label">Awaiting Payout Review</span>
+								<span class="health-metric-label">Platform Treasury (<?= $platformSharePercent ?>%) Net</span>
+								<span class="health-metric-value" style="color: #4338ca; font-weight: 700;">$<?= number_format($platformTotalEarned, 2) ?></span>
+							</div>
+							<div class="health-metric-row">
+								<span class="health-metric-label">Platform Available for Bank Cash-Out</span>
+								<span class="health-metric-value" style="color: #16a34a; font-weight: 800;">$<?= number_format($platformAvailableBal, 2) ?></span>
+							</div>
+							<div class="health-metric-row">
+								<span class="health-metric-label">Awaiting Teacher Payout Review</span>
 								<span class="health-metric-value" style="color: #d97706;">$<?= number_format($pendingPayoutAmount, 2) ?> (<?= $pendingPayoutCount ?>)</span>
 							</div>
 						</div>
@@ -674,18 +682,78 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			<section id="tab-payouts" class="admin-tab-panel">
 				<div class="panel-header">
 					<div>
-						<h1 class="panel-title">Instructor Cash-Out &amp; Payout Requests</h1>
-						<p class="panel-subtitle">Review withdrawal requests, verify destination accounts, and disburse ad revenue shares.</p>
+						<h1 class="panel-title">Platform Treasury &amp; Revenue Disbursements</h1>
+						<p class="panel-subtitle">Manage Adsity platform treasury (35% share), withdraw via bank transfer, and process instructor cash-outs (65% share).</p>
 					</div>
 					<div class="panel-header-actions">
+						<a href="export_data.php?type=admin_withdrawals" class="admin-top-btn admin-top-btn--secondary">
+							<img src="../assets/icons/download.svg" width="14" height="14" alt="Export">
+							<span>Export Bank Ledger</span>
+						</a>
 						<a href="export_data.php?type=payouts" class="admin-top-btn admin-top-btn--secondary">
 							<img src="../assets/icons/download.svg" width="14" height="14" alt="Export">
-							<span>Export Payouts</span>
+							<span>Export Instructor Payouts</span>
 						</a>
 					</div>
 				</div>
 
-				<div class="dashboard-section">
+				<!-- Platform Treasury & Bank Withdrawal Banner -->
+				<div class="dashboard-section" style="margin-bottom: 24px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+					<div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+						<div>
+							<div style="display: flex; align-items: center; gap: 10px;">
+								<div style="width: 40px; height: 40px; border-radius: 10px; background-color: #ecfdf5; display: flex; align-items: center; justify-content: center;">
+									<img src="../assets/icons/dollar-sign.svg" width="22" height="22" alt="Treasury">
+								</div>
+								<div>
+									<h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0;">Platform Treasury &amp; Admin Cash-Out</h2>
+									<p style="font-size: 0.82rem; color: #64748b; margin: 2px 0 0 0;">
+										<?= $platformSharePercent ?>% Platform revenue margin auto-deposited per completed 15s ad view &bull; Direct Bank Transfer
+									</p>
+								</div>
+							</div>
+						</div>
+						<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+							<button type="button" class="btn-process-payout" style="background-color: #16a34a; padding: 10px 18px; font-size: 0.88rem;" onclick="openAdminBankWithdrawModal()">
+								<img src="../assets/icons/dollar-sign.svg" width="16" height="16" alt="Cash-Out" style="filter: brightness(0) invert(1);">
+								<span>+ Withdraw to Bank Account</span>
+							</button>
+						</div>
+					</div>
+
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+						<div style="background-color: #ffffff; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px 20px;">
+							<div style="font-size: 0.76rem; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Available Platform Balance</div>
+							<div style="font-size: 1.75rem; font-weight: 900; color: #16a34a;">$<?= number_format($platformAvailableBal, 2) ?></div>
+							<div style="font-size: 0.74rem; color: #64748b; margin-top: 4px;">Ready for immediate bank transfer (no minimum)</div>
+						</div>
+
+						<div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px;">
+							<div style="font-size: 0.76rem; font-weight: 700; color: #4338ca; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total <?= $platformSharePercent ?>% Platform Share</div>
+							<div style="font-size: 1.75rem; font-weight: 900; color: #3730a3;">$<?= number_format($platformTotalEarned, 2) ?></div>
+							<div style="font-size: 0.74rem; color: #64748b; margin-top: 4px;">Cumulative 35% ad revenue earned</div>
+						</div>
+
+						<div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px;">
+							<div style="font-size: 0.76rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Withdrawn to Date</div>
+							<div style="font-size: 1.75rem; font-weight: 900; color: #0f172a;">$<?= number_format($platformTotalWithdrawn, 2) ?></div>
+							<div style="font-size: 0.74rem; color: #64748b; margin-top: 4px;"><?= $totalAdminWithdrawalsCount ?> bank transfer<?= $totalAdminWithdrawalsCount === 1 ? '' : 's' ?> executed</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section: Instructor Cash-Out Requests -->
+				<div class="dashboard-section" style="margin-bottom: 28px;">
+					<div class="section-heading">
+						<h2>
+							<img src="../assets/icons/dollar-sign.svg" width="22" height="22" alt="Payouts">
+							Instructor Cash-Out &amp; Payout Requests (<?= $instructorSharePercent ?>% Share)
+						</h2>
+						<span class="badge-count" style="background-color: #fef3c7; color: #b45309; font-weight: 800;">
+							$<?= number_format($pendingPayoutAmount, 2) ?> Pending Review
+						</span>
+					</div>
+
 					<!-- Payout Filter Toolbar -->
 					<div class="table-toolbar">
 						<div class="filter-pill-group">
@@ -693,9 +761,6 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 							<button type="button" class="filter-pill" onclick="filterPayoutsTable('pending')">Pending Review (<?= $pendingPayoutCount ?>)</button>
 							<button type="button" class="filter-pill" onclick="filterPayoutsTable('completed')">Disbursed</button>
 							<button type="button" class="filter-pill" onclick="filterPayoutsTable('rejected')">Rejected</button>
-						</div>
-						<div class="badge-count" style="background-color: #fef3c7; color: #b45309; font-weight: 800;">
-							$<?= number_format($pendingPayoutAmount, 2) ?> Pending Review
 						</div>
 					</div>
 
@@ -785,6 +850,75 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 							</table>
 						<?php else: ?>
 							<div class="empty-state">No instructor withdrawal requests submitted yet.</div>
+						<?php endif; ?>
+					</div>
+				</div>
+
+				<!-- Section: Administrator Bank Transfer Ledger -->
+				<div class="dashboard-section">
+					<div class="section-heading">
+						<h2>
+							<img src="../assets/icons/dollar-sign.svg" width="22" height="22" alt="Bank Ledger">
+							Administrator Bank Transfer Ledger
+						</h2>
+						<span class="badge-count" style="background-color: #f1f5f9; color: #334155; font-weight: 800;">
+							<?= $totalAdminWithdrawalsCount ?> Transfer<?= $totalAdminWithdrawalsCount === 1 ? '' : 's' ?> Recorded
+						</span>
+					</div>
+
+					<div class="table-responsive">
+						<?php if (!empty($adminWithdrawals)): ?>
+							<table class="data-table" id="adminBankWithdrawalsTable">
+								<thead>
+									<tr>
+										<th>Reference ID</th>
+										<th>Administrator</th>
+										<th>Amount</th>
+										<th>Destination Bank</th>
+										<th>Account Holder</th>
+										<th>Account Number</th>
+										<th>Memo / Notes</th>
+										<th>Date &amp; Time</th>
+										<th>Status</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php foreach ($adminWithdrawals as $aw): ?>
+										<tr>
+											<td><strong style="font-family: monospace; color: #4f46e5;"><?= htmlspecialchars($aw['transaction_reference']) ?></strong></td>
+											<td>
+												<strong><?= htmlspecialchars($aw['admin_name']) ?></strong>
+												<div style="font-size: 0.78rem; color: #64748b;"><?= htmlspecialchars($aw['admin_email']) ?></div>
+											</td>
+											<td>
+												<strong style="font-size: 1.05rem; color: #16a34a;">
+													$<?= number_format((float)$aw['amount'], 2) ?>
+												</strong>
+											</td>
+											<td>
+												<span class="badge-count" style="font-weight: 800; background-color: #f1f5f9; color: #1e293b;">
+													🏦 <?= htmlspecialchars($aw['bank_name']) ?>
+												</span>
+											</td>
+											<td><strong><?= htmlspecialchars($aw['account_name']) ?></strong></td>
+											<td><code style="font-size: 0.85rem; color: #334155;"><?= htmlspecialchars($aw['account_number']) ?></code></td>
+											<td>
+												<span style="font-size: 0.82rem; color: #64748b;">
+													<?= !empty($aw['notes']) ? htmlspecialchars($aw['notes']) : '—' ?>
+												</span>
+											</td>
+											<td><?= date('M d, Y h:i A', strtotime($aw['created_at'])) ?></td>
+											<td>
+												<span class="status-badge-completed">✓ Completed</span>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+						<?php else: ?>
+							<div class="empty-state">
+								No platform treasury bank withdrawals recorded yet. Click "+ Withdraw to Bank Account" above to disburse platform funds.
+							</div>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -968,15 +1102,35 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 						<p class="panel-subtitle">Configure sponsor video campaigns, Cost-Per-Mille (CPM) rates, and instructor revenue-share splits.</p>
 					</div>
 					<div class="panel-header-actions">
-						<button type="button" class="admin-top-btn admin-top-btn--primary" onclick="openAdminNewAdModal()">
-							<img src="../assets/icons/plus.svg" width="14" height="14" alt="New Ad" style="filter: brightness(0) invert(1);">
-							<span>+ New Sponsor Ad</span>
-						</button>
+						<a href="../mock_adsense/" target="_blank" class="admin-top-btn admin-top-btn--secondary" title="Open Google AdSense Simulated Sandbox">
+							<span style="font-weight: 800; color: #4285f4; font-size: 0.95rem;">G</span>
+							<span>AdSense Sandbox</span>
+						</a>
 						<a href="export_data.php?type=ad_logs" class="admin-top-btn admin-top-btn--secondary">
 							<img src="../assets/icons/download.svg" width="14" height="14" alt="Export">
 							<span>Export Ad Logs</span>
 						</a>
 					</div>
+				</div>
+
+				<!-- Google AdSense Simulated Network Status Banner -->
+				<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #4285f4; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+					<div style="display: flex; align-items: center; gap: 12px;">
+						<div style="background-color: #e8f0fe; color: #1a73e8; font-weight: 900; font-size: 1rem; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+							G
+						</div>
+						<div>
+							<div style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">
+								Google AdSense for Video &bull; Simulated Ad Network Active
+							</div>
+							<div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">
+								Classroom video players query the VAST 3.0 API endpoint (<code style="color: #1a73e8; background: #e8f0fe; padding: 1px 5px; border-radius: 4px;">mock_adsense/serve_ad.php</code>) serving the Coca-Cola Real Magic 15-second sponsor commercial.
+							</div>
+						</div>
+					</div>
+					<a href="../mock_adsense/" target="_blank" style="font-size: 0.8rem; font-weight: 700; color: #1a73e8; text-decoration: underline;">
+						View AdSense Sandbox &rarr;
+					</a>
 				</div>
 
 				<!-- Monetization Engine Platform Settings Card -->
@@ -1006,7 +1160,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 								<label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
 									Instructor Share (%)
 								</label>
-								<input type="number" step="1" min="1" max="99" name="instructor_rev_share_percent" id="instructorRevShareInput" value="<?= htmlspecialchars($platformSettings['instructor_rev_share_percent'] ?? '70') ?>" required class="table-search-input" style="width: 100%; height: 42px; font-weight: 700;" oninput="updatePlatformShareDisplay()">
+								<input type="number" step="1" min="1" max="99" name="instructor_rev_share_percent" id="instructorRevShareInput" value="<?= htmlspecialchars($platformSettings['instructor_rev_share_percent'] ?? '65') ?>" required class="table-search-input" style="width: 100%; height: 42px; font-weight: 700;" oninput="updatePlatformShareDisplay()">
 								<small style="color: #64748b; font-size: 0.72rem;">Credited to instructor wallet</small>
 							</div>
 
@@ -1014,7 +1168,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 								<label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
 									Adsity Platform Margin (%)
 								</label>
-								<input type="number" id="platformRevShareDisplay" value="<?= htmlspecialchars($platformSettings['platform_rev_share_percent'] ?? '30') ?>" readonly class="table-search-input" style="width: 100%; height: 42px; font-weight: 700; background-color: #e2e8f0; color: #475569; cursor: not-allowed;">
+								<input type="number" id="platformRevShareDisplay" value="<?= htmlspecialchars($platformSettings['platform_rev_share_percent'] ?? '35') ?>" readonly class="table-search-input" style="width: 100%; height: 42px; font-weight: 700; background-color: #e2e8f0; color: #475569; cursor: not-allowed;">
 								<small style="color: #64748b; font-size: 0.72rem;">Auto-balanced platform revenue</small>
 							</div>
 
@@ -1041,7 +1195,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 					<div class="section-heading">
 						<h2>
 							<img src="../assets/icons/video.svg" width="22" height="22" alt="Inventory">
-							Sponsor Ad Inventory &amp; Campaigns
+							Google AdSense Network Video Inventory
 						</h2>
 						<span class="badge-count"><?= $activeSponsorAds ?> Active / <?= $totalSponsorAds ?> Total</span>
 					</div>
@@ -1066,7 +1220,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 										<tr>
 											<td>
 												<strong style="color: #0f172a; font-size: 0.95rem;"><?= htmlspecialchars($ad['campaign_title']) ?></strong>
-												<div style="font-size: 0.78rem; color: #4338ca; font-weight: 700; margin-top: 2px;">
+												<div style="font-size: 0.78rem; color: #1a73e8; font-weight: 700; margin-top: 2px;">
 													<?= htmlspecialchars($ad['sponsor_name']) ?>
 												</div>
 											</td>
@@ -1113,14 +1267,6 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 															</button>
 														<?php endif; ?>
 													</form>
-
-													<form method="POST" action="manage_ads.php" style="display: inline;" onsubmit="return confirm('Permanently delete campaign \'<?= htmlspecialchars(addslashes($ad['campaign_title'])) ?>\'?');">
-														<input type="hidden" name="action" value="delete_ad">
-														<input type="hidden" name="ad_id" value="<?= (int)$ad['id'] ?>">
-														<button type="submit" class="btn-table-action btn-table-action--delete" title="Delete Campaign">
-															<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
-														</button>
-													</form>
 												</div>
 											</td>
 										</tr>
@@ -1128,7 +1274,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 								</tbody>
 							</table>
 						<?php else: ?>
-							<div class="empty-state">No sponsor ad campaigns created yet. Click "+ New Sponsor Ad" to add your first campaign.</div>
+							<div class="empty-state">No active campaigns connected to the Google AdSense network. Ads are sourced automatically via the Google AdSense for Video API (<code>mock_adsense/serve_ad.php</code>).</div>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -1272,8 +1418,9 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 										<th>Student Viewer</th>
 										<th>Course &amp; Lesson</th>
 										<th>Instructor Beneficiary</th>
-										<th>Duration</th>
-										<th>Revenue Credited</th>
+										<th>Gross CPM</th>
+										<th>Teacher (<?= $instructorSharePercent ?>%)</th>
+										<th>Platform (<?= $platformSharePercent ?>%)</th>
 										<th>Timestamp</th>
 									</tr>
 								</thead>
@@ -1287,9 +1434,14 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 												<div style="font-size: 0.78rem; color: #64748b;">Lesson <?= htmlspecialchars($log['lesson_number'] ?? '1') ?>: <?= htmlspecialchars($log['lesson_title'] ?? '') ?></div>
 											</td>
 											<td><?= htmlspecialchars($log['instructor_name'] ?? 'Instructor') ?></td>
-											<td><?= $log['ad_duration_seconds'] ?>s break</td>
+											<td>
+												<span style="font-weight: 700; color: #0f172a;">$<?= number_format((float)($log['gross_cpm'] ?? 0.05), 4) ?></span>
+											</td>
 											<td>
 												<strong style="color: #16a34a; font-size: 0.95rem;">+$<?= number_format((float)$log['amount_earned'], 4) ?></strong>
+											</td>
+											<td>
+												<strong style="color: #4338ca; font-size: 0.95rem;">+$<?= number_format((float)($log['platform_earned'] ?? 0.0175), 4) ?></strong>
 											</td>
 											<td><?= date('M d, Y h:i:s A', strtotime($log['created_at'])) ?></td>
 										</tr>
@@ -1708,94 +1860,89 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 		</div>
 	</div>
 
+
 	<!-- ==========================================================
-	     MODAL 9: NEW SPONSOR AD CAMPAIGN MODAL
+	     MODAL 10: ADMIN PLATFORM TREASURY BANK WITHDRAWAL MODAL
 	     ========================================================== -->
-	<div id="adminNewAdModal" class="admin-modal-backdrop" style="display: none;" onclick="handleNewAdModalBackdrop(event)">
+	<div id="adminBankWithdrawModal" class="admin-modal-backdrop" style="display: none;" onclick="handleAdminBankWithdrawModalBackdrop(event)">
 		<div class="admin-modal-dialog" style="max-width: 520px;">
 			<div class="admin-modal-header">
 				<div>
 					<h3 class="admin-modal-title">
-						<img src="../assets/icons/video.svg" width="20" height="20" alt="New Ad">
-						New Sponsor Video Campaign
+						<img src="../assets/icons/dollar-sign.svg" width="20" height="20" alt="Bank Cash-Out">
+						Platform Treasury Bank Withdrawal
 					</h3>
-					<p class="admin-modal-subtitle">Add a sponsor advertisement to run during video lessons.</p>
+					<p class="admin-modal-subtitle">Withdraw Adsity platform earnings (<?= $platformSharePercent ?>% ad margin) directly to your bank account.</p>
 				</div>
-				<button type="button" class="admin-modal-close" onclick="closeAdminNewAdModal()" aria-label="Close modal">&times;</button>
+				<button type="button" class="admin-modal-close" onclick="closeAdminBankWithdrawModal()" aria-label="Close modal">&times;</button>
 			</div>
 
-			<form method="POST" action="manage_ads.php" enctype="multipart/form-data">
-				<input type="hidden" name="action" value="add_ad">
+			<form method="POST" action="admin_withdraw.php">
+				<input type="hidden" name="admin_withdraw" value="1">
 
 				<div class="admin-modal-body">
-					<div style="margin-bottom: 14px;">
-						<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-							Sponsor Brand / Company Name <span style="color: #ef4444;">*</span>
-						</label>
-						<input type="text" name="sponsor_name" required placeholder="e.g. JetBrains, Google Cloud, Figma" class="table-search-input" style="width: 100%; box-sizing: border-box;">
-					</div>
-
-					<div style="margin-bottom: 14px;">
-						<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-							Campaign Headline / Title <span style="color: #ef4444;">*</span>
-						</label>
-						<input type="text" name="campaign_title" required placeholder="e.g. Free Developer Pack for Students" class="table-search-input" style="width: 100%; box-sizing: border-box;">
-					</div>
-
-					<!-- Video File Picker from File Manager -->
-					<div style="margin-bottom: 14px;">
-						<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-							Sponsor Video File (Pick from your computer)
-						</label>
-						<div id="adFileDropzone" onclick="document.getElementById('adVideoFileInput').click()" style="border: 2px dashed #94a3b8; border-radius: 10px; padding: 18px 14px; text-align: center; background-color: #f8fafc; cursor: pointer; transition: all 0.2s ease;">
-							<input type="file" id="adVideoFileInput" name="ad_video_file" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov" style="display: none;" onchange="handleAdFileSelected(this)">
-							<img src="../assets/icons/video.svg" width="28" height="28" alt="Video File" style="opacity: 0.7; margin-bottom: 4px;">
-							<div id="adFilePickerTitle" style="font-size: 0.92rem; font-weight: 700; color: #1e293b;">
-								Click to open File Manager &amp; select Video
-							</div>
-							<div id="adFilePickerSub" style="font-size: 0.75rem; color: #64748b; margin-top: 3px;">
-								Supports MP4, WebM, MOV (Max 100MB) &bull; Recommended 15-second sponsor spot
-							</div>
-						</div>
-
-						<div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
-							<span style="font-size: 0.74rem; color: #64748b;">Or use existing path / web URL:</span>
-							<button type="button" onclick="toggleAdUrlInput()" style="background: none; border: none; font-size: 0.74rem; color: #4f46e5; text-decoration: underline; cursor: pointer;">
-								Toggle Custom Path
-							</button>
-						</div>
-						<input type="text" id="adVideoUrlInput" name="video_url" value="assets/ad/sample_ad.mp4" placeholder="assets/ad/sample_ad.mp4 or https://..." class="table-search-input" style="width: 100%; box-sizing: border-box; margin-top: 4px; display: none; font-size: 0.85rem;">
-					</div>
-
-					<div style="margin-bottom: 14px;">
-						<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-							Sponsor Website / Click-Through URL
-						</label>
-						<input type="url" name="click_url" placeholder="https://example.com/student-offer" class="table-search-input" style="width: 100%; box-sizing: border-box;">
-					</div>
-
-					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+					<!-- Balance Info Banner -->
+					<div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
 						<div>
-							<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-								CPM Rate ($ per impression)
-							</label>
-							<input type="number" step="0.0001" min="0.0001" name="cpm_rate" value="0.0500" class="table-search-input" style="width: 100%; box-sizing: border-box; font-weight: 700;">
+							<div style="font-size: 0.75rem; font-weight: 700; color: #065f46; text-transform: uppercase;">Available Treasury Balance</div>
+							<div style="font-size: 1.4rem; font-weight: 900; color: #047857;">$<?= number_format($platformAvailableBal, 2) ?></div>
 						</div>
-						<div>
-							<label style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-								Initial Status
-							</label>
-							<select name="status" class="table-select-filter" style="width: 100%; height: 42px;">
-								<option value="active" selected>Active (Serving)</option>
-								<option value="paused">Paused</option>
-							</select>
+						<div style="text-align: right;">
+							<span class="badge-count" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; font-weight: 700;">No Minimum</span>
 						</div>
+					</div>
+
+					<div style="margin-bottom: 14px;">
+						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+							<label for="adminWithdrawAmountInput" style="font-size: 0.85rem; font-weight: 700; color: #334155;">
+								Amount to Withdraw ($) <span style="color: #ef4444;">*</span>
+							</label>
+							<?php if ($platformAvailableBal > 0): ?>
+								<button type="button" onclick="setAdminWithdrawMax(<?= $platformAvailableBal ?>)" style="background: none; border: none; font-size: 0.75rem; font-weight: 700; color: #16a34a; cursor: pointer; text-decoration: underline;">
+									Withdraw Max ($<?= number_format($platformAvailableBal, 2) ?>)
+								</button>
+							<?php endif; ?>
+						</div>
+						<input type="number" step="0.01" min="0.01" max="<?= $platformAvailableBal ?>" name="amount" id="adminWithdrawAmountInput" required placeholder="0.00" class="table-search-input" style="width: 100%; box-sizing: border-box; font-size: 1.1rem; font-weight: 700;">
+						<small style="color: #64748b; font-size: 0.74rem;">Amount must be greater than $0.00 and cannot exceed available treasury.</small>
+					</div>
+
+					<div style="margin-bottom: 14px;">
+						<label for="adminBankNameInput" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+							Bank Name <span style="color: #ef4444;">*</span>
+						</label>
+						<input type="text" name="bank_name" id="adminBankNameInput" required placeholder="e.g. BDO Unibank, BPI, Metrobank, Wells Fargo, Chase" class="table-search-input" style="width: 100%; box-sizing: border-box;">
+					</div>
+
+					<div style="margin-bottom: 14px;">
+						<label for="adminAccountNameInput" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+							Account Holder Name <span style="color: #ef4444;">*</span>
+						</label>
+						<input type="text" name="account_name" id="adminAccountNameInput" required placeholder="e.g. Adsity Platform Foundation or Full Legal Name" class="table-search-input" style="width: 100%; box-sizing: border-box;">
+					</div>
+
+					<div style="margin-bottom: 14px;">
+						<label for="adminAccountNumberInput" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+							Bank Account Number / IBAN <span style="color: #ef4444;">*</span>
+						</label>
+						<input type="text" name="account_number" id="adminAccountNumberInput" required placeholder="e.g. 1092837465" class="table-search-input" style="width: 100%; box-sizing: border-box;">
+					</div>
+
+					<div style="margin-bottom: 16px;">
+						<label for="adminWithdrawNotesInput" style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+							Transfer Notes / Purpose <span style="font-weight: 400; color: #64748b;">(Optional)</span>
+						</label>
+						<textarea name="notes" id="adminWithdrawNotesInput" rows="2" placeholder="e.g. Operational funds cash-out, server hosting reserve, school project demo withdrawal" class="review-textarea"></textarea>
+					</div>
+
+					<div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.76rem; color: #64748b;">
+						💡 <strong>Internal Ledger Protocol:</strong> Withdrawals are recorded in the administrator bank ledger with a unique trace reference (<span style="font-family: monospace;">BNK-YYYY-XXXX</span>). Funds are deducted immediately from platform available balance.
 					</div>
 
 					<div class="admin-modal-footer">
-						<button type="button" class="btn-table-action btn-table-action--preview" onclick="closeAdminNewAdModal()">Cancel</button>
-						<button type="submit" class="btn-process-payout" style="background-color: #16a34a; padding: 9px 18px;">
-							Create Sponsor Campaign
+						<button type="button" class="btn-table-action btn-table-action--preview" onclick="closeAdminBankWithdrawModal()">Cancel</button>
+						<button type="submit" class="btn-process-payout" style="background-color: #16a34a; padding: 9px 18px;" <?= $platformAvailableBal <= 0 ? 'disabled style="background-color: #94a3b8; cursor: not-allowed;"' : '' ?>>
+							Confirm Bank Transfer
 						</button>
 					</div>
 				</div>
@@ -1952,7 +2099,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			const instructorInput = document.getElementById('instructorRevShareInput');
 			const platformDisplay = document.getElementById('platformRevShareDisplay');
 			if (instructorInput && platformDisplay) {
-				let val = parseInt(instructorInput.value, 10) || 70;
+				let val = parseInt(instructorInput.value, 10) || 65;
 				if (val < 1) val = 1;
 				if (val > 99) val = 99;
 				platformDisplay.value = 100 - val;
@@ -2285,122 +2432,39 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			}
 		}
 
-		// --- Modal 8: New Sponsor Ad Modal ---
-		function openAdminNewAdModal() {
-			const modal = document.getElementById('adminNewAdModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+		// Admin Bank Withdrawal Modal Handlers
+		function openAdminBankWithdrawModal() {
+			const modal = document.getElementById('adminBankWithdrawModal');
+			if (modal) {
+				modal.style.display = 'flex';
+				document.body.style.overflow = 'hidden';
+				const amtInput = document.getElementById('adminWithdrawAmountInput');
+				if (amtInput) {
+					amtInput.focus();
+				}
+			}
 		}
 
-		function closeAdminNewAdModal() {
-			const modal = document.getElementById('adminNewAdModal');
+		function closeAdminBankWithdrawModal() {
+			const modal = document.getElementById('adminBankWithdrawModal');
 			if (modal) {
 				modal.style.display = 'none';
 				document.body.style.overflow = '';
-				resetAdFilePicker();
 			}
 		}
 
-		function handleNewAdModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminNewAdModal') {
-				closeAdminNewAdModal();
+		function handleAdminBankWithdrawModalBackdrop(event) {
+			if (event.target && event.target.id === 'adminBankWithdrawModal') {
+				closeAdminBankWithdrawModal();
 			}
 		}
 
-		function handleAdFileSelected(input) {
-			const file = input.files && input.files[0];
-			if (file) {
-				const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-				const titleEl = document.getElementById('adFilePickerTitle');
-				const subEl = document.getElementById('adFilePickerSub');
-				const dropzone = document.getElementById('adFileDropzone');
-				if (titleEl) {
-					titleEl.innerHTML = 'Selected: <span style="color: #15803d; word-break: break-all;">' + escapeHtml(file.name) + '</span>';
-				}
-				if (subEl) {
-					subEl.textContent = sizeMB + ' MB \u2022 Ready to upload (Click to change file)';
-				}
-				if (dropzone) {
-					dropzone.style.borderColor = '#16a34a';
-					dropzone.style.backgroundColor = '#f0fdf4';
-				}
-				const urlInput = document.getElementById('adVideoUrlInput');
-				if (urlInput) {
-					urlInput.value = '';
-				}
+		function setAdminWithdrawMax(maxVal) {
+			const amtInput = document.getElementById('adminWithdrawAmountInput');
+			if (amtInput) {
+				amtInput.value = parseFloat(maxVal).toFixed(2);
 			}
 		}
-
-		function toggleAdUrlInput() {
-			const urlInput = document.getElementById('adVideoUrlInput');
-			if (urlInput) {
-				const isHidden = (urlInput.style.display === 'none' || getComputedStyle(urlInput).display === 'none');
-				urlInput.style.display = isHidden ? 'block' : 'none';
-				if (isHidden) {
-					urlInput.focus();
-				}
-			}
-		}
-
-		function resetAdFilePicker() {
-			const fileInput = document.getElementById('adVideoFileInput');
-			if (fileInput) {
-				fileInput.value = '';
-			}
-			const titleEl = document.getElementById('adFilePickerTitle');
-			if (titleEl) {
-				titleEl.textContent = 'Click to open File Manager & select Video';
-			}
-			const subEl = document.getElementById('adFilePickerSub');
-			if (subEl) {
-				subEl.textContent = 'Supports MP4, WebM, MOV (Max 100MB) \u2022 Recommended 15-second sponsor spot';
-			}
-			const dropzone = document.getElementById('adFileDropzone');
-			if (dropzone) {
-				dropzone.style.borderColor = '#94a3b8';
-				dropzone.style.backgroundColor = '#f8fafc';
-			}
-			const urlInput = document.getElementById('adVideoUrlInput');
-			if (urlInput && !urlInput.value) {
-				urlInput.value = 'assets/ad/sample_ad.mp4';
-			}
-		}
-
-		// Drag and drop support for ad file dropzone
-		document.addEventListener('DOMContentLoaded', function() {
-			const dropzone = document.getElementById('adFileDropzone');
-			const fileInput = document.getElementById('adVideoFileInput');
-			if (dropzone && fileInput) {
-				['dragenter', 'dragover'].forEach(function(eventName) {
-					dropzone.addEventListener(eventName, function(e) {
-						e.preventDefault();
-						e.stopPropagation();
-						dropzone.style.borderColor = '#16a34a';
-						dropzone.style.backgroundColor = '#f0fdf4';
-					}, false);
-				});
-
-				['dragleave', 'dragend'].forEach(function(eventName) {
-					dropzone.addEventListener(eventName, function(e) {
-						e.preventDefault();
-						e.stopPropagation();
-						if (!fileInput.files || !fileInput.files.length) {
-							dropzone.style.borderColor = '#94a3b8';
-							dropzone.style.backgroundColor = '#f8fafc';
-						}
-					}, false);
-				});
-
-				dropzone.addEventListener('drop', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-						fileInput.files = e.dataTransfer.files;
-						handleAdFileSelected(fileInput);
-					}
-				}, false);
-			}
-		});
 
 		// Keyboard ESC listener to close open modals
 		window.addEventListener('keydown', function(event) {
@@ -2412,7 +2476,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 				closeAdminExportModal();
 				closeAdminRejectCourseModal();
 				closeAdminRevokeCertModal();
-				closeAdminNewAdModal();
+				closeAdminBankWithdrawModal();
 				closeSidebarMobile();
 			}
 		});

@@ -128,9 +128,9 @@ CREATE TABLE IF NOT EXISTS certificates (
 -- 9. Instructor Wallets Table
 CREATE TABLE IF NOT EXISTS instructor_wallets (
     instructor_id INT PRIMARY KEY,
-    total_earned DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    available_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    total_withdrawn DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+    available_balance DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+    total_withdrawn DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_wallet_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS platform_settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 13. Ad Activity Logs Table (Tracks completed sponsor ad impressions and instructor earnings)
+-- 13. Ad Activity Logs Table (Tracks completed sponsor ad impressions, gross CPM, and instructor/platform split)
 CREATE TABLE IF NOT EXISTS ad_activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
@@ -182,7 +182,9 @@ CREATE TABLE IF NOT EXISTS ad_activity_logs (
     student_id INT NOT NULL,
     instructor_id INT NOT NULL,
     ad_id INT NULL,
-    amount_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
+    gross_cpm DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
+    amount_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0325,
+    platform_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0175,
     ad_duration_seconds INT NOT NULL DEFAULT 15,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_aal_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
@@ -191,5 +193,39 @@ CREATE TABLE IF NOT EXISTS ad_activity_logs (
     CONSTRAINT fk_aal_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_aal_ad FOREIGN KEY (ad_id) REFERENCES sponsor_ads(id) ON DELETE SET NULL
 );
+
+-- 14. Platform Treasury Wallet Table (Tracks platform net earnings, available balance, and withdrawals)
+CREATE TABLE IF NOT EXISTS platform_wallet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    total_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+    available_balance DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+    total_withdrawn DECIMAL(10,4) NOT NULL DEFAULT 0.0000,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Seed initial Platform Treasury Wallet record
+INSERT INTO platform_wallet (id, total_earned, available_balance, total_withdrawn) 
+VALUES (1, 0.0000, 0.0000, 0.0000) 
+ON DUPLICATE KEY UPDATE id=id;
+
+-- 15. Admin Bank Withdrawals Table (Manual internal ledger for administrator bank cash-outs)
+CREATE TABLE IF NOT EXISTS admin_withdrawals (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    amount DECIMAL(10,4) NOT NULL,
+    bank_name VARCHAR(100) NOT NULL,
+    account_name VARCHAR(150) NOT NULL,
+    account_number VARCHAR(100) NOT NULL,
+    transaction_reference VARCHAR(100) NULL,
+    notes TEXT NULL,
+    status ENUM('completed', 'pending') NOT NULL DEFAULT 'completed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_admin_withdrawals_admin FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Seed initial Mock Google AdSense for Video Campaign (Coca-Cola)
+INSERT INTO sponsor_ads (id, sponsor_name, campaign_title, video_url, click_url, cpm_rate, status, total_impressions) VALUES
+(1, 'Coca-Cola (Google AdSense)', 'Coca-Cola Real Magic • Refresh Your Study Break', 'mock_adsense/assets/sample_ad.mp4', 'https://www.coca-cola.com', 0.0500, 'active', 0)
+ON DUPLICATE KEY UPDATE id=id;
 
 
