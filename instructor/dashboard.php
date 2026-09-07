@@ -285,7 +285,17 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-link">
 															<strong><?= htmlspecialchars($c['title']) ?></strong>
 														</a>
-														<div style="font-size: 0.8rem; color: #64748b;"><?= htmlspecialchars(substr($c['description'], 0, 55)) ?>...</div>
+														<div style="margin-top: 3px; display: flex; align-items: center; gap: 6px;">
+															<?php $cStatus = $c['status'] ?? 'published'; ?>
+															<?php if ($cStatus === 'published'): ?>
+																<span style="font-size: 0.7rem; font-weight: 700; color: #15803d; background-color: #dcfce7; padding: 1px 7px; border-radius: 9999px;">● Live</span>
+															<?php elseif ($cStatus === 'pending_review'): ?>
+																<span style="font-size: 0.7rem; font-weight: 700; color: #b45309; background-color: #fef3c7; padding: 1px 7px; border-radius: 9999px;">⏳ In Review</span>
+															<?php elseif ($cStatus === 'rejected'): ?>
+																<span style="font-size: 0.7rem; font-weight: 700; color: #b91c1c; background-color: #fee2e2; padding: 1px 7px; border-radius: 9999px;">⚠️ Revisions</span>
+															<?php endif; ?>
+															<span style="font-size: 0.78rem; color: #64748b;"><?= htmlspecialchars(substr($c['description'], 0, 45)) ?>...</span>
+														</div>
 													</div>
 												</div>
 											</td>
@@ -482,8 +492,22 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 															<strong style="font-size: 1rem;"><?= htmlspecialchars($c['title']) ?></strong>
 														</a>
 														<div style="font-size: 0.82rem; color: #64748b; margin-top: 3px; max-width: 320px;"><?= htmlspecialchars($c['description']) ?></div>
+														<div style="margin-top: 5px; display: flex; align-items: center; gap: 6px;">
+															<?php $cStatus = $c['status'] ?? 'published'; ?>
+															<?php if ($cStatus === 'published'): ?>
+																<span style="font-size: 0.72rem; font-weight: 700; color: #15803d; background-color: #dcfce7; padding: 2px 8px; border-radius: 9999px;">● Live in Catalog</span>
+															<?php elseif ($cStatus === 'pending_review'): ?>
+																<span style="font-size: 0.72rem; font-weight: 700; color: #b45309; background-color: #fef3c7; padding: 2px 8px; border-radius: 9999px;">⏳ Pending Admin Review</span>
+															<?php elseif ($cStatus === 'rejected'): ?>
+																<span style="font-size: 0.72rem; font-weight: 700; color: #b91c1c; background-color: #fee2e2; padding: 2px 8px; border-radius: 9999px;">⚠️ Revisions Requested</span>
+															<?php endif; ?>
+														</div>
+														<?php if ($cStatus === 'rejected' && !empty($c['rejection_reason'])): ?>
+															<div style="font-size: 0.76rem; color: #dc2626; margin-top: 4px; background-color: #fff1f2; padding: 4px 8px; border-radius: 4px; border-left: 3px solid #e11d48; max-width: 320px;">
+																<strong>Admin Feedback:</strong> <?= htmlspecialchars($c['rejection_reason']) ?>
+															</div>
+														<?php endif; ?>
 													</div>
-												</div>
 											</td>
 											<td>
 												<span class="category-pill"><?= htmlspecialchars($c['category']) ?></span>

@@ -37,6 +37,8 @@ try {
                         c.category,
                         c.thumbnail,
                         c.total_lessons,
+                        c.status,
+                        c.rejection_reason,
                         c.created_at,
                         COUNT(DISTINCT e.user_id) AS enrolled_students,
                         COUNT(DISTINCT cert.id) AS certificates_issued

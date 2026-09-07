@@ -66,9 +66,9 @@ $totalLessons = count($lessonTitles);
 try {
     $pdo = getConnection();
 
-    // 2. Insert Course record
-    $sql = "INSERT INTO courses (title, description, category, thumbnail, total_lessons, instructor_id, assessment_type, assessment_instructions)
-            VALUES (:title, :description, :category, :thumbnail, :total_lessons, :instructor_id, :assessment_type, :assessment_instructions)";
+    // 2. Insert Course record (starts in pending_review for admin moderation)
+    $sql = "INSERT INTO courses (title, description, category, thumbnail, total_lessons, instructor_id, assessment_type, assessment_instructions, status)
+            VALUES (:title, :description, :category, :thumbnail, :total_lessons, :instructor_id, :assessment_type, :assessment_instructions, 'pending_review')";
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':title', htmlspecialchars($title));

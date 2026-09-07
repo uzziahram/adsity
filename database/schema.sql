@@ -44,8 +44,13 @@ CREATE TABLE IF NOT EXISTS courses (
     instructor_id INT NULL,
     assessment_type ENUM('github_repo', 'file_upload', 'live_url') DEFAULT 'github_repo',
     assessment_instructions TEXT NULL,
+    status ENUM('draft', 'pending_review', 'published', 'rejected') NOT NULL DEFAULT 'published',
+    rejection_reason TEXT NULL,
+    reviewed_at TIMESTAMP NULL,
+    reviewed_by INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_courses_instructors FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT fk_courses_instructors FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_courses_reviewed_by FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- 4. Enrollments Table
@@ -110,8 +115,13 @@ CREATE TABLE IF NOT EXISTS certificates (
     course_id INT NOT NULL,
     certificate_code VARCHAR(50) UNIQUE NOT NULL,
     issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('valid', 'revoked') NOT NULL DEFAULT 'valid',
+    revocation_reason TEXT NULL,
+    revoked_at TIMESTAMP NULL,
+    revoked_by INT NULL,
     CONSTRAINT fk_cert_users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_cert_courses FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cert_revoked_by FOREIGN KEY (revoked_by) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY uq_user_cert_course (user_id, course_id)
 );
 
@@ -143,20 +153,43 @@ CREATE TABLE IF NOT EXISTS payout_requests (
     CONSTRAINT fk_payout_admin FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- 11. Ad Activity Logs Table (Tracks completed sponsor ad impressions and instructor earnings)
+-- 11. Sponsor Ads Table
+CREATE TABLE IF NOT EXISTS sponsor_ads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sponsor_name VARCHAR(150) NOT NULL,
+    campaign_title VARCHAR(200) NOT NULL,
+    video_url VARCHAR(255) NOT NULL,
+    click_url VARCHAR(255) NULL,
+    cpm_rate DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
+    status ENUM('active', 'paused') DEFAULT 'active',
+    total_impressions INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 12. Platform Settings Table
+CREATE TABLE IF NOT EXISTS platform_settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_value VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 13. Ad Activity Logs Table (Tracks completed sponsor ad impressions and instructor earnings)
 CREATE TABLE IF NOT EXISTS ad_activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT NOT NULL,
     lesson_id INT NOT NULL,
     student_id INT NOT NULL,
     instructor_id INT NOT NULL,
+    ad_id INT NULL,
     amount_earned DECIMAL(10,4) NOT NULL DEFAULT 0.0500,
     ad_duration_seconds INT NOT NULL DEFAULT 15,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_aal_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     CONSTRAINT fk_aal_lesson FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE,
     CONSTRAINT fk_aal_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_aal_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_aal_instructor FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_aal_ad FOREIGN KEY (ad_id) REFERENCES sponsor_ads(id) ON DELETE SET NULL
 );
 
 

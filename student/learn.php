@@ -98,14 +98,28 @@ try {
     exit;
 }
 
-// Prepare video URL: Ensure clean path
-$rawVideoPath = $activeLesson['video_path'] ?? 'assets/ad/sample_ad.mp4';
-$lessonVideoSrc = str_starts_with($rawVideoPath, 'http') || str_starts_with($rawVideoPath, '/')
-    ? $rawVideoPath
-    : '../' . $rawVideoPath;
+// Select an active sponsor ad if available
+$activeSponsorAd = null;
+try {
+    $stmtSponsor = $pdo->query("SELECT id, sponsor_name, campaign_title, video_url, click_url FROM sponsor_ads WHERE status = 'active' ORDER BY RAND() LIMIT 1");
+    $activeSponsorAd = $stmtSponsor ? $stmtSponsor->fetch() : null;
+} catch (Exception $e) {
+    // fallback
+}
 
-// Ad video asset
-$adVideoSrc = '../assets/ad/sample_ad.mp4';
+$adVideoSrc      = '../assets/ad/sample_ad.mp4';
+$activeAdId      = 0;
+$sponsorName     = 'Adsity Edu Partner';
+$sponsorClickUrl = '';
+if ($activeSponsorAd) {
+    $activeAdId      = (int)$activeSponsorAd['id'];
+    $sponsorName     = $activeSponsorAd['sponsor_name'];
+    $sponsorClickUrl = $activeSponsorAd['click_url'] ?? '';
+    $rawAdPath       = $activeSponsorAd['video_url'];
+    $adVideoSrc      = str_starts_with($rawAdPath, 'http') || str_starts_with($rawAdPath, '/')
+        ? $rawAdPath
+        : '../' . $rawAdPath;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -169,7 +183,16 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 			<div class="video-stage-container">
 
 				<!-- 1. SPONSOR AD CONTAINER (Plays First) -->
-				<div id="adPlayerWrapper" class="ad-player-wrapper">
+				<div id="adPlayerWrapper" class="ad-player-wrapper" style="position: relative;">
+					<!-- Sponsor Badge Overlay -->
+					<div class="ad-sponsor-badge" style="position: absolute; top: 16px; left: 16px; z-index: 10; background: rgba(15, 23, 42, 0.85); color: #f8fafc; padding: 6px 14px; border-radius: 6px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(4px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);">
+						<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #10b981;"></span>
+						<span>Sponsored by <?= htmlspecialchars($sponsorName) ?></span>
+						<?php if (!empty($sponsorClickUrl)): ?>
+							<a href="<?= htmlspecialchars($sponsorClickUrl) ?>" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline; margin-left: 6px; font-size: 0.78rem;">Learn More &rarr;</a>
+						<?php endif; ?>
+					</div>
+
 					<video 
 						id="adVideoPlayer" 
 						class="video-element" 
@@ -449,6 +472,8 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 			transitionFromAdToLesson();
 		});
 
+		const ACTIVE_AD_ID = <?= (int)$activeAdId ?>;
+
 		function recordAdActivity() {
 			fetch('record_ad_activity.php', {
 				method: 'POST',
@@ -456,6 +481,7 @@ $adVideoSrc = '../assets/ad/sample_ad.mp4';
 				body: JSON.stringify({
 					course_id: COURSE_ID,
 					lesson_id: CURRENT_LESSON_ID,
+					ad_id: ACTIVE_AD_ID,
 					duration_watched: Math.round(adVideo.currentTime || 15)
 				})
 			})

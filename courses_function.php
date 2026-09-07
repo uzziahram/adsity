@@ -20,12 +20,12 @@ try {
     $pdo = getConnection();
 
     // Fetch distinct categories for filter buttons
-    $stmtCat = $pdo->prepare("SELECT DISTINCT category FROM courses WHERE category IS NOT NULL ORDER BY category ASC");
+    $stmtCat = $pdo->prepare("SELECT DISTINCT category FROM courses WHERE category IS NOT NULL AND status = 'published' ORDER BY category ASC");
     $stmtCat->execute();
     $categories = $stmtCat->fetchAll(PDO::FETCH_COLUMN);
 
-    // Build courses query with optional search & category filter
-    $sql = "SELECT id, title, description, category, thumbnail, total_lessons, created_at FROM courses WHERE 1=1";
+    // Build courses query with optional search & category filter (only published courses)
+    $sql = "SELECT id, title, description, category, thumbnail, total_lessons, created_at FROM courses WHERE status = 'published'";
     $params = [];
 
     if ($search !== '') {
