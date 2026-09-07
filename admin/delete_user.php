@@ -1,16 +1,32 @@
 <?php
 
-require '../database/config.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-if (!isset($_POST['delete_user'])) {
-    header('Location: dashboard.php');
+// Protect Admin Panel: Must be logged in as admin
+if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
+    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
     exit;
 }
 
-$userId = $_POST['user_id'] ?? null;
+require_once __DIR__ . '/../database/config.php';
 
-if (!$userId) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid user ID.'));
+if (!isset($_POST['delete_user'])) {
+    header('Location: dashboard.php#users');
+    exit;
+}
+
+$userId      = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+$currentAdmin = (int)$_SESSION['user_id'];
+
+if ($userId <= 0) {
+    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid user ID.') . '#users');
+    exit;
+}
+
+if ($userId === $currentAdmin) {
+    header('Location: dashboard.php?status=error&message=' . urlencode('You cannot delete your own administrative account.') . '#users');
     exit;
 }
 
@@ -23,9 +39,13 @@ try {
     $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
     $stmt->execute();
 
-    header('Location: dashboard.php?status=success&message=' . urlencode('User deleted successfully.'));
+    if ($stmt->rowCount() > 0) {
+        header('Location: dashboard.php?status=success&message=' . urlencode('User removed from platform successfully.') . '#users');
+    } else {
+        header('Location: dashboard.php?status=error&message=' . urlencode('User could not be deleted or is a protected administrator.') . '#users');
+    }
     exit;
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()));
+    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()) . '#users');
     exit;
 }
