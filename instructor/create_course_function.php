@@ -71,6 +71,7 @@ $totalLessons = count($lessonTitles);
 
 try {
     $pdo = getConnection();
+    $pdo->beginTransaction();
 
     // 2. Insert Course record (starts in pending_review for admin moderation)
     $sql = "INSERT INTO courses (title, description, category, thumbnail, total_lessons, instructor_id, assessment_type, assessment_instructions, status)
@@ -181,10 +182,15 @@ try {
         $stmtLesson->execute();
     }
 
-    header('Location: dashboard.php?status=success&message=' . urlencode('Multi-video course "' . $title . '" published with ' . $totalLessons . ' lessons!'));
+    $pdo->commit();
+
+    header('Location: dashboard.php?status=success&message=' . urlencode('Multi-video course "' . $title . '" published with ' . $totalLessons . ' lessons!') . '#courses');
     exit;
 
 } catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('Instructor create course error: ' . $e->getMessage());
     header('Location: create_course.php?status=error&message=' . urlencode('An error occurred while saving your course. Please try again.'));
     exit;

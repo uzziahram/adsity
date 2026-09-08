@@ -15,7 +15,12 @@ $message = $_GET['message'] ?? null;
 
 $studentId = $_SESSION['user_id'];
 
-$student          = null;
+$student = [
+    'id'         => $studentId,
+    'full_name'  => $_SESSION['full_name'] ?? 'Student',
+    'email'      => $_SESSION['email'] ?? '',
+    'created_at' => null
+];
 $inProgress       = [];
 $completedCourses = [];
 $certificates     = [];
@@ -32,7 +37,10 @@ try {
     $stmtUser = $pdo->prepare("SELECT id, full_name, email, created_at FROM users WHERE id = :id AND role_id = 3 LIMIT 1");
     $stmtUser->bindValue(':id', $studentId, PDO::PARAM_INT);
     $stmtUser->execute();
-    $student = $stmtUser->fetch();
+    $userData = $stmtUser->fetch();
+    if ($userData) {
+        $student = $userData;
+    }
 
     if ($student) {
         $studentId = $student['id'];
@@ -68,7 +76,8 @@ try {
                             c.category,
                             c.thumbnail,
                             c.total_lessons,
-                            cert.certificate_code
+                            cert.certificate_code,
+                            cert.status AS cert_status
                         FROM enrollments e
                         JOIN courses c ON e.course_id = c.id
                         LEFT JOIN certificates cert ON (cert.user_id = e.user_id AND cert.course_id = c.id)
@@ -83,6 +92,9 @@ try {
         $sqlCert = "SELECT 
                         cert.id AS cert_id,
                         cert.certificate_code,
+                        cert.status,
+                        cert.revocation_reason,
+                        cert.revoked_at,
                         cert.issued_at,
                         c.id AS course_id,
                         c.title AS course_title,
@@ -99,7 +111,10 @@ try {
 
         $inProgressCount  = count($inProgress);
         $completedCount   = count($completedCourses);
-        $certCount        = count($certificates);
+        $validCerts       = array_filter($certificates, function($c) {
+            return ($c['status'] ?? 'valid') !== 'revoked';
+        });
+        $certCount        = count($validCerts);
         $totalEnrolled    = $inProgressCount + $completedCount;
     }
 } catch (PDOException $e) {

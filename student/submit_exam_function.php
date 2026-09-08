@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 requireAuth('student', '../login.php?status=error&message=' . urlencode('Please log in with a student account.'));
 
 require_once __DIR__ . '/../database/config.php';
@@ -10,7 +10,8 @@ $courseId  = $_GET['course_id'] ?? ($_POST['course_id'] ?? null);
 $status    = $_GET['status'] ?? null;
 $message   = $_GET['message'] ?? null;
 
-$course = null;
+/** @var array<string, mixed> $course */
+$course = [];
 
 if (!$courseId) {
     header('Location: dashboard.php?status=error&message=' . urlencode('Invalid course specified.'));
@@ -87,6 +88,9 @@ try {
 
         if ($assessmentType === 'github_repo') {
             $githubUrl = trim($_POST['github_url'] ?? '');
+            if ($githubUrl !== '' && !preg_match('#^https?://#i', $githubUrl)) {
+                $githubUrl = 'https://' . $githubUrl;
+            }
             if ($githubUrl === '' || !filter_var($githubUrl, FILTER_VALIDATE_URL)) {
                 header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Please provide a valid GitHub repository URL.'));
                 exit;
@@ -95,6 +99,9 @@ try {
 
         } elseif ($assessmentType === 'live_url') {
             $liveUrl = trim($_POST['live_url'] ?? '');
+            if ($liveUrl !== '' && !preg_match('#^https?://#i', $liveUrl)) {
+                $liveUrl = 'https://' . $liveUrl;
+            }
             if ($liveUrl === '' || !filter_var($liveUrl, FILTER_VALIDATE_URL)) {
                 header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Please provide a valid live demo URL.'));
                 exit;
@@ -103,7 +110,11 @@ try {
 
         } elseif ($assessmentType === 'file_upload') {
             if (!isset($_FILES['project_file']) || $_FILES['project_file']['error'] !== UPLOAD_ERR_OK) {
-                header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Please select a valid project file to upload.'));
+                $errCode = $_FILES['project_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $errMsg = ($errCode === UPLOAD_ERR_INI_SIZE || $errCode === UPLOAD_ERR_FORM_SIZE)
+                    ? 'The uploaded file is too large. Please upload a smaller archive or file.'
+                    : 'Please select a valid project file to upload.';
+                header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode($errMsg));
                 exit;
             }
 

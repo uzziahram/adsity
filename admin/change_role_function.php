@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 requireAuth('admin', '../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
 
 require_once __DIR__ . '/../database/config.php';

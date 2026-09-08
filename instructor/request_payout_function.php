@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 requireAuth('instructor', '../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
 
 require_once __DIR__ . '/../database/config.php';

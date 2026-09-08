@@ -589,12 +589,12 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 									<?php foreach ($allCourses as $course): ?>
 										<tr class="course-row" data-title="<?= htmlspecialchars(strtolower($course['title'])) ?>" data-instructor="<?= htmlspecialchars(strtolower($course['instructor_name'] ?? '')) ?>" data-category="<?= htmlspecialchars($course['category'] ?? '') ?>" data-status="<?= htmlspecialchars($course['status'] ?? 'published') ?>">
 											<td>
-												<div style="display: flex; align-items: center; gap: 12px;">
-													<?php if (!empty($course['thumbnail'])): ?>
-														<img src="../<?= htmlspecialchars($course['thumbnail']) ?>" alt="Thumb" style="width: 44px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0;">
-													<?php else: ?>
-														<div style="width: 44px; height: 32px; border-radius: 6px; background-color: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #94a3b8; font-weight: 700;">VID</div>
-													<?php endif; ?>
+													<?php 
+													$cThumbSrc = !empty($course['thumbnail']) && str_starts_with($course['thumbnail'], 'uploads/')
+														? '../' . $course['thumbnail']
+														: (!empty($course['thumbnail']) ? '../assets/adsity_assets/' . $course['thumbnail'] : '../assets/adsity_assets/Web_Development_Basics.png');
+													?>
+													<img src="<?= htmlspecialchars($cThumbSrc) ?>" alt="Thumb" style="width: 44px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0;" onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'">
 													<div>
 														<strong style="color: #0f172a; font-size: 0.95rem; display: block; max-width: 230px; line-height: 1.3;">
 															<?= htmlspecialchars($course['title']) ?>
@@ -1777,6 +1777,8 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 		</div>
 	</div>
+
+	<!-- ==========================================================
 	     MODAL 7: REJECT / REVISION COURSE MODAL
 	     ========================================================== -->
 	<div id="adminRejectCourseModal" class="admin-modal-backdrop" style="display: none;" onclick="handleRejectCourseModalBackdrop(event)">
@@ -1904,6 +1906,12 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 						</div>
 					</div>
 
+					<?php if ($platformAvailableBal <= 0): ?>
+						<div style="background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+							<span>⚠️ No platform treasury balance is currently available to withdraw ($0.00). Funds accumulate automatically as students view sponsor advertisements in video lessons.</span>
+						</div>
+					<?php endif; ?>
+
 					<div style="margin-bottom: 14px;">
 						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
 							<label for="adminWithdrawAmountInput" style="font-size: 0.85rem; font-weight: 700; color: #334155;">
@@ -1915,7 +1923,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 								</button>
 							<?php endif; ?>
 						</div>
-						<input type="number" step="0.01" min="0.01" max="<?= $platformAvailableBal ?>" name="amount" id="adminWithdrawAmountInput" required placeholder="0.00" class="table-search-input" style="width: 100%; box-sizing: border-box; font-size: 1.1rem; font-weight: 700;">
+						<input type="number" step="0.01" min="0.01" <?= $platformAvailableBal > 0 ? 'max="' . $platformAvailableBal . '"' : 'disabled' ?> name="amount" id="adminWithdrawAmountInput" required placeholder="0.00" class="table-search-input" style="width: 100%; box-sizing: border-box; font-size: 1.1rem; font-weight: 700;">
 						<small style="color: #64748b; font-size: 0.74rem;">Amount must be greater than $0.00 and cannot exceed available treasury.</small>
 					</div>
 
@@ -2106,8 +2114,8 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.querySelectorAll('#tab-users .filter-pill').forEach(function(pill) {
 				pill.classList.remove('active');
 			});
-			if (event && event.currentTarget) {
-				event.currentTarget.classList.add('active');
+			if (window.event && window.event.currentTarget) {
+				window.event.currentTarget.classList.add('active');
 			}
 			filterUsersTable();
 		}
@@ -2144,8 +2152,8 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.querySelectorAll('#tab-payouts .filter-pill').forEach(function(pill) {
 				pill.classList.remove('active');
 			});
-			if (event && event.currentTarget) {
-				event.currentTarget.classList.add('active');
+			if (window.event && window.event.currentTarget) {
+				window.event.currentTarget.classList.add('active');
 			}
 
 			const rows = document.querySelectorAll('.payout-row');
@@ -2355,7 +2363,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.getElementById('modalRevokeCertId').value = certId;
 			document.getElementById('modalRevokeCertCode').textContent = certCode;
 			document.getElementById('modalRevokeStudentName').textContent = studentName;
-			document.getElementById('modalRejectReason') ? (document.getElementById('modalRejectReason').value = '') : null;
+			document.getElementById('modalRevokeReason') ? (document.getElementById('modalRevokeReason').value = '') : null;
 
 			AdsityUI.openModal('adminRevokeCertModal');
 		}

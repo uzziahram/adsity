@@ -519,7 +519,8 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 														<span>Download File</span>
 													</a>
 												<?php else: ?>
-													<a href="<?= htmlspecialchars($s['submission_value']) ?>" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+													<?php $safeDeliverableUrl = preg_match('#^https?://#i', $s['submission_value']) ? $s['submission_value'] : 'https://' . $s['submission_value']; ?>
+													<a href="<?= htmlspecialchars($safeDeliverableUrl) ?>" target="_blank" rel="noopener noreferrer" style="color: var(--primary-blue); font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
 														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Link">
 														<span>View Deliverable ↗</span>
 													</a>

@@ -303,6 +303,15 @@ body {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .course-card .img-placeholder,
@@ -468,11 +477,16 @@ body {
   font-family: var(--font-main);
   transition: background-color 0.18s ease, transform 0.18s ease;
   user-select: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-start-now:hover {
   background-color: #16a34a;
   transform: scale(1.04);
+  color: #ffffff;
 }
 
 .btn-start-now:active {
@@ -561,6 +575,9 @@ body {
   box-sizing: border-box;
   background-color: transparent;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 }
 
 .skill-card:hover {
@@ -823,13 +840,6 @@ body {
 .footer {
   background-color: #ffffff;
   font-family: inherit;
-}
-
-/* Top Decorative Accent Bar */
-.footer-accent-bar {
-  height: 12px;
-  width: 100%;
-  background: linear-gradient(to right, #e73646 0%, #e73646 10%, #2980b9 10%, #3498db 55%, #2ecc71 58%, #2ecc71 100%);
 }
 
 /* Main Footer Content */

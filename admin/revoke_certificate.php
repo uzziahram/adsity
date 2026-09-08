@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 requireAuth('admin', '../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['certificate_id'], $_POST['action'])) {

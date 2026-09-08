@@ -5,19 +5,26 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // 1. Authentication Guard: Must be logged in as a student
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {
+$currentUserId   = (int)($_SESSION['user_id'] ?? 0);
+$currentUserRole = $_SESSION['role_name'] ?? '';
+$isStudent       = ($currentUserRole === 'student');
+$isInstructor    = ($currentUserRole === 'instructor');
+$isAdmin         = ($currentUserRole === 'admin');
+
+// 1. Authentication Guard: Must be logged in as student, or course instructor/admin in preview
+if (!$currentUserId || (!$isStudent && !$isInstructor && !$isAdmin)) {
     $courseId = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
-    header('Location: ../login.php?redirect_course=' . $courseId . '&status=error&message=' . urlencode('Please log in as a student to access the classroom.'));
+    header('Location: ../login.php?redirect_course=' . $courseId . '&status=error&message=' . urlencode('Please log in to access the classroom.'));
     exit;
 }
 
 require_once __DIR__ . '/../database/config.php';
 
-$studentId = (int)$_SESSION['user_id'];
+$studentId = $currentUserId;
 $courseId  = isset($_GET['course_id']) ? (int)$_GET['course_id'] : 0;
 
 if ($courseId <= 0) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid course specified.'));
+    header('Location: ' . ($isInstructor ? '../instructor/dashboard.php' : 'dashboard.php') . '?status=error&message=' . urlencode('Invalid course specified.'));
     exit;
 }
 
@@ -26,28 +33,39 @@ $lessons = [];
 $completedLessonIds = [];
 $activeLesson = null;
 $allLessonsCompleted = false;
+$isInstructorPreview = false;
 
 try {
     $pdo = getConnection();
 
-    // 2. Verify Enrollment
-    $stmtEnr = $pdo->prepare("SELECT id, progress_percent, status FROM enrollments WHERE user_id = :uid AND course_id = :cid LIMIT 1");
-    $stmtEnr->execute([':uid' => $studentId, ':cid' => $courseId]);
-    $enrollment = $stmtEnr->fetch();
-
-    if (!$enrollment) {
-        header('Location: ../course_details.php?id=' . $courseId . '&status=error&message=' . urlencode('You must be enrolled in this course to access the classroom.'));
-        exit;
-    }
-
-    // 3. Fetch Course Details
-    $stmtCourse = $pdo->prepare("SELECT id, title, description, category, thumbnail, total_lessons, assessment_type, assessment_instructions FROM courses WHERE id = :cid LIMIT 1");
+    // 2. Fetch Course Details first
+    $stmtCourse = $pdo->prepare("SELECT id, title, description, category, thumbnail, total_lessons, instructor_id, assessment_type, assessment_instructions FROM courses WHERE id = :cid LIMIT 1");
     $stmtCourse->execute([':cid' => $courseId]);
     $course = $stmtCourse->fetch();
 
     if (!$course) {
-        header('Location: dashboard.php?status=error&message=' . urlencode('Course not found.'));
+        header('Location: ' . ($isInstructor ? '../instructor/dashboard.php' : 'dashboard.php') . '?status=error&message=' . urlencode('Course not found.'));
         exit;
+    }
+
+    // 3. Verify Enrollment or Instructor/Admin Preview Authorization
+    if ($isStudent) {
+        $stmtEnr = $pdo->prepare("SELECT id, progress_percent, status FROM enrollments WHERE user_id = :uid AND course_id = :cid LIMIT 1");
+        $stmtEnr->execute([':uid' => $studentId, ':cid' => $courseId]);
+        $enrollment = $stmtEnr->fetch();
+
+        if (!$enrollment) {
+            header('Location: ../course_details.php?id=' . $courseId . '&status=error&message=' . urlencode('You must be enrolled in this course to access the classroom.'));
+            exit;
+        }
+    } else {
+        // Instructor must be owner of this course, unless admin
+        if (!$isAdmin && (int)$course['instructor_id'] !== $studentId) {
+            header('Location: ../courses.php?status=error&message=' . urlencode('You do not have permission to preview this course classroom.'));
+            exit;
+        }
+        $isInstructorPreview = true;
+        $enrollment = ['id' => 0, 'progress_percent' => 100, 'status' => 'preview'];
     }
 
     // 4. Fetch All Lessons for this course
@@ -56,10 +74,14 @@ try {
     $lessons = $stmtLessons->fetchAll();
 
     // 5. Fetch Completed Lesson IDs for this student
-    $stmtComp = $pdo->prepare("SELECT lesson_id FROM lesson_completions WHERE user_id = :uid AND course_id = :cid");
-    $stmtComp->execute([':uid' => $studentId, ':cid' => $courseId]);
-    $completedLessonIds = $stmtComp->fetchAll(PDO::FETCH_COLUMN);
-    $completedLessonIds = array_map('intval', $completedLessonIds);
+    if ($isStudent) {
+        $stmtComp = $pdo->prepare("SELECT lesson_id FROM lesson_completions WHERE user_id = :uid AND course_id = :cid");
+        $stmtComp->execute([':uid' => $studentId, ':cid' => $courseId]);
+        $completedLessonIds = $stmtComp->fetchAll(PDO::FETCH_COLUMN);
+        $completedLessonIds = array_map('intval', $completedLessonIds);
+    } else {
+        $completedLessonIds = [];
+    }
 
     $totalLessonsCount = count($lessons);
     $completedCount = count($completedLessonIds);
@@ -121,6 +143,15 @@ if ($activeSponsorAd) {
         ? $rawAdPath
         : '../' . $rawAdPath;
 }
+
+// Determine active lesson video playback path
+$rawLessonVideo = $activeLesson['video_path'] ?? '';
+$lessonVideoSrc = '';
+if (!empty($rawLessonVideo)) {
+    $lessonVideoSrc = (str_starts_with($rawLessonVideo, 'http://') || str_starts_with($rawLessonVideo, 'https://') || str_starts_with($rawLessonVideo, '/'))
+        ? $rawLessonVideo
+        : '../' . $rawLessonVideo;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -142,10 +173,17 @@ if ($activeSponsorAd) {
 	<!-- Classroom Top Header -->
 	<header class="classroom-navbar">
 		<div class="nav-left">
-			<a href="dashboard.php" class="btn-nav-back" title="Return to Student Dashboard">
-				<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Back">
-				<span>Dashboard</span>
-			</a>
+			<?php if ($isInstructorPreview): ?>
+				<a href="../instructor/course_overview.php?id=<?= $courseId ?>" class="btn-nav-back" title="Return to Course Overview">
+					<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Back">
+					<span>Course Overview</span>
+				</a>
+			<?php else: ?>
+				<a href="dashboard.php" class="btn-nav-back" title="Return to Student Dashboard">
+					<img src="../assets/icons/arrow-left.svg" width="16" height="16" alt="Back">
+					<span>Dashboard</span>
+				</a>
+			<?php endif; ?>
 			<div class="nav-divider"></div>
 			<div class="nav-course-info">
 				<span class="nav-course-badge"><?= htmlspecialchars($course['category'] ?? 'Course') ?></span>
@@ -171,6 +209,16 @@ if ($activeSponsorAd) {
 			</a>
 		</div>
 	</header>
+
+	<?php if ($isInstructorPreview): ?>
+		<div style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; color: #166534; font-weight: 700; z-index: 100; position: relative;">
+			<div style="display: flex; align-items: center; gap: 8px;">
+				<span>🎓</span>
+				<span>Instructor Curriculum Preview Mode &bull; You are testing your multi-video curriculum and player controls.</span>
+			</div>
+			<a href="../instructor/course_overview.php?id=<?= $courseId ?>" style="color: #15803d; text-decoration: underline;">&larr; Return to Overview</a>
+		</div>
+	<?php endif; ?>
 
 	<!-- Main Classroom Layout (Left: Video Player / Ad, Right: Syllabus Sidebar) -->
 	<div class="classroom-layout">
@@ -291,14 +339,14 @@ if ($activeSponsorAd) {
 
 				<div class="lesson-info-right">
 					<div class="lesson-status-pill" id="lessonStatusBadge">
-						<?php if (in_array((int)$activeLesson['id'], $completedLessonIds)): ?>
+						<?php if (!empty($activeLesson['id']) && in_array((int)$activeLesson['id'], $completedLessonIds)): ?>
 							<span class="status-badge status-badge--completed">✓ Completed</span>
 						<?php else: ?>
 							<span class="status-badge status-badge--playing">▶ In Progress</span>
 						<?php endif; ?>
 					</div>
 
-					<?php if (in_array((int)$activeLesson['id'], $completedLessonIds)): ?>
+					<?php if (!empty($activeLesson['id']) && in_array((int)$activeLesson['id'], $completedLessonIds)): ?>
 						<button type="button" class="btn-manual-complete btn-manual-completed" id="btnManualComplete" disabled style="opacity: 0.65; cursor: default;">
 							<img src="../assets/icons/check-circle.svg" width="16" height="16" alt="Check">
 							<span>Completed</span>
@@ -351,7 +399,7 @@ if ($activeSponsorAd) {
 			<div class="sidebar-lessons-scroll">
 				<div class="sidebar-lessons-list">
 					<?php foreach ($lessons as $idx => $l): 
-						$isCurrent = ((int)$l['id'] === (int)$activeLesson['id']);
+						$isCurrent = (!empty($activeLesson['id']) && (int)$l['id'] === (int)$activeLesson['id']);
 						$isDone    = in_array((int)$l['id'], $completedLessonIds);
 					?>
 						<a 
@@ -436,11 +484,12 @@ if ($activeSponsorAd) {
 
 	<!-- Pass PHP State to Classroom JavaScript Controller -->
 	<script>
+		const IS_PREVIEW = <?= $isInstructorPreview ? 'true' : 'false' ?>;
 		const COURSE_ID = <?= (int)$courseId ?>;
-		const CURRENT_LESSON_ID = <?= (int)$activeLesson['id'] ?>;
-		const CURRENT_LESSON_NUM = <?= (int)$activeLesson['lesson_number'] ?>;
+		const CURRENT_LESSON_ID = <?= (int)($activeLesson['id'] ?? 0) ?>;
+		const CURRENT_LESSON_NUM = <?= (int)($activeLesson['lesson_number'] ?? 0) ?>;
 		const TOTAL_LESSONS = <?= (int)$totalLessonsCount ?>;
-		let isCompleted = <?= in_array((int)$activeLesson['id'], $completedLessonIds) ? 'true' : 'false' ?>;
+		let isCompleted = <?= (!empty($activeLesson['id']) && in_array((int)$activeLesson['id'], $completedLessonIds)) ? 'true' : 'false' ?>;
 
 		// Lessons list metadata
 		const ALL_LESSONS = <?= json_encode(array_map(function($l) use ($completedLessonIds) {
@@ -544,6 +593,17 @@ if ($activeSponsorAd) {
 		let isSubmittingCompletion = false;
 
 		async function markActiveLessonComplete(autoAdvance = false) {
+			if (IS_PREVIEW) {
+				if (autoAdvance) {
+					const currentIndex = ALL_LESSONS.findIndex(l => l.id === CURRENT_LESSON_ID);
+					if (currentIndex !== -1 && currentIndex < ALL_LESSONS.length - 1) {
+						window.location.href = `learn.php?course_id=${COURSE_ID}&lesson_id=${ALL_LESSONS[currentIndex + 1].id}`;
+					} else {
+						AdsityUI.showToast('You have completed previewing all curriculum lessons!', 'info');
+					}
+				}
+				return;
+			}
 			if (isSubmittingCompletion) return;
 			isSubmittingCompletion = true;
 

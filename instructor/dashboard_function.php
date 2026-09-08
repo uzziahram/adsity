@@ -21,6 +21,13 @@ $totalCourses      = 0;
 $totalStudents     = 0;
 $totalCertificates = 0;
 
+$instructor = [
+    'id'         => $instructorId,
+    'full_name'  => $_SESSION['full_name'] ?? 'Instructor',
+    'email'      => $_SESSION['email'] ?? '',
+    'created_at' => date('Y-m-d H:i:s'),
+];
+
 try {
     $pdo = getConnection();
 
@@ -28,7 +35,10 @@ try {
     $stmtUser = $pdo->prepare("SELECT id, full_name, email, created_at FROM users WHERE id = :id AND role_id = 2 LIMIT 1");
     $stmtUser->bindValue(':id', $instructorId, PDO::PARAM_INT);
     $stmtUser->execute();
-    $instructor = $stmtUser->fetch();
+    $userData = $stmtUser->fetch();
+    if ($userData) {
+        $instructor = $userData;
+    }
 
     // 2. Fetch Courses Created by this Instructor
     $sqlCourses = "SELECT 

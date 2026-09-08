@@ -361,6 +361,8 @@ try {
     $completedEnrollments       = 0;
     $platformCompletionRate     = 0;
     $totalCertificates          = 0;
+    $validCertificates          = 0;
+    $revokedCertificates        = 0;
     error_log('Admin dashboard data fetch error: ' . $e->getMessage());
     $status                     = 'error';
     $message                    = 'An error occurred while loading administrative dashboard metrics.';

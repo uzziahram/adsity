@@ -1,5 +1,15 @@
 <?php
 require_once __DIR__ . '/submit_exam_function.php';
+
+/**
+ * @var array<string, mixed> $course
+ * @var array<string, mixed> $enrollment
+ * @var array<string, mixed>|false $latestSubmission
+ * @var array<string, mixed>|false $existingCertificate
+ * @var bool $isCourseFinished
+ * @var string|null $status
+ * @var string|null $message
+ */
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -268,7 +278,7 @@ require_once __DIR__ . '/submit_exam_function.php';
 					</div>
 				<?php endif; ?>
 
-				<form action="submit_exam.php" method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 24px;">
+				<form action="submit_exam.php?course_id=<?= urlencode($course['id']) ?>" method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 24px;">
 					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<input type="hidden" name="course_id" value="<?= htmlspecialchars($course['id']) ?>">
 

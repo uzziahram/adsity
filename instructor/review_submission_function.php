@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 requireAuth('instructor', '../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
 
 require_once __DIR__ . '/../database/config.php';
@@ -85,6 +85,8 @@ try {
     $courseId    = (int)$submission['course_id'];
     $studentName = $submission['student_name'];
 
+    $pdo->beginTransaction();
+
     if ($action === 'approve') {
         // A. Set submission to approved
         $stmtApprove = $pdo->prepare("UPDATE course_submissions 
@@ -108,21 +110,35 @@ try {
             ':cid' => $courseId
         ]);
 
-        // C. Issue Certificate if not already generated
-        $stmtCertCheck = $pdo->prepare("SELECT certificate_code FROM certificates WHERE user_id = :uid AND course_id = :cid LIMIT 1");
+        // C. Issue Certificate if not already generated, or reinstate if previously revoked
+        $stmtCertCheck = $pdo->prepare("SELECT certificate_code, status FROM certificates WHERE user_id = :uid AND course_id = :cid LIMIT 1");
         $stmtCertCheck->execute([':uid' => $studentId, ':cid' => $courseId]);
         $existingCert = $stmtCertCheck->fetch();
 
         if (!$existingCert) {
             $certCode = 'ADS-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(4)));
-            $stmtCertInsert = $pdo->prepare("INSERT INTO certificates (user_id, course_id, certificate_code, issued_at) 
-                                             VALUES (:uid, :cid, :code, CURRENT_TIMESTAMP)");
+            $stmtCertInsert = $pdo->prepare("INSERT INTO certificates (user_id, course_id, certificate_code, issued_at, status) 
+                                             VALUES (:uid, :cid, :code, CURRENT_TIMESTAMP, 'valid')");
             $stmtCertInsert->execute([
                 ':uid'  => $studentId,
                 ':cid'  => $courseId,
                 ':code' => $certCode
             ]);
+        } elseif (($existingCert['status'] ?? 'valid') === 'revoked') {
+            $stmtCertUpdate = $pdo->prepare("UPDATE certificates 
+                                             SET status = 'valid', 
+                                                 revocation_reason = NULL, 
+                                                 revoked_at = NULL, 
+                                                 revoked_by = NULL, 
+                                                 issued_at = CURRENT_TIMESTAMP 
+                                             WHERE user_id = :uid AND course_id = :cid");
+            $stmtCertUpdate->execute([
+                ':uid' => $studentId,
+                ':cid' => $courseId
+            ]);
         }
+
+        $pdo->commit();
 
         redirectWithMessage(
             $redirectTo, 
@@ -159,6 +175,8 @@ try {
             ':cid' => $courseId
         ]);
 
+        $pdo->commit();
+
         redirectWithMessage(
             $redirectTo, 
             'success', 
@@ -167,6 +185,9 @@ try {
     }
 
 } catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('Instructor review submission error: ' . $e->getMessage());
     redirectWithMessage($redirectTo, 'error', 'An error occurred while grading this submission. Please try again.');
 }

@@ -279,7 +279,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
 													?>
 													<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-img-link" title="View <?= htmlspecialchars($c['title']) ?>">
-														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img" onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'">
 													</a>
 													<div>
 														<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-link">
@@ -399,7 +399,8 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 											</td>
 											<td>
 												<?php if ($sub['submission_type'] === 'github_repo'): ?>
-													<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue">
+													<?php $safeSubUrl = preg_match('#^https?://#i', $sub['submission_value']) ? $sub['submission_value'] : 'https://' . $sub['submission_value']; ?>
+													<a href="<?= htmlspecialchars($safeSubUrl) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue">
 														<span>Open Repository</span>
 														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
 													</a>
@@ -409,7 +410,8 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														<span>Download File</span>
 													</a>
 												<?php else: ?>
-													<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple">
+													<?php $safeSubUrl = preg_match('#^https?://#i', $sub['submission_value']) ? $sub['submission_value'] : 'https://' . $sub['submission_value']; ?>
+													<a href="<?= htmlspecialchars($safeSubUrl) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple">
 														<span>Visit Live Site</span>
 														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
 													</a>
@@ -486,7 +488,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														: '../assets/adsity_assets/' . ($c['thumbnail'] ?: 'Web_Development_Basics.png');
 													?>
 													<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-img-link" title="View <?= htmlspecialchars($c['title']) ?>">
-														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img">
+														<img src="<?= htmlspecialchars($thumbSrc) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-table-img" onerror="this.src='../assets/adsity_assets/Web_Development_Basics.png'">
 													</a>
 													<div>
 														<a href="course_overview.php?id=<?= $c['id'] ?>" class="course-table-link">
@@ -509,6 +511,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 															</div>
 														<?php endif; ?>
 													</div>
+												</div>
 											</td>
 											<td>
 												<span class="category-pill"><?= htmlspecialchars($c['category']) ?></span>
@@ -622,7 +625,8 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 											</td>
 											<td>
 												<?php if ($sub['submission_type'] === 'github_repo'): ?>
-													<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue">
+													<?php $safeSubUrl = preg_match('#^https?://#i', $sub['submission_value']) ? $sub['submission_value'] : 'https://' . $sub['submission_value']; ?>
+													<a href="<?= htmlspecialchars($safeSubUrl) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue">
 														<span>Open Repository</span>
 														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
 													</a>
@@ -632,7 +636,8 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														<span>Download <?= htmlspecialchars(pathinfo($sub['submission_value'], PATHINFO_EXTENSION)) ?></span>
 													</a>
 												<?php else: ?>
-													<a href="<?= htmlspecialchars($sub['submission_value']) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple">
+													<?php $safeSubUrl = preg_match('#^https?://#i', $sub['submission_value']) ? $sub['submission_value'] : 'https://' . $sub['submission_value']; ?>
+													<a href="<?= htmlspecialchars($safeSubUrl) ?>" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple">
 														<span>Visit Live Site</span>
 														<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Open">
 													</a>
@@ -1094,7 +1099,9 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 				typeBadge.className = 'deliverable-badge deliverable-badge--github';
 				typeBadge.innerHTML = '<img src="../assets/icons/github.svg" width="12" height="12" alt="GitHub"> GitHub Repo';
 				previewText.textContent = data.submission_value;
-				linkContainer.innerHTML = '<a href="' + encodeURI(data.submission_value) + '" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue" style="font-weight:700;">Open Repo ↗</a>';
+				var repoUrl = (data.submission_value || '').trim();
+				var safeRepoUrl = repoUrl.match(/^https?:\/\//i) ? repoUrl : 'https://' + repoUrl;
+				linkContainer.innerHTML = '<a href="' + encodeURI(safeRepoUrl) + '" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--blue" style="font-weight:700;">Open Repo ↗</a>';
 			} else if (data.submission_type === 'file_upload') {
 				typeBadge.className = 'deliverable-badge deliverable-badge--file';
 				typeBadge.innerHTML = '<img src="../assets/icons/file-text.svg" width="12" height="12" alt="File"> File Upload';
@@ -1104,7 +1111,9 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 				typeBadge.className = 'deliverable-badge deliverable-badge--demo';
 				typeBadge.innerHTML = '<img src="../assets/icons/external-link.svg" width="12" height="12" alt="Live"> Live Demo';
 				previewText.textContent = data.submission_value;
-				linkContainer.innerHTML = '<a href="' + encodeURI(data.submission_value) + '" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple" style="font-weight:700;">Visit Demo ↗</a>';
+				var demoUrl = (data.submission_value || '').trim();
+				var safeDemoUrl = demoUrl.match(/^https?:\/\//i) ? demoUrl : 'https://' + demoUrl;
+				linkContainer.innerHTML = '<a href="' + encodeURI(safeDemoUrl) + '" target="_blank" rel="noopener noreferrer" class="link-deliverable link-deliverable--purple" style="font-weight:700;">Visit Demo ↗</a>';
 			}
 
 			// Notes
@@ -1247,7 +1256,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 						name="amount" 
 						step="0.01" 
 						min="5.00" 
-						max="<?= (float)($wallet['available_balance'] ?? 0) ?>" 
+						max="<?= max(5.00, (float)($wallet['available_balance'] ?? 0)) ?>" 
 						value="<?= (float)($wallet['available_balance'] ?? 0) >= 5.00 ? number_format((float)($wallet['available_balance'] ?? 0), 2, '.', '') : '5.00' ?>" 
 						required 
 						class="form-input" 

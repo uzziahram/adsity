@@ -1172,19 +1172,6 @@ body.admin-dashboard-body {
 	gap: 5px;
 }
 
-.status-badge-rejected {
-	background-color: var(--primary-red-subtle);
-	color: var(--primary-red);
-	border: 1px solid var(--primary-red-border);
-	font-weight: 700;
-	font-size: 0.78rem;
-	padding: 4px 10px;
-	border-radius: 9999px;
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-}
-
 .btn-process-payout {
 	background-color: #0284c7;
 	color: #ffffff;

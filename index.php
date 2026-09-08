@@ -5,6 +5,89 @@ if (session_status() === PHP_SESSION_NONE) {
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName   = $_SESSION['full_name'] ?? '';
 $userRole   = $_SESSION['role_name'] ?? '';
+
+// Fetch published courses for the Popular/Trending Courses section
+require_once __DIR__ . '/database/config.php';
+$popularCourses = [];
+try {
+    $pdo = getConnection();
+    $stmt = $pdo->query("SELECT id, title, description, category, thumbnail, total_lessons 
+                         FROM courses 
+                         WHERE status = 'published' 
+                         ORDER BY id ASC LIMIT 4");
+    $popularCourses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Failed to fetch popular courses: " . $e->getMessage());
+    $popularCourses = [];
+}
+
+// Fallback showcase items if DB has fewer than 4 published courses
+$defaultFeatured = [
+    [
+        'id'          => null,
+        'title'       => 'Cybersecurity Fundamentals',
+        'description' => 'Threat models, basic encryption, identity management, and securing network traffic.',
+        'thumbnail'   => './assets/adsity_assets/CyberSecurityFundamentals.png',
+        'target_url'  => 'courses.php',
+        'rating'      => '4.8'
+    ],
+    [
+        'id'          => null,
+        'title'       => 'SQL & Database Management',
+        'description' => 'Designing relational databases, writing queries, and managing data with SQL.',
+        'thumbnail'   => './assets/adsity_assets/sql_and_database_management.png',
+        'target_url'  => 'courses.php',
+        'rating'      => '4.8'
+    ],
+    [
+        'id'          => null,
+        'title'       => 'Computer Networking Fundamentals',
+        'description' => 'How devices communicate, IP addressing, DNS, TCP/IP stack, routers, and switches.',
+        'thumbnail'   => './assets/adsity_assets/Computer_Networking_Fundamentals.png',
+        'target_url'  => 'courses.php',
+        'rating'      => '4.8'
+    ],
+    [
+        'id'          => null,
+        'title'       => 'Cloud Computing',
+        'description' => 'Cloud environments, deployment basics, and configuration.',
+        'thumbnail'   => './assets/adsity_assets/Clound_Computing.png',
+        'target_url'  => 'courses.php',
+        'rating'      => '4.8'
+    ]
+];
+
+$displayCourses = [];
+foreach ($popularCourses as $pc) {
+    $thumb = !empty($pc['thumbnail']) && str_starts_with($pc['thumbnail'], 'uploads/')
+        ? './' . $pc['thumbnail']
+        : (!empty($pc['thumbnail']) ? './assets/adsity_assets/' . $pc['thumbnail'] : './assets/adsity_assets/Web_Development_Basics.png');
+
+    $displayCourses[] = [
+        'id'          => (int)$pc['id'],
+        'title'       => $pc['title'],
+        'description' => !empty($pc['description']) ? $pc['description'] : 'Comprehensive, ad-supported practical curriculum with industry certificate.',
+        'thumbnail'   => $thumb,
+        'target_url'  => 'course_details.php?id=' . (int)$pc['id'],
+        'rating'      => '4.9'
+    ];
+}
+
+foreach ($defaultFeatured as $df) {
+    if (count($displayCourses) >= 4) {
+        break;
+    }
+    $alreadyExists = false;
+    foreach ($displayCourses as $dc) {
+        if (stripos($dc['title'], $df['title']) !== false) {
+            $alreadyExists = true;
+            break;
+        }
+    }
+    if (!$alreadyExists) {
+        $displayCourses[] = $df;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,31 +176,31 @@ $userRole   = $_SESSION['role_name'] ?? '';
 			<div class="resume-carousel">
 				<div class="carousel-cards">
 					<!-- Card 1 -->
-					<div class="course-card">
+					<a href="courses.php" class="course-card">
 						<img src="./assets/adsity_assets/Fullstack_Web_Development.jpg" alt="Full-Stack Web Development" class="course-card-img">
 						<div class="course-card-body">
 							<h3 class="course-card-title">Full-Stack Web Development</h3>
 							<p class="course-card-tags">Next.js | MongoDB | Redis<br>Docker | Kubernetes</p>
 						</div>
-					</div>
+					</a>
 
 					<!-- Card 2 -->
-					<div class="course-card">
+					<a href="courses.php" class="course-card">
 						<img src="./assets/adsity_assets/Logo_Design.jpg" alt="Logo Design" class="course-card-img">
 						<div class="course-card-body">
 							<h3 class="course-card-title">Logo Design</h3>
 							<p class="course-card-tags">Adobe Illustrator<br>Adobe Photoshop</p>
 						</div>
-					</div>
+					</a>
 
 					<!-- Card 3 -->
-					<div class="course-card">
+					<a href="courses.php" class="course-card">
 						<img src="./assets/adsity_assets/Web_Development_Basics.png" alt="Web Development Basics" class="course-card-img">
 						<div class="course-card-body">
 							<h3 class="course-card-title">Web Development Basics</h3>
 							<p class="course-card-tags">Html | CSS | JavaScript</p>
 						</div>
-					</div>
+					</a>
 				</div>
 			</div>
 		</div>
@@ -125,90 +208,41 @@ $userRole   = $_SESSION['role_name'] ?? '';
 
 	<div class="green-divider"></div>
 
-	<!-- Trending Courses Section -->
-	<section class="trending-section">
-		<div class="trending-header">
-			<h2 class="trending-title">Trending Courses</h2>
+	<!-- Popular Courses Section -->
+	<section class="trending-section" id="popular-courses">
+		<div class="trending-header" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 24px auto;">
+			<h2 class="trending-title" style="margin: 0;">Popular Courses</h2>
+			<a href="courses.php" style="color: var(--primary-green, #22c55e); text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 6px; transition: color 0.18s ease;">
+				View All Courses &rarr;
+			</a>
 		</div>
 
 		<div class="trending-grid-wrapper">
 			<div class="trending-grid">
-				<!-- Card 1 -->
-				<div class="trending-card-frame">
-					<div class="trending-card">
-						<div class="trending-card-header">
-							<img src="./assets/adsity_assets/CyberSecurityFundamentals.png" alt="Cybersecurity Fundamentals" class="trending-card-img">
-						</div>
-						<div class="trending-card-body">
-							<div class="trending-card-content">
-								<h3 class="trending-card-title">Cybersecurity Fundamentals</h3>
-								<p class="trending-card-desc">Threat models, basic encryption, identity management, and securing network traffic.</p>
-							</div>
-							<div class="trending-card-footer">
-								<button class="btn-start-now">Start Now</button>
-								<span class="rating"><span class="rating-star">&#9733;</span><span class="rating-score"> 4.8</span></span>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Card 2 -->
-				<div class="trending-card-frame">
-					<div class="trending-card">
-						<div class="trending-card-header">
-							<img src="./assets/adsity_assets/sql_and_database_management.png" alt="SQL &amp; Database Management" class="trending-card-img">
-						</div>
-						<div class="trending-card-body">
-							<div class="trending-card-content">
-								<h3 class="trending-card-title">SQL &amp; Database Management</h3>
-								<p class="trending-card-desc">Designing relational databases, writing queries, and managing data with SQL.</p>
-							</div>
-							<div class="trending-card-footer">
-								<button class="btn-start-now">Start Now</button>
-								<span class="rating"><span class="rating-star">&#9733;</span><span class="rating-score"> 4.8</span></span>
+				<?php foreach ($displayCourses as $course): ?>
+					<div class="trending-card-frame">
+						<div class="trending-card">
+							<a href="<?= htmlspecialchars($course['target_url']) ?>" class="trending-card-header" style="text-decoration: none; display: flex;">
+								<img src="<?= htmlspecialchars($course['thumbnail']) ?>" alt="<?= htmlspecialchars($course['title']) ?>" class="trending-card-img" onerror="this.src='./assets/adsity_assets/Web_Development_Basics.png'">
+							</a>
+							<div class="trending-card-body">
+								<div class="trending-card-content">
+									<h3 class="trending-card-title">
+										<a href="<?= htmlspecialchars($course['target_url']) ?>" style="color: inherit; text-decoration: none;">
+											<?= htmlspecialchars($course['title']) ?>
+										</a>
+									</h3>
+									<p class="trending-card-desc"><?= htmlspecialchars($course['description']) ?></p>
+								</div>
+								<div class="trending-card-footer">
+									<a href="<?= htmlspecialchars($course['target_url']) ?>" class="btn-start-now">Start Now</a>
+									<span class="rating"><span class="rating-star">&#9733;</span><span class="rating-score"> <?= htmlspecialchars($course['rating']) ?></span></span>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-
-				<!-- Card 3 -->
-				<div class="trending-card-frame">
-					<div class="trending-card">
-						<div class="trending-card-header">
-							<img src="./assets/adsity_assets/Computer_Networking_Fundamentals.png" alt="Computer Networking Fundamentals" class="trending-card-img">
-						</div>
-						<div class="trending-card-body">
-							<div class="trending-card-content">
-								<h3 class="trending-card-title">Computer Networking Fundamentals</h3>
-								<p class="trending-card-desc">How devices communicate, IP addressing, DNS, TCP/IP stack, routers, and switches.</p>
-							</div>
-							<div class="trending-card-footer">
-								<button class="btn-start-now">Start Now</button>
-								<span class="rating"><span class="rating-star">&#9733;</span><span class="rating-score"> 4.8</span></span>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Card 4 -->
-				<div class="trending-card-frame">
-					<div class="trending-card">
-						<div class="trending-card-header">
-							<img src="./assets/adsity_assets/Clound_Computing.png" alt="Cloud Computing" class="trending-card-img">
-						</div>
-						<div class="trending-card-body">
-							<div class="trending-card-content">
-								<h3 class="trending-card-title">Cloud Computing</h3>
-								<p class="trending-card-desc">Cloud environments, deployment basics, and configuration.</p>
-							</div>
-							<div class="trending-card-footer">
-								<button class="btn-start-now">Start Now</button>
-							</div>
-						</div>
-					</div>
-				</div>
+				<?php endforeach; ?>
 			</div>
-
 		</div>
 	</section>
 
@@ -225,7 +259,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 			<div class="skills-grid">
 				<!-- Row 1: Green Accent (3 Cards) -->
 				<!-- Python -->
-				<article class="skill-card skill-card--green">
+				<a href="courses.php?search=Python" class="skill-card skill-card--green">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -238,10 +272,10 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Build data pipelines, automate workflows, and power AI models with a versatile language.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- JavaScript -->
-				<article class="skill-card skill-card--green">
+				<a href="courses.php?search=JavaScript" class="skill-card skill-card--green">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -254,10 +288,10 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Drive web frontends, backends, and desktop apps with a language that runs everywhere.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- React -->
-				<article class="skill-card skill-card--green">
+				<a href="courses.php?search=React" class="skill-card skill-card--green">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -270,11 +304,11 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Build fast, reusable UI components for web applications with a popular JavaScript library.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- Row 2: Crimson Red Accent (3 Cards) -->
 				<!-- AWS -->
-				<article class="skill-card skill-card--red">
+				<a href="courses.php?search=AWS" class="skill-card skill-card--red">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -287,10 +321,10 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Deploy scalable infrastructure, services, and applications on a leading cloud platform.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- UI / UX design -->
-				<article class="skill-card skill-card--red">
+				<a href="courses.php?search=Design" class="skill-card skill-card--red">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -303,10 +337,10 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Craft intuitive interfaces that delight users and drive conversion through research and testing.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- Docker -->
-				<article class="skill-card skill-card--red">
+				<a href="courses.php?search=Docker" class="skill-card skill-card--red">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -319,11 +353,11 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Package applications into consistent, portable containers for reliable delivery.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- Row 3: Cyan / Electric Blue Accent (2 Centered Cards) -->
 				<!-- Cyber Security -->
-				<article class="skill-card skill-card--blue skill-card--row3-left">
+				<a href="courses.php?search=Security" class="skill-card skill-card--blue skill-card--row3-left">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -336,10 +370,10 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Protect systems, networks, and data from threats with secure design and incident response.</p>
 					</div>
-				</article>
+				</a>
 
 				<!-- Blockchain -->
-				<article class="skill-card skill-card--blue skill-card--row3-right">
+				<a href="courses.php?search=Blockchain" class="skill-card skill-card--blue skill-card--row3-right">
 					<div class="skill-card__surface">
 						<div class="skill-card__header">
 							<span class="skill-card__badge">
@@ -352,7 +386,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 						</div>
 						<p class="skill-card__desc">Build decentralized applications, smart contracts, and secure ledger systems.</p>
 					</div>
-				</article>
+				</a>
 			</div>
 		</div>
 	</section>
@@ -419,7 +453,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 					<ul class="footer-links">
 						<li><a href="#">Get the app</a></li>
 						<li><a href="teach.php">Teach on Adsity</a></li>
-						<li><a href="#">Courses</a></li>
+						<li><a href="courses.php">Courses</a></li>
 						<li><a href="#">Affiliate</a></li>
 						<li><a href="#">Help and Support</a></li>
 					</ul>

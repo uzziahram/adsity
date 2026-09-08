@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../database/config.php';
 
-$code = $_GET['code'] ?? null;
+$code = isset($_GET['code']) ? trim((string)$_GET['code']) : null;
 $certificate = null;
 
 // Determine intelligent back URL and label based on viewer session role
@@ -25,7 +25,7 @@ if ($viewerRole === 'admin') {
     $backLabel = 'Back to Student Dashboard';
 }
 
-if ($code) {
+if (!empty($code)) {
     try {
         $pdo = getConnection();
         $sql = "SELECT 

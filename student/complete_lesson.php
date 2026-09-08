@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 ensureSessionStarted();
 
 // 1. Authentication check via reusable helper
@@ -41,9 +41,7 @@ try {
     $lesson = $stmtLesson->fetch();
 
     if (!$lesson) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Lesson not found in this course.']);
-        exit;
+        sendJsonResponse(['success' => false, 'message' => 'Lesson not found in this course.'], 404);
     }
 
     // 5. Insert or update record in lesson_completions
@@ -78,11 +76,11 @@ try {
     $sqlNext = "SELECT id, lesson_number, title 
                 FROM lessons 
                 WHERE course_id = :cid 
-                  AND id NOT IN (SELECT lesson_id FROM lesson_completions WHERE user_id = :uid)
+                  AND id NOT IN (SELECT lesson_id FROM lesson_completions WHERE user_id = :uid AND course_id = :cid2 AND lesson_id IS NOT NULL)
                 ORDER BY lesson_number ASC 
                 LIMIT 1";
     $stmtNext = $pdo->prepare($sqlNext);
-    $stmtNext->execute([':cid' => $courseId, ':uid' => $studentId]);
+    $stmtNext->execute([':cid' => $courseId, ':uid' => $studentId, ':cid2' => $courseId]);
     $nextLesson = $stmtNext->fetch();
 
     sendJsonResponse([

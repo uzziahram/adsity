@@ -123,7 +123,7 @@ try {
             $stmt = $pdo->query($sql);
             while ($row = $stmt->fetch()) {
                 $details = json_decode($row['payout_details'], true) ?: [];
-                $detailStr = implode(' | ', array_map(fn($k, $v) => "$k: $v", array_keys($details), $details));
+                $detailStr = implode(' | ', array_map(fn($k, $v) => "$k: " . (is_array($v) ? json_encode($v) : $v), array_keys($details), $details));
                 fputcsv($output, [
                     $row['id'],
                     $row['instructor_name'],

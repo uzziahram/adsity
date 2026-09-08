@@ -1045,22 +1045,6 @@
 	box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
 }
 
-.btn-submit-locked {
-	background-color: #f1f5f9 !important;
-	color: #94a3b8 !important;
-	border: 1px solid #e2e8f0;
-	box-shadow: none !important;
-	cursor: not-allowed;
-	pointer-events: auto;
-}
-
-.btn-submit-locked:hover {
-	background-color: #f1f5f9 !important;
-	transform: none !important;
-	box-shadow: none !important;
-	color: #64748b !important;
-}
-
 .btn-view-cert {
 	display: inline-flex;
 	align-items: center;

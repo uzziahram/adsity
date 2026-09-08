@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../validation.php';
 ensureSessionStarted();
 
 // 1. Authentication check via reusable helper
@@ -64,9 +64,7 @@ try {
     $stmtEnr = $pdo->prepare("SELECT id FROM enrollments WHERE user_id = :uid AND course_id = :cid LIMIT 1");
     $stmtEnr->execute([':uid' => $studentId, ':cid' => $courseId]);
     if (!$stmtEnr->fetch()) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Student is not enrolled in this course.']);
-        exit;
+        sendJsonResponse(['success' => false, 'message' => 'Student is not enrolled in this course.'], 403);
     }
 
     // 4. Verify lesson exists and find course instructor
@@ -78,21 +76,18 @@ try {
     $courseInfo = $stmtCourse->fetch();
 
     if (!$courseInfo) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Course or lesson not found.']);
-        exit;
+        sendJsonResponse(['success' => false, 'message' => 'Course or lesson not found.'], 404);
     }
 
     $instructorId = (int)$courseInfo['instructor_id'];
 
     // Don't credit self-views if instructor is testing as a student
     if ($instructorId === $studentId) {
-        echo json_encode([
+        sendJsonResponse([
             'success'          => true,
             'message'          => 'Self-preview: No ad earnings credited to own wallet.',
             'already_recorded' => true
         ]);
-        exit;
     }
 
     // 5. Anti-spam / Cooldown check (using configured interval):
@@ -103,12 +98,11 @@ try {
                                    LIMIT 1");
     $stmtCooldown->execute([':sid' => $studentId, ':lid' => $lessonId, ':cooldown' => $cooldownMinutes]);
     if ($stmtCooldown->fetch()) {
-        echo json_encode([
+        sendJsonResponse([
             'success'          => true,
             'message'          => 'Ad activity already logged for this lesson session.',
             'already_recorded' => true
         ]);
-        exit;
     }
 
     // 6. Record Ad Activity & Credit Wallets in a Transaction

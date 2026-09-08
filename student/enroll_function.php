@@ -34,14 +34,19 @@ $studentId = (int)$_SESSION['user_id'];
 try {
     $pdo = getConnection();
 
-    // Verify course exists
-    $stmt = $pdo->prepare("SELECT id, title FROM courses WHERE id = :id LIMIT 1");
+    // Verify course exists and is published
+    $stmt = $pdo->prepare("SELECT id, title, status FROM courses WHERE id = :id LIMIT 1");
     $stmt->bindValue(':id', $courseId, PDO::PARAM_INT);
     $stmt->execute();
     $course = $stmt->fetch();
 
     if (!$course) {
         header('Location: ../courses.php?status=error&message=' . urlencode('The selected course does not exist.'));
+        exit;
+    }
+
+    if (($course['status'] ?? '') !== 'published') {
+        header('Location: ../courses.php?status=error&message=' . urlencode('This course is not currently open for enrollment.'));
         exit;
     }
 

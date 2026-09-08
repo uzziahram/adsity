@@ -262,9 +262,9 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
-											<img src="../assets/icons/book-open.svg" width="16" height="16" alt="Details" style="filter: brightness(0);">
-											<span>Course Details</span>
+										<a href="learn.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
+											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
+											<span>Resume Learning</span>
 										</a>
 										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
 											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
@@ -345,9 +345,9 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									</div>
 
 									<div class="card-actions-row">
-										<a href="../course_details.php?id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
-											<img src="../assets/icons/book-open.svg" width="16" height="16" alt="Details" style="filter: brightness(0);">
-											<span>Course Details</span>
+										<a href="learn.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-continue-course">
+											<img src="../assets/icons/play.svg" width="16" height="16" alt="Play" style="filter: brightness(0);">
+											<span>Resume Learning</span>
 										</a>
 										<?php if ((int)($course['progress_percent'] ?? 0) >= 100): ?>
 											<a href="submit_exam.php?course_id=<?= urlencode($course['course_id']) ?>" class="btn-submit-project">
@@ -419,10 +419,15 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 										Completed on <?= date('M d, Y', strtotime($completed['completed_at'] ?? 'now')) ?>
 									</div>
 
-									<?php if (!empty($completed['certificate_code'])): ?>
+									<?php if (!empty($completed['certificate_code']) && ($completed['cert_status'] ?? 'valid') !== 'revoked'): ?>
 										<a href="certificate.php?code=<?= urlencode($completed['certificate_code']) ?>" class="btn-view-cert">
 											<img src="../assets/icons/award.svg" width="16" height="16" alt="Certificate" style="filter: brightness(0);">
 											View Official Certificate
+										</a>
+									<?php elseif (!empty($completed['certificate_code']) && ($completed['cert_status'] ?? 'valid') === 'revoked'): ?>
+										<a href="certificate.php?code=<?= urlencode($completed['certificate_code']) ?>" class="btn-view-cert" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;">
+											<img src="../assets/icons/alert-circle.svg" width="16" height="16" alt="Revoked" style="filter: invert(18%) sepia(85%) saturate(4646%) hue-rotate(345deg) brightness(85%) contrast(92%);">
+											Certificate Revoked (View Notice)
 										</a>
 									<?php else: ?>
 										<a href="submit_exam.php?course_id=<?= urlencode($completed['course_id']) ?>" class="btn-submit-project">
@@ -459,17 +464,26 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 
 				<?php if (!empty($certificates)): ?>
 					<div class="courses-grid">
-						<?php foreach ($certificates as $cert): ?>
-							<article class="cert-card">
-								<span class="cert-card-badge-verified">
-									<img src="../assets/icons/award.svg" width="14" height="14" alt="Verified">
-									Official Adsity Credential
-								</span>
+						<?php foreach ($certificates as $cert): 
+							$isRevoked = ($cert['status'] ?? 'valid') === 'revoked';
+						?>
+							<article class="cert-card" style="<?= $isRevoked ? 'border-color: #fca5a5; background: #fff5f5;' : '' ?>">
+								<?php if ($isRevoked): ?>
+									<span class="cert-card-badge-verified" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5;">
+										<img src="../assets/icons/alert-circle.svg" width="14" height="14" alt="Revoked" style="filter: invert(18%) sepia(85%) saturate(4646%) hue-rotate(345deg) brightness(85%) contrast(92%);">
+										Revoked Credential
+									</span>
+								<?php else: ?>
+									<span class="cert-card-badge-verified">
+										<img src="../assets/icons/award.svg" width="14" height="14" alt="Verified">
+										Official Adsity Credential
+									</span>
+								<?php endif; ?>
 
 								<h3 class="cert-card-title"><?= htmlspecialchars($cert['course_title'] ?? 'Verified Course') ?></h3>
 
 								<div class="cert-card-code-box">
-									<span class="cert-card-code"><?= htmlspecialchars($cert['certificate_code']) ?></span>
+									<span class="cert-card-code" style="<?= $isRevoked ? 'text-decoration: line-through; color: #94a3b8;' : '' ?>"><?= htmlspecialchars($cert['certificate_code']) ?></span>
 									<button type="button" class="btn-copy-code" onclick="copyCertCode('<?= htmlspecialchars($cert['certificate_code']) ?>', this)">
 										Copy Code
 									</button>
@@ -480,14 +494,22 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 									Issued on <?= date('F d, Y', strtotime($cert['issued_at'] ?? 'now')) ?>
 								</div>
 
+								<?php if ($isRevoked): ?>
+									<div style="font-size: 0.82rem; color: #b91c1c; margin-top: 8px; padding: 6px 10px; background: #fee2e2; border-radius: 6px;">
+										<strong>Reason:</strong> <?= htmlspecialchars($cert['revocation_reason'] ?: 'Revoked by administration') ?>
+									</div>
+								<?php endif; ?>
+
 								<div class="cert-card-actions">
-									<a href="certificate.php?code=<?= urlencode($cert['certificate_code']) ?>" class="btn-cert-view">
+									<a href="certificate.php?code=<?= urlencode($cert['certificate_code']) ?>" class="btn-cert-view" style="<?= $isRevoked ? 'background: #f1f5f9; color: #64748b;' : '' ?>">
 										<img src="../assets/icons/eye.svg" width="16" height="16" alt="View" style="filter: brightness(0);">
-										View Certificate
+										View <?= $isRevoked ? 'Notice' : 'Certificate' ?>
 									</a>
-									<a href="certificate.php?code=<?= urlencode($cert['certificate_code']) ?>" class="btn-cert-download" title="Print / Download PDF">
-										<img src="../assets/icons/download.svg" width="16" height="16" alt="Download" style="filter: brightness(0) invert(1);">
-									</a>
+									<?php if (!$isRevoked): ?>
+										<a href="certificate.php?code=<?= urlencode($cert['certificate_code']) ?>" class="btn-cert-download" title="Print / Download PDF">
+											<img src="../assets/icons/download.svg" width="16" height="16" alt="Download" style="filter: brightness(0) invert(1);">
+										</a>
+									<?php endif; ?>
 								</div>
 							</article>
 						<?php endforeach; ?>
