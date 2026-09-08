@@ -107,23 +107,7 @@ The 10-phase operational lifecycle outlines the complete workflow of Adsity acro
 
 ---
 
-## 3. Technology Stack
-
-| Layer | Technology | Details |
-| :--- | :--- | :--- |
-| **Backend** | PHP 8.x | Native procedural PHP with PDO database abstraction, prepared statements, and transactional rollbacks |
-| **Database** | MariaDB 10.4 | Relational database with foreign key constraints, cascading updates/deletes, and unique indices |
-| **Session & Auth** | PHP Sessions (`$_SESSION`) | Role-based access control (RBAC), session gating, and immediate memory purging of plaintext passwords |
-| **Media Processing** | FFmpeg (`ffprobe`) | Server-side CLI execution to detect video durations from uploaded lesson files |
-| **File Handling** | Native PHP Uploads | Secure uploads for video lessons, thumbnails, and student project deliverables |
-| **Frontend** | HTML5 / CSS3 / Vanilla JS | Responsive CSS, Raleway & Cinzel typography, and HTML5 Video API |
-| **UI Components** | Custom JavaScript | Native file dropzone pickers, ad player state machines, and glassmorphic confirmation modals |
-| **Reporting & Export** | Native PHP Stream | UTF-8 BOM-encoded CSV export streams for spreadsheet and Excel compatibility |
-| **Assets** | Standalone SVG Vectors | 30 bespoke icons stored in `assets/icons/` |
-
----
-
-## 4. Input Validation Architecture
+## 3. Input Validation Architecture
 
 All input validation rules are centralized in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity/validation.php):
 
@@ -139,78 +123,3 @@ All input validation rules are centralized in [`validation.php`](file:///home/ug
 * **Password Match (`validatePasswordMatch`):** Verifies that the confirmation password matches the entered password.
 * **Terms of Service Consent (`validateTerms`):** Verifies that the user agreed to platform terms.
 * **Aggregated Validators:** Handles full form validation for student registration (`validateSignupInput`), instructor registration (`validateTeacherSignupInput`), and authentication (`validateLoginInput`).
-
----
-
-## 5. Setup & Local Testing Guide
-
-### Prerequisites
-* XAMPP / LAMPP installed on Linux.
-* Apache web server running on Port `81`.
-* MariaDB database service running on Port `3307` (or socket `/opt/lampp/var/mysql/mysql.sock`).
-* FFmpeg (`ffprobe`) installed in system path for video duration detection.
-* Recommended PHP configuration (`/opt/lampp/etc/php.ini`):
-  * `upload_max_filesize = 100M` (or higher)
-  * `post_max_size = 100M` (or higher)
-
-### Directory Permissions
-Ensure write permissions are configured for media upload directories:
-```bash
-chmod -R 775 uploads/ads/
-chmod -R 775 uploads/instructors/
-chmod -R 775 assets/submissions/
-```
-
-### Database Initialization
-Import the database schema and default seeds:
-```bash
-/opt/lampp/bin/mysql -u root -S /opt/lampp/var/mysql/mysql.sock < database/schema.sql
-```
-
-### Default Administrator Credentials
-
-| Role | Email | Password | Dashboard URL |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@adsity.org` | `admin123` | `http://localhost:81/projects/adsity/admin/dashboard.php` |
-
-> [!NOTE]
-> Instructors can be registered at [teach.php](file:///home/ugenella/coding/xampp-projects/adsity/teach.php) and Students at [signup.php](file:///home/ugenella/coding/xampp-projects/adsity/signup.php). All passwords are encrypted with `PASSWORD_DEFAULT` (Bcrypt).
-
----
-
-## 6. Vector Icons Reference
-
-All 30 vector icons are stored inside `assets/icons/`:
-
-| Icon File | Usage & Description |
-| :--- | :--- |
-| `alert-circle.svg` | Error and warning alert banners, revoked certificate audit notices |
-| `arrow-left.svg` | Return navigation, back to catalog/home buttons |
-| `arrow-right.svg` | Submit triggers, forward progression buttons |
-| `award.svg` | Verified credentials, certificates, deliverable evaluations |
-| `book-open.svg` | Course catalog, lesson syllabus, learning indicators, course moderation |
-| `box.svg` | Docker container technology badge |
-| `check-circle.svg` | Success alerts, completed course indicators, approved course badges |
-| `clock.svg` | In-progress time, lesson duration indicators, pending review badges |
-| `cloud.svg` | Cloud computing & AWS technology badge |
-| `code.svg` | Programming languages (Python, JS, React) badge |
-| `dollar-sign.svg` | Ad revenue, instructor wallet, cash-out metrics |
-| `download.svg` | Download and print certificate actions, CSV data export |
-| `external-link.svg` | External platform links, sponsor click-through links |
-| `eye.svg` | View credential and details action buttons, user inspection |
-| `file-text.svg` | File upload deliverable indicator |
-| `github.svg` | GitHub repository deliverable badge |
-| `globe.svg` | Language and localization selector |
-| `graduation-cap.svg` | Instructor badges and teacher portal identifiers |
-| `layout.svg` | UI/UX design skill badge, dashboard overview icon |
-| `link.svg` | Blockchain technology badge, live URL deliverable icon |
-| `lock.svg` | Locked final project deliverable indicator |
-| `log-out.svg` | Global logout confirmation dialog badge |
-| `play.svg` | Video lesson player, resume learning button |
-| `plus.svg` | Publish new course, add lesson syllabus builder, new ad campaign |
-| `shield-check.svg` | 100% free ad-supported verification badge |
-| `shield.svg` | Cybersecurity technology badge |
-| `trash.svg` | Delete user, delete course, and delete sponsor ad action buttons |
-| `user-check.svg` | Student KPI indicators in Admin dashboard |
-| `users.svg` | Total users KPI card and User Directory in Admin dashboard |
-| `video.svg` | Curriculum module and video indicator, sponsor ad engine |
