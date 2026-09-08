@@ -10,102 +10,100 @@
 
 ## 1. Project Overview
 
-**Adsity** is a web-based educational platform providing free, ad-supported technology courses and verified industry certificates. The system operates on a sustainable monetization model where students watch short 15-second sponsor advertisement breaks before lessons in exchange for zero-cost education and accredited credentialing, while instructors earn a direct, configurable revenue share from every completed sponsor ad session.
+**Adsity** is a web-based educational platform providing **free, ad-supported technology courses and verified completion certificates**. 
 
-### Core User Roles & Responsibilities:
-- **Student (`role_id = 3`):** Explores approved courses in the public catalog, enrolls in courses, participates in the interactive video classroom, views pre-roll sponsor advertisements with active partner information, completes lessons sequentially, submits final project deliverables, and views/prints accredited completion certificates.
-- **Instructor / Teacher (`role_id = 2`):** Registers via dedicated onboarding, builds multi-video courses with custom assessment rubrics, monitors student rosters and completion telemetry, grades submitted final projects, tracks course publication status (`Live`, `In Review`, `Revisions Requested`), earns ad revenue based on platform revenue-share percentages, and requests withdrawals via PayPal, GCash, or Bank Transfer.
-- **Administrator (`role_id = 1`):** System superuser who oversees platform health, moderation, monetization, and compliance:
-  1. **Course Moderation Queue:** Reviews newly submitted instructor courses, approves them to the public catalog, or rejects them with revision guidance.
-  2. **Sponsor Ad Engine:** Manages sponsor ad campaigns, uploads video files via native operating system file manager or custom URLs, and configures platform monetization economics (CPM rates, instructor revenue-share %, and ad cooldown intervals).
-  3. **Certificate Anti-Fraud Registry:** Audits issued certificates, revokes invalid or fraudulent credentials with documented justification, renders public invalidation watermarks and red audit banners, and restores revoked certificates if appealed.
-  4. **Instructor Payout Review:** Inspects cash-out requests, disburses funds with transaction trace receipts, or rejects invalid requests with automated balance refunds.
-  5. **User Administration & RBAC:** Inspects user profiles, promotes students to instructors (with automated wallet provisioning) or demotes instructors, and safely deletes inactive accounts.
-  6. **Data Export Engine:** Generates instant CSV audit reports for users, courses, payouts, certificates, ad logs, and sponsor campaigns.
+The system operates on a sustainable monetization model:
+* **Zero-Cost Education:** Students watch a short 15-second sponsor advertisement break before each lesson video in exchange for free access to course content and accredited credentials.
+* **Shared Revenue:** Instructors earn a configurable revenue share from every completed sponsor ad view on their courses.
+* **Treasury Sustainability:** The platform retains a percentage of ad earnings to sustain infrastructure and operational costs.
+
+### Core User Roles
+
+* **Student (`role_id = 3`):** Explores approved courses, enrolls for free, watches lessons with pre-roll sponsor ads, completes sequential modules, submits capstone project deliverables, and views or prints verified completion certificates.
+* **Instructor (`role_id = 2`):** Registers an instructor profile, creates courses via a 4-step wizard, uploads sequential lesson videos, establishes assessment rubrics, grades student deliverables (approving or requesting revisions), tracks ad revenue in an automated wallet, and requests cash-out withdrawals via PayPal, GCash, or Bank Transfer.
+* **Administrator (`role_id = 1`):** Platform superuser who oversees quality moderation, system economics, and compliance:
+  1. **Course Moderation Queue:** Reviews, approves, or rejects submitted instructor courses with detailed feedback.
+  2. **Ad Engine & Monetization:** Manages sponsor ad campaigns, monitors the simulated Google AdSense for Video stream, and configures global monetization rates (CPM, revenue share %, ad cooldowns).
+  3. **Certificate Anti-Fraud Registry:** Audits issued certificates, revokes fraudulent credentials with public audit banners and watermarks, and restores appealed certificates.
+  4. **Instructor Payout Review:** Inspects withdrawal requests, disburses funds with transaction trace receipts, or rejects invalid requests with automated balance refunds.
+  5. **Platform Treasury Withdrawals:** Withdraws accumulated platform ad margins directly to commercial bank accounts with automated ledger tracking.
+  6. **User Administration & RBAC:** Promotes/demotes user roles (with root admin protection) and manages active accounts.
+  7. **Data Export Engine:** Generates instant UTF-8 CSV audit reports for users, courses, payouts, certificates, and ad impressions.
 
 ---
 
 ## 2. Dedicated End-to-End Website Process
 
-The following 10-phase operational lifecycle outlines the complete workflow of the Adsity platform across all user roles, from onboarding and curriculum ingestion to video learning, ad monetization, project evaluation, credential verification, and financial disbursements.
+The 10-phase operational lifecycle outlines the complete workflow of Adsity across all roles:
 
 ### Phase 1: Onboarding & Account Provisioning
-1. **Student Registration (`signup.php`):** Learners register with their name, email, and a secure 5-tier password. Upon registration, their account is provisioned with `role_id = 3` (`student`), authenticated into `$_SESSION`, and directed to the student dashboard or their selected course.
-2. **Instructor Onboarding (`teach.php`):** Educators apply with professional credentials, background, and teaching category. An instructor account is provisioned (`role_id = 2`) along with an initialized wallet record in `instructor_wallets` ($0.00 balance).
-3. **Administrator Access (`login.php`):** Platform superusers authenticate using root credentials (`role_id = 1`) and access the central Admin Control Center (`admin/dashboard.php`).
+* **Student Registration ([signup.php](file:///home/ugenella/coding/xampp-projects/adsity/signup.php)):** Learners register with their name, email, and a secure 5-tier password. Upon creation, their account is assigned `role_id = 3` and logged in immediately.
+* **Instructor Onboarding ([teach.php](file:///home/ugenella/coding/xampp-projects/adsity/teach.php)):** Educators register with professional credentials and category expertise. An account is created (`role_id = 2`) with an initialized wallet balance of `$0.00`.
+* **Administrator Access ([login.php](file:///home/ugenella/coding/xampp-projects/adsity/login.php)):** Authenticates superuser accounts (`role_id = 1`) and routes them directly to the Admin Control Center ([admin/dashboard.php](file:///home/ugenella/coding/xampp-projects/adsity/admin/dashboard.php)).
 
 ### Phase 2: Course Authoring & Curriculum Upload
-1. **Multi-Step Wizard (`instructor/create_course.php`):** Instructors author courses via a guided 4-step wizard:
-   - **Step 1 (Overview):** Specify title, category, syllabus description, and upload a cover thumbnail to `uploads/instructors/{id}/{course_id}/thumbnail/`.
-   - **Step 2 (Curriculum):** Upload sequential MP4 lesson modules. Durations are automatically detected client-side via HTML5 Video API and validated server-side using CLI `ffprobe`.
-   - **Step 3 (Assessment Rubric):** Define the required final project format (GitHub repository, live website URL, or project archive file upload) and provide grading rubrics.
-   - **Step 4 (Pre-Flight Preview):** Review catalog card mockups, syllabus layout, and submit the curriculum for review.
-2. **Moderation Queue Ingestion:** Newly submitted courses are saved with `status = 'pending_review'` and remain hidden from the public course catalog until administrative approval.
+* **4-Step Wizard ([instructor/create_course.php](file:///home/ugenella/coding/xampp-projects/adsity/instructor/create_course.php)):**
+  1. **Overview:** Enter title, category, and syllabus description, and upload a course thumbnail.
+  2. **Curriculum:** Upload sequential MP4 video lessons. Durations are detected on the client via the HTML5 Video API and validated on the server using `ffprobe`.
+  3. **Assessment Rubric:** Choose the final project format (GitHub repository, live website URL, or file archive) and specify grading instructions.
+  4. **Preview & Submission:** Review catalog card mockups and submit the curriculum for review.
+* Newly created courses are marked `pending_review` and hidden from the public catalog until approved.
 
-### Phase 3: Administrative Course Moderation & Catalog Publication
-1. **Moderation Queue Review (`admin/moderate_course.php`):** Administrators review pending courses in the "Course Moderation" tab of the Admin Control Center.
-2. **Approval Path:** If curriculum and video quality meet platform standards, the administrator approves the course (`status = 'published'`). The course instantly appears in the public catalog (`courses.php`) and topic category filters.
-3. **Rejection / Revision Path:** If revisions are necessary (e.g. missing audio, incomplete syllabus, unclear rubric), the administrator rejects the course with mandatory feedback notes (`status = 'rejected'`). The instructor receives an immediate alert and feedback note in Instructor Studio to make required adjustments.
+### Phase 3: Administrative Course Moderation & Publication
+* **Moderation Queue ([admin/moderate_course.php](file:///home/ugenella/coding/xampp-projects/adsity/admin/moderate_course.php)):** Administrators review pending courses in the Admin Control Center.
+* **Approval:** If curriculum standards are met, the course status changes to `published` and it immediately appears in the public catalog ([courses.php](file:///home/ugenella/coding/xampp-projects/adsity/courses.php)).
+* **Rejection / Revision Request:** If changes are required, the admin rejects the submission with mandatory feedback. The instructor is notified in the Instructor Studio to make adjustments.
 
-### Phase 4: Sponsor Ad Campaign Ingestion & Monetization Setup
-1. **Campaign Creation (`admin/manage_ads.php`):** Administrators launch campaigns via the "Sponsor Ad Engine" tab:
-   - **Native File Manager Upload:** The administrator clicks the dropzone to open their operating system's native file chooser (or drags-and-drops a video file). Supported formats include MP4, WebM, and MOV up to 100MB. Files are saved securely in `uploads/ads/` with sanitized, unique names (`ad_{timestamp}_{uniqid}.{ext}`).
-   - **Custom/Fallback Paths:** Admins can toggle custom paths to use bundled sample ads (`assets/ad/sample_ad.mp4`) or external video URLs.
-   - **Campaign Settings:** Admin configures sponsor brand name, marketing headline, destination click URL, custom CPM rate, and initial serving status (`active` or `paused`).
-2. **Mock Google AdSense for Video Network (`mock_adsense/`):**
-   - **Simulated Programmatic Network:** An isolated ad server sandbox mimicking Google AdSense for Video and the Google Interactive Media Ads (IMA) SDK.
-   - **Live Auction Endpoint (`mock_adsense/serve_ad.php`):** Serves dynamic video ad payloads in both JSON and industry-standard VAST 3.0 XML formats serving the authentic Coca-Cola Real Magic commercial campaign (`sample_ad.mp4`).
-   - **Developer Sandbox Portal (`mock_adsense/index.php`):** A dedicated Google-styled developer dashboard displaying publisher ID `pub-849201837492`, live inventory bids, and an interactive real-time auction simulator.
-3. **Platform Monetization Economics (`platform_settings`):** Administrators configure global financial parameters:
-   - Default Ad CPM Rate ($ per completed 15-second impression, default `$0.0500`)
-   - Revenue Share Split: 65% to course instructors ($0.0325 / view) and 35% to platform treasury ($0.0175 / view)
-   - Anti-Spam Ad Cooldown Interval (minutes required between billable views per student per lesson)
+### Phase 4: Sponsor Ad Integration & Monetization Setup
+* **Ad Network Integration:** Video advertisements are delivered via the simulated Google AdSense for Video sandbox ([mock_adsense/](file:///home/ugenella/coding/xampp-projects/adsity/mock_adsense)), serving authentic partner commercials programmatically in JSON and VAST 3.0 XML formats.
+* **Platform Monetization Economics:** Administrators configure global parameters:
+  * **Default Ad CPM Rate:** Revenue generated per completed 15-second impression (e.g., `$0.0500`).
+  * **Revenue Share Split:** Default split is **65% to the instructor** and **35% to the platform treasury**.
+  * **Anti-Spam Ad Cooldown:** Configured time window required between billable ad views per student per lesson.
 
-### Phase 5: Student Discovery, Enrollment & Interactive Learning
-1. **Catalog Exploration (`courses.php`):** Students browse published courses with search and topic filters. Cards dynamically show "View Course & Enroll" or "In Progress (View)" based on enrollment status.
-2. **Enrollment (`course_details.php` & `student/enroll_function.php`):** Clicking "Enroll in Course" creates an enrollment record (`progress_percent = 0`, `status = 'in_progress'`) and routes the student directly into the video classroom.
-3. **Interactive Classroom (`student/learn.php`):**
-   - **Mandatory 15-Second Pre-Roll:** Before any lesson video begins, an active sponsor video plays with a real-time countdown timer.
-   - **Branded Sponsor Overlay:** Displays "Sponsored by {Brand}" with a clickable "Learn More &rarr;" link to the sponsor's landing page.
-   - **Curriculum Navigation:** Students navigate unlocked lessons sequentially while monitoring their course completion percentage.
+### Phase 5: Student Discovery, Enrollment & Learning
+* **Course Catalog ([courses.php](file:///home/ugenella/coding/xampp-projects/adsity/courses.php)):** Students browse published courses with dynamic cards showing enrollment status ("View Course & Enroll" or "In Progress").
+* **Enrollment ([course_details.php](file:///home/ugenella/coding/xampp-projects/adsity/course_details.php)):** Clicking "Enroll in Course" registers the student (`progress_percent = 0`, `status = 'in_progress'`) and enters the classroom.
+* **Interactive Classroom ([student/learn.php](file:///home/ugenella/coding/xampp-projects/adsity/student/learn.php)):**
+  * Plays a mandatory 15-second sponsor video with a real-time countdown timer before each lesson starts.
+  * Displays a branded sponsor overlay with partner information and landing page links.
+  * Lets students navigate unlocked lessons sequentially while tracking progress.
 
 ### Phase 6: Impression Verification & Automated Revenue Allocation
-1. **Ad Telemetry & Verification (`student/record_ad_activity.php`):** When the 15-second ad completes, an automated AJAX call dispatches impression data:
-   - **Anti-Spam Verification:** Validates that the student has not recorded an impression for the same lesson within the configured cooldown window (e.g. 5 minutes).
-   - **Self-Preview Guard:** Prevents instructors from generating ad revenue while previewing their own courses.
-   - **Atomic 65/35 Revenue Split:** Calculates earnings based on configured CPM: 65% allocated to instructor and 35% allocated to platform treasury. Logs an immutable audit record in `ad_activity_logs` (`gross_cpm`, `amount_earned`, `platform_earned`), increments `sponsor_ads.total_impressions`, credits the instructor's wallet (`total_earned` and `available_balance`), and credits the platform treasury wallet (`platform_wallet` id = 1) within an ACID database transaction.
-2. **Lesson Completion Engine (`student/complete_lesson.php`):** When the lesson video concludes, completion is logged to `lesson_completions`, course progress percentage updates, and the learner progresses to the next module.
+* **Ad Verification & Logging ([student/record_ad_activity.php](file:///home/ugenella/coding/xampp-projects/adsity/student/record_ad_activity.php)):**
+  * When the 15-second ad finishes, an automated request validates the impression against the anti-spam cooldown window.
+  * Prevents instructors from generating ad revenue while previewing their own courses.
+  * Automatically calculates and splits the revenue within a database transaction: 65% credits the instructor's wallet balance and 35% deposits into the platform treasury.
+* **Lesson Progress ([student/complete_lesson.php](file:///home/ugenella/coding/xampp-projects/adsity/student/complete_lesson.php)):** Completing a lesson updates student progress and unlocks the next module.
 
 ### Phase 7: Final Assessment & Project Evaluation
-1. **Assessment Gate (`student/submit_exam.php`):** Deliverable submission unlocks exclusively when course progress reaches 100%.
-2. **Deliverable Submission (`student/submit_exam_function.php`):** The student submits their deliverable (GitHub repo URL, live website link, or uploaded project file archive saved into `assets/submissions/`) with project notes. Submission status is set to `pending`.
-3. **Instructor Evaluation (`instructor/review_submission_function.php`):**
-   - **Approval:** Instructor evaluates the deliverable, enters commentary, and marks it `approved`. Enrollment status is set to `completed`, and a unique credential code (`ADS-{YEAR}-{HEX}`) is generated in `certificates` with `status = 'valid'`.
-   - **Revision Request:** If criteria are unmet, instructor marks `revision_needed` with actionable feedback. The student is notified and can revise and resubmit their work.
+* **Assessment Gate ([student/submit_exam.php](file:///home/ugenella/coding/xampp-projects/adsity/student/submit_exam.php)):** Deliverable submission unlocks exclusively when course progress reaches 100%.
+* **Deliverable Submission:** The student submits their GitHub repository URL, live application link, or uploaded project archive with notes.
+* **Instructor Evaluation:**
+  * **Approval:** The instructor approves the project, marking the enrollment as completed. A unique certificate verification code (`ADS-{YEAR}-{HEX}`) is generated.
+  * **Revision Request:** If criteria are unmet, the instructor marks the submission for revision with actionable feedback so the student can resubmit.
 
 ### Phase 8: Credential Issuance & Anti-Fraud Verification
-1. **Certificate Presentation (`student/certificate.php`):** Students view and print accredited completion certificates displaying their legal name, course title, completion date, and unique verification ID.
-2. **Anti-Fraud Registry & Revocation (`admin/revoke_certificate.php`):**
-   - Administrators audit credentials via the "Certificates & Logs" tab in the Admin Control Center.
-   - If academic dishonesty or deliverable plagiarism is detected, the administrator revokes the credential with documented audit reasoning.
-   - When viewed publicly, a revoked certificate displays a prominent red audit warning banner, invalidation reason, and a diagonal "REVOKED" watermark.
-   - Administrators can restore revoked certificates if an appeal is resolved.
-3. **Intelligent Return Routing:** The certificate return button detects the viewer's active session role (Admin, Instructor, Student) to avoid role collisions and prevent inadvertent administrative logouts.
+* **Certificate Display ([student/certificate.php](file:///home/ugenella/coding/xampp-projects/adsity/student/certificate.php)):** Students view and print accredited certificates displaying their legal name, course title, completion date, and verification ID.
+* **Anti-Fraud Auditing & Revocation:**
+  * Administrators can review and revoke any certificate suspected of academic dishonesty or deliverable plagiarism.
+  * A revoked certificate publicly displays a red audit warning banner, invalidation reason, and a diagonal "REVOKED" watermark.
+  * Administrators can restore a revoked certificate if an appeal is resolved.
+* **Intelligent Routing:** The certificate return button detects whether the viewer is an Admin, Instructor, or Student to avoid session collisions.
 
-### Phase 9: Multi-Tier Monetization, Payouts & Treasury Cash-Out
-1. **Instructor Cash-Out (`instructor/request_payout_function.php`):** Instructors with an `available_balance >= $5.00` submit cash-out requests via PayPal, GCash, or Bank Transfer. A database transaction locks the balance and sets `payout_requests.status = 'pending'`.
-2. **Administrative Disbursement (`admin/process_payout_function.php`):**
-   - **Disbursement:** The administrator reviews destination details, disburses funds through the chosen financial channel, enters a trace reference code (e.g. bank trace, PayPal transaction ID, GCash ref), and marks the request `completed`. Total withdrawn funds are updated.
-   - **Rejection with Refund:** If payout details are invalid, the administrator rejects the request with mandatory explanatory notes. Locked funds are automatically refunded back to the instructor's `available_balance`.
-3. **Platform Treasury & Admin Bank Cash-Out (`admin/admin_withdraw.php`):**
-   - **Platform Treasury Tracking:** Administrators view real-time platform metrics (Gross Ad Revenue, 65% Teacher Pool, 35% Platform Treasury, and Total Withdrawn).
-   - **Direct Bank Transfer:** Administrators can withdraw accumulated platform funds directly to their designated bank account without minimum threshold constraints.
-   - **Internal Ledger Protocol:** An ACID transaction with row-level locking (`FOR UPDATE`) validates balance, deducts from `platform_wallet.available_balance`, increments `total_withdrawn`, generates a unique banking trace reference (`BNK-YYYY-XXXX`), and records the completed transfer in `admin_withdrawals`.
+### Phase 9: Payouts & Platform Treasury Cash-Out
+* **Instructor Cash-Out:** Instructors with an available balance of at least `$5.00` can request withdrawals via PayPal, GCash, or Bank Transfer. The requested balance is locked pending review.
+* **Administrative Payout Processing:**
+  * **Disbursement:** The admin inspects the destination account, disburses the funds, enters a transaction reference ID, and marks the request completed.
+  * **Rejection & Refund:** If payment details are invalid, the admin rejects the request with notes, and the locked funds automatically refund to the instructor's available balance.
+* **Platform Treasury Bank Cash-Out ([admin/admin_withdraw.php](file:///home/ugenella/coding/xampp-projects/adsity/admin/admin_withdraw.php)):**
+  * Administrators can withdraw accumulated platform funds directly to a commercial bank account with no minimum threshold.
+  * Every withdrawal executes an atomic ledger transaction, generates a unique banking trace reference (`BNK-YYYY-XXXX`), and logs the transfer.
 
-### Phase 10: Platform Governance, RBAC & Audit Export
-1. **User Role Management (`admin/change_role_function.php`):** Administrators can inspect any student or teacher profile, promote students to instructors (automatically provisioning wallet accounts), or demote instructors. Self-demotion by the root admin is strictly prevented.
-2. **Platform Data Export (`admin/export_data.php`):** Administrators can download real-time CSV reports (Users, Courses, Instructor Payouts, Admin Bank Ledger, Certificates, Ad Logs, Sponsor Campaigns) with UTF-8 BOM encoding for direct opening in Microsoft Excel and spreadsheet software.
-3. **Safe Session Termination (`assets/js/logout_modal.js`):** Global glassmorphic logout confirmation modal prevents accidental session terminations across all user roles.
+### Phase 10: Platform Governance, RBAC & Reporting
+* **User Management:** Administrators can promote students to instructors (automatically provisioning a wallet) or demote instructors, while protecting root administrator accounts from accidental lockouts.
+* **Data Export Engine ([admin/export_data.php](file:///home/ugenella/coding/xampp-projects/adsity/admin/export_data.php)):** Administrators can download instant CSV audit reports with UTF-8 BOM encoding for Excel (Users, Courses, Instructor Payouts, Admin Bank Ledger, Certificates, Ad Logs, and Sponsor Campaigns).
+* **Safe Logout:** A global confirmation modal intercepts logout triggers across all user roles to prevent accidental session loss.
 
 ---
 
@@ -114,675 +112,46 @@ The following 10-phase operational lifecycle outlines the complete workflow of t
 | Layer | Technology | Details |
 | :--- | :--- | :--- |
 | **Backend** | PHP 8.x | Native procedural PHP with PDO database abstraction, prepared statements, and transactional rollbacks |
-| **Database** | MariaDB 10.4.32 | Relational schema with 15 tables, foreign keys, cascading constraints, and unique indices |
-| **Session & Auth** | PHP Sessions (`$_SESSION`) | Role-based access control (RBAC), session gating, and credential memory purging |
-| **Media Processing** | FFmpeg (`ffprobe`) | Server-side CLI execution to detect video durations from uploaded lesson MP4s |
-| **File Upload Handling** | Native PHP Uploads | Secure file uploads for sponsor videos (MP4, WebM, MOV up to 100MB), thumbnails, and student project deliverables |
-| **Frontend** | HTML5 / CSS3 / Vanilla JS | Modular stylesheets (`style.css`, `admindashboard.css`), Raleway & Cinzel typography, HTML5 Video API |
-| **UI Components** | Custom JavaScript | Native File Manager dropzone picker, glassmorphic modal system, ad player state machine |
+| **Database** | MariaDB 10.4 | Relational database with foreign key constraints, cascading updates/deletes, and unique indices |
+| **Session & Auth** | PHP Sessions (`$_SESSION`) | Role-based access control (RBAC), session gating, and immediate memory purging of plaintext passwords |
+| **Media Processing** | FFmpeg (`ffprobe`) | Server-side CLI execution to detect video durations from uploaded lesson files |
+| **File Handling** | Native PHP Uploads | Secure uploads for video lessons, thumbnails, and student project deliverables |
+| **Frontend** | HTML5 / CSS3 / Vanilla JS | Responsive CSS, Raleway & Cinzel typography, and HTML5 Video API |
+| **UI Components** | Custom JavaScript | Native file dropzone pickers, ad player state machines, and glassmorphic confirmation modals |
 | **Reporting & Export** | Native PHP Stream | UTF-8 BOM-encoded CSV export streams for spreadsheet and Excel compatibility |
-| **Assets** | Standalone SVG Vectors | 30 bespoke icons stored in `assets/icons/` and rendered via standard `<img>` and inline SVG |
+| **Assets** | Standalone SVG Vectors | 30 bespoke icons stored in `assets/icons/` |
 
 ---
 
-## 4. Directory & File Structure
+## 4. Input Validation Architecture
 
-```
-adsity/
-├── admin/
-│   ├── admin_withdraw.php           # Platform Treasury bank withdrawal handler with balance validation
-│   ├── admindashboard.css           # Comprehensive stylesheet for Admin Control Center, sidebar, and modals
-│   ├── change_role_function.php     # RBAC action handler to alter user roles (Student <-> Instructor)
-│   ├── dashboard.php                # Admin Control Center (Overview, Courses, Payouts, Ads, Users, Analytics)
-│   ├── dashboard_function.php       # Data aggregation, financial analytics, tab routing, and session gate
-│   ├── delete_course.php            # Administrative action handler to delete platform courses
-│   ├── delete_user.php              # Action handler to safely remove non-admin users
-│   ├── export_data.php              # Action handler generating UTF-8 CSV exports for platform reporting
-│   ├── manage_ads.php               # Sponsor ads handler (file manager video upload, CPM, rev-share settings)
-│   ├── moderate_course.php          # Course moderation queue handler (approvals & rejections with notes)
-│   ├── process_payout_function.php  # Payout review handler (approvals, disbursements, refunds & rejections)
-│   └── revoke_certificate.php       # Anti-fraud certificate registry handler (revocation & restoration)
-│
-├── assets/
-│   ├── ad/
-│   │   └── sample_ad.mp4            # Default fallback 15-second sponsor advertisement video asset
-│   ├── adsity_assets/               # Course thumbnails, branding, and logo graphics
-│   ├── icons/                       # Standalone SVG icon vector library (30 icons)
-│   ├── js/
-│   │   └── logout_modal.js          # Global interactive logout confirmation modal
-│   ├── submissions/                 # Storage directory for student-uploaded project deliverables
-│   ├── Adsity-Homepage-Mockup_Genella.pdf # Original design specification
-│   ├── instructor_sign_up.jpg       # Hero branding graphic for instructor registration
-│   └── student_sign_up.jpg          # Hero branding graphic for student registration
-│
-├── database/
-│   ├── config.php                   # PDO database connection factory with failover fallback
-│   └── schema.sql                   # Complete SQL schema & table definitions (15 relational tables)
-│
-├── mock_adsense/
-│   ├── assets/
-│   │   └── sample_ad.mp4            # Sample 15-second commercial video asset
-│   ├── index.php                    # Google AdSense for Video simulated sandbox & auction tester
-│   ├── inventory.json               # Mock AdSense database of global advertisers & dynamic CPM bids
-│   └── serve_ad.php                 # Mock VAST 3.0 & JSON ad server API endpoint
-│
-├── instructor/
-│   ├── course_overview.php          # Dedicated per-course analytics, student roster, and syllabus stats
-│   ├── create_course.css            # Stylesheet for Multi-Step Course Creation Wizard
-│   ├── create_course.php            # 4-step wizard interface to publish new courses
-│   ├── create_course_function.php   # Backend course publishing handler, directory maker & ffprobe detector
-│   ├── dashboard.php                # Instructor Studio dashboard (Overview, Courses, Submissions, Revenue)
-│   ├── dashboard_function.php       # Instructor data aggregation, wallet metrics, and session gate
-│   ├── delete_course.php            # Action handler to delete an instructor's own course
-│   ├── instructordashboard.css      # Stylesheet for Instructor Studio and management tables
-│   ├── request_payout_function.php  # Payout request validator (PayPal, GCash, Bank) with row-locking
-│   └── review_submission_function.php # Project grading handler (approvals, revisions & cert issuance)
-│
-├── student/
-│   ├── certificate.css              # Stylesheet for Verified Certificate view and print layout
-│   ├── certificate.php              # Verified Certificate view (Print / Save as PDF / Anti-Fraud Watermark)
-│   ├── certificate_function.php     # Certificate lookup, verification handler, and role-aware return routing
-│   ├── complete_lesson.php          # AJAX endpoint to record lesson completions and recalculate progress %
-│   ├── dashboard.php                # Student Dashboard view (In-Progress, Completed, Certificates)
-│   ├── dashboard_function.php       # Student data query handler and session gate
-│   ├── enroll_function.php          # Student course enrollment processor
-│   ├── learn.css                    # Dedicated stylesheet for Interactive Video Classroom & Ad Stage
-│   ├── learn.php                    # Video Classroom interface with dynamic sponsor ad breaks & partner overlays
-│   ├── record_ad_activity.php       # AJAX endpoint to log ad views, enforce cooldowns, and credit instructor
-│   ├── studentdashboard.css         # Stylesheet for Student Dashboard and course progress cards
-│   ├── submit_exam.css              # Stylesheet for Final Exam / Project submission view
-│   ├── submit_exam.php              # Final project deliverable submission form (locked until 100% progress)
-│   └── submit_exam_function.php     # Deliverable upload handler (saves submission in pending status)
-│
-├── uploads/
-│   ├── ads/                         # Upload directory for sponsor campaign videos (ad_{timestamp}_{uniqid}.{ext})
-│   └── instructors/                 # Isolated instructor storage partitioned by instructor ID & course ID
-│       └── {instructor_id}/
-│           └── {course_id}/
-│               ├── thumbnail/       # Course cover thumbnail (thumbnail_{timestamp}.ext)
-│               └── lesson_{n}_{timestamp}.mp4 # Uploaded lesson MP4 video files
-│
-├── course_details.css               # Stylesheet for Course Overview & Syllabus page
-├── course_details.php               # Course Overview page (Thumbnail, Syllabus, Final Output, Sticky CTA)
-├── courses.css                      # Stylesheet for Course Catalog & Category filters
-├── courses.php                      # Course Catalog with search, category filtering (published courses only)
-├── courses_function.php             # Courses query handler with dynamic SQL filters and enrollment checks
-├── index.php                        # Adsity landing page / platform homepage
-├── login.php                        # User authentication login view (supports redirect_course)
-├── login_function.php               # Login validation, credential verification & role routing
-├── logout.php                       # Session destruction & logout redirection handler
-├── README.md                        # Technical & functional documentation
-├── signup.php                       # Student registration view (supports redirect_course)
-├── signup_function.php              # Student registration handler & auto-login
-├── style.css                        # Global design system, typography, colors, and responsive layout
-├── teach.php                        # Instructor application & registration view
-├── teach_function.php               # Instructor registration handler & session initialization
-└── validation.php                   # Centralized input validation functions (email, password criteria, terms)
-```
+All input validation rules are centralized in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity/validation.php):
 
----
-
-## 5. Database Schema & Architecture
-
-### Relational Architecture & Entity Matrix
-
-| Entity | Primary Key | Foreign Keys | Cardinality / Relationships | Responsibility |
-| :--- | :--- | :--- | :--- | :--- |
-| **`roles`** | `id` | None | `1 : N` with `users` | Defines system permissions (`1 = admin`, `2 = instructor`, `3 = student`). |
-| **`users`** | `id` | `role_id -> roles(id)` | `1 : N` with `courses`, `enrollments`, `certificates` | Stores credentials, profile data, and assigned security role. |
-| **`courses`** | `id` | `instructor_id -> users(id)`, `reviewed_by -> users(id)` | `1 : N` with `lessons`, `enrollments`, `course_submissions` | Holds course catalog meta, deliverable specifications, and moderation state (`draft`, `pending_review`, `published`, `rejected`). |
-| **`lessons`** | `id` | `course_id -> courses(id)` | `1 : N` with `lesson_completions`, `ad_activity_logs` | Represents sequential curriculum video modules and detected durations. |
-| **`enrollments`** | `id` | `user_id -> users(id)`, `course_id -> courses(id)` | Many-to-Many bridge (`users` &lt;-&gt; `courses`) | Tracks student course enrollment, progress percent (0-100), and status. |
-| **`lesson_completions`** | `id` | `user_id -> users(id)`, `course_id -> courses(id)`, `lesson_id -> lessons(id)` | Many-to-Many bridge (`users` &lt;-&gt; `lessons`) | Granular record of individual completed lessons per student. |
-| **`course_submissions`** | `id` | `user_id -> users(id)`, `course_id -> courses(id)` | `N : 1` with `users`, `N : 1` with `courses` | Tracks student project deliverables (URLs/files), grading status, and instructor feedback. |
-| **`certificates`** | `id` | `user_id -> users(id)`, `course_id -> courses(id)`, `revoked_by -> users(id)` | `1 : 1` unique pair (`user_id`, `course_id`) | Accredited credential records with verification codes and anti-fraud status (`valid`, `revoked`). |
-| **`instructor_wallets`** | `instructor_id` | `instructor_id -> users(id)` | `1 : 1` with `users` (instructors) | Aggregates lifetime earnings, available balance, and disbursed totals. |
-| **`payout_requests`** | `id` | `instructor_id -> users(id)`, `processed_by -> users(id)` | `N : 1` with `users` (instructors), `N : 1` with `users` (admin) | Manages cash-out requests, transfer channels, receipt references, and approval state. |
-| **`sponsor_ads`** | `id` | None | `1 : N` with `ad_activity_logs` | Manages sponsor video campaigns, uploaded files, click URLs, CPM rates, and active serving status. |
-| **`platform_settings`** | `setting_key` | None | Key-value configuration repository | Controls platform-wide monetization rules (default CPM, revenue-share %, ad intervals). |
-| **`ad_activity_logs`** | `id` | `course_id -> courses(id)`, `lesson_id -> lessons(id)`, `student_id -> users(id)`, `instructor_id -> users(id)`, `ad_id -> sponsor_ads(id)` | Audit trail connecting students, instructors, lessons, and sponsor ads | Immutable log of completed sponsor ad views recording gross CPM, 65% instructor share, and 35% platform share. |
-| **`platform_wallet`** | `id` | None | Singleton treasury entity (`id = 1`) | Tracks platform lifetime earnings (35% ad margin), available balance, and total withdrawn to bank. |
-| **`admin_withdrawals`** | `id` | `admin_id -> users(id)` | `N : 1` with `users` (admin) | Internal ledger of administrator bank disbursements, account numbers, and trace references. |
-
----
-
-### Detailed Table Specifications
-
-#### 1. `roles` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Role ID (`1 = admin`, `2 = instructor`, `3 = student`) |
-| `name` | `VARCHAR(50)` | `NOT NULL, UNIQUE` | Unique role identifier name (`admin`, `instructor`, `student`) |
-| `description`| `VARCHAR(255)` | `NULL` | Human-readable role description |
-
-#### 2. `users` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Unique User ID |
-| `full_name` | `VARCHAR(100)` | `NOT NULL` | User full legal name |
-| `email` | `VARCHAR(150)` | `NOT NULL, UNIQUE` | User login email address |
-| `password` | `VARCHAR(255)` | `NOT NULL` | Bcrypt hashed password (`PASSWORD_DEFAULT`) |
-| `role_id` | `INT` | `NOT NULL, DEFAULT 3, FK` | References `roles(id)` ON DELETE RESTRICT ON UPDATE CASCADE |
-| `created_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account registration timestamp |
-
-#### 3. `courses` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Unique Course ID |
-| `title` | `VARCHAR(150)` | `NOT NULL` | Course Title |
-| `description`| `TEXT` | `NULL` | Detailed course overview and syllabus narrative |
-| `category` | `VARCHAR(100)` | `NULL` | Topic category (e.g. Web Development, Cloud Computing) |
-| `thumbnail`| `VARCHAR(255)` | `NULL` | Path to cover thumbnail image |
-| `total_lessons` | `INT` | `DEFAULT 10` | Total lessons count published in curriculum |
-| `instructor_id` | `INT` | `NULL, FK` | References `users(id)` ON DELETE SET NULL ON UPDATE CASCADE |
-| `assessment_type` | `ENUM` | `'github_repo', 'file_upload', 'live_url'` | Required format for final deliverable |
-| `assessment_instructions` | `TEXT` | `NULL` | Guidelines and rubric for final project grading |
-| `status` | `ENUM` | `'draft', 'pending_review', 'published', 'rejected'` | Moderation status (Default: `'published'`) |
-| `rejection_reason` | `TEXT` | `NULL` | Feedback and revision requirements provided by administrator |
-| `reviewed_at` | `TIMESTAMP` | `NULL` | Timestamp of administrative review decision |
-| `reviewed_by` | `INT` | `NULL, FK` | References `users(id)` ON DELETE SET NULL ON UPDATE CASCADE |
-| `created_at`| `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Course publication timestamp |
-
-#### 4. `lessons` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Unique Lesson ID |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `lesson_number` | `INT` | `NOT NULL` | Sequential position within course curriculum (`1`, `2`, `3`...) |
-| `title` | `VARCHAR(150)` | `NOT NULL` | Module / Lesson Title |
-| `video_path` | `VARCHAR(255)` | `NOT NULL` | Relative path to uploaded MP4 video file |
-| `duration` | `VARCHAR(20)` | `DEFAULT '10:00'` | Detected video duration (e.g. `12:45`) |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Lesson record creation timestamp |
-
-#### 5. `enrollments` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Enrollment ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `progress_percent` | `INT` | `DEFAULT 0` | Completion percentage (0 - 100) |
-| `status` | `ENUM` | `'in_progress', 'completed'` | Current study state |
-| `enrolled_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Initial enrollment timestamp |
-| `completed_at` | `TIMESTAMP` | `NULL` | Date when final project was approved |
-| *Index* | `UNIQUE` | `uq_user_course (user_id, course_id)` | Prevents duplicate student enrollments |
-
-#### 6. `lesson_completions` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Completion record ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `lesson_id` | `INT` | `NOT NULL, FK` | References `lessons(id)` ON DELETE CASCADE |
-| `completed_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Timestamp when video playback finished |
-| *Index* | `UNIQUE` | `uq_user_lesson (user_id, lesson_id)` | Ensures a lesson is completed once per student |
-
-#### 7. `course_submissions` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Submission record ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `submission_type` | `VARCHAR(50)` | `NOT NULL` | Deliverable format (`github_repo`, `file_upload`, `live_url`) |
-| `submission_value`| `VARCHAR(255)` | `NOT NULL` | Repository URL, live website link, or saved file name |
-| `notes` | `TEXT` | `NULL` | Student commentary and project overview |
-| `instructor_feedback` | `TEXT` | `NULL` | Review comments and revision guidance from instructor |
-| `status` | `ENUM` | `'pending', 'approved', 'revision_needed', 'rejected'` | Manual grading status |
-| `reviewed_at` | `TIMESTAMP` | `NULL` | Date when instructor evaluated deliverable |
-| `submitted_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Submission timestamp |
-
-#### 8. `certificates` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Certificate ID |
-| `user_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `certificate_code` | `VARCHAR(50)` | `NOT NULL, UNIQUE` | Verification code (e.g. `ADS-2026-ABCD1234`) |
-| `issued_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Timestamp of project approval |
-| `status` | `ENUM` | `'valid', 'revoked'` | Anti-fraud status (`valid` or `revoked`) |
-| `revocation_reason` | `TEXT` | `NULL` | Documented reason for administrative credential revocation |
-| `revoked_at` | `TIMESTAMP` | `NULL` | Timestamp of revocation action |
-| `revoked_by` | `INT` | `NULL, FK` | References `users(id)` ON DELETE SET NULL |
-| *Index* | `UNIQUE` | `uq_user_cert_course (user_id, course_id)` | One certificate per student per course |
-
-#### 9. `instructor_wallets` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `instructor_id` | `INT` | `PRIMARY KEY, FK` | References `users(id)` ON DELETE CASCADE |
-| `total_earned` | `DECIMAL(10,2)`| `NOT NULL, DEFAULT 0.00` | Lifetime cumulative ad revenue earned |
-| `available_balance` | `DECIMAL(10,2)`| `NOT NULL, DEFAULT 0.00` | Current funds available for withdrawal |
-| `total_withdrawn` | `DECIMAL(10,2)`| `NOT NULL, DEFAULT 0.00` | Total funds successfully disbursed by admin |
-| `updated_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` | Last balance modification timestamp |
-
-#### 10. `payout_requests` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Cash-out request ID |
-| `instructor_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `amount` | `DECIMAL(10,2)`| `NOT NULL` | Requested withdrawal amount (minimum $5.00) |
-| `payout_method` | `ENUM` | `'paypal', 'gcash', 'bank_transfer'` | Selected transfer channel |
-| `payout_details`| `TEXT` | `NOT NULL` | JSON encoded destination account details |
-| `instructor_notes`| `TEXT` | `NULL` | Optional comments submitted by instructor |
-| `admin_notes` | `TEXT` | `NULL` | Admin disbursement notes or rejection reasoning |
-| `transaction_reference` | `VARCHAR(100)` | `NULL` | Bank trace, GCash reference, or PayPal transaction ID |
-| `status` | `ENUM` | `'pending', 'completed', 'rejected'` | Processing status |
-| `processed_by` | `INT` | `NULL, FK` | References `users(id)` ON DELETE SET NULL |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Request timestamp |
-| `processed_at` | `TIMESTAMP` | `NULL` | Timestamp when reviewed by administrator |
-
-#### 11. `sponsor_ads` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Sponsor ad campaign ID |
-| `sponsor_name` | `VARCHAR(150)` | `NOT NULL` | Sponsor brand or enterprise partner name |
-| `campaign_title`| `VARCHAR(200)` | `NOT NULL` | Marketing campaign headline / callout |
-| `video_url` | `VARCHAR(255)` | `NOT NULL` | Stored video path (`uploads/ads/...` or external URL) |
-| `click_url` | `VARCHAR(255)` | `NULL` | Destination website or landing page URL |
-| `cpm_rate` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0500` | Revenue generated per completed view ($) |
-| `status` | `ENUM` | `'active', 'paused'` | Ad serving status (Default: `'active'`) |
-| `total_impressions` | `INT` | `NOT NULL, DEFAULT 0` | Cumulative completed video ad impressions |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Campaign creation timestamp |
-
-#### 12. `platform_settings` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `setting_key` | `VARCHAR(100)` | `PRIMARY KEY` | Unique configuration key (e.g. `default_ad_cpm`, `instructor_rev_share_percent`) |
-| `setting_value`| `VARCHAR(255)` | `NOT NULL` | Assigned configuration value |
-| `description` | `VARCHAR(255)` | `NULL` | Human-readable setting explanation |
-| `updated_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` | Last updated timestamp |
-
-#### 13. `ad_activity_logs` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Ad impression log ID |
-| `course_id` | `INT` | `NOT NULL, FK` | References `courses(id)` ON DELETE CASCADE |
-| `lesson_id` | `INT` | `NOT NULL, FK` | References `lessons(id)` ON DELETE CASCADE |
-| `student_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `instructor_id`| `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE CASCADE |
-| `ad_id` | `INT` | `NULL, FK` | References `sponsor_ads(id)` ON DELETE SET NULL |
-| `gross_cpm` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0500`| Gross advertiser cost per completed 15s view |
-| `amount_earned`| `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0325`| 65% Revenue share credited to instructor wallet |
-| `platform_earned`| `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0175`| 35% Revenue margin deposited to platform treasury |
-| `ad_duration_seconds` | `INT` | `NOT NULL, DEFAULT 15` | Required watch time in seconds |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Timestamp of completed ad impression |
-
-#### 14. `platform_wallet` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Singleton wallet ID (`1`) |
-| `total_earned` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Cumulative lifetime 35% platform revenue earned |
-| `available_balance` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Liquid platform treasury funds available for bank withdrawal |
-| `total_withdrawn` | `DECIMAL(10,4)`| `NOT NULL, DEFAULT 0.0000` | Total funds disbursed to administrator bank accounts |
-| `updated_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP` | Last balance modification timestamp |
-
-#### 15. `admin_withdrawals` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `INT` | `AUTO_INCREMENT, PRIMARY KEY` | Internal withdrawal record ID |
-| `admin_id` | `INT` | `NOT NULL, FK` | References `users(id)` ON DELETE RESTRICT |
-| `amount` | `DECIMAL(10,2)`| `NOT NULL` | Dollar amount withdrawn from treasury |
-| `bank_name` | `VARCHAR(100)` | `NOT NULL` | Destination commercial banking institution |
-| `account_name`| `VARCHAR(150)` | `NOT NULL` | Legal account holder name |
-| `account_number`| `VARCHAR(100)` | `NOT NULL` | Destination bank account / IBAN number |
-| `transaction_reference` | `VARCHAR(100)` | `NOT NULL, UNIQUE` | Banking trace reference code (`BNK-YYYY-XXXX`) |
-| `notes` | `TEXT` | `NULL` | Administrative memo or withdrawal purpose notes |
-| `status` | `ENUM` | `'completed', 'pending', 'rejected'` | Ledger status (Default: `'completed'`) |
-| `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Transfer execution timestamp |
-
----
-
-## 6. Core Platform Workflows
-
-### A. Authentication & Session Routing Flow
-
-1. **Request Submission:** User submits email and password at `login.php`.
-2. **Controller Guard:** `login_function.php` ensures the request originated via POST and executes `validateLoginInput()`.
-3. **Database Query:** Prepared PDO statement queries `users` joined with `roles` where `email = :email`.
-4. **Password Verification:** PHP's `password_verify()` checks the submitted plaintext password against the Bcrypt database hash.
-5. **Memory Purge:** Raw input password and database hash strings are immediately unset from memory.
-6. **Session Assignment:** User identity, email, `role_id`, and `role_name` are populated into `$_SESSION`.
-7. **RBAC Redirection Matrix:**
-   - If `role_name === 'admin'` &rarr; Redirects to `admin/dashboard.php`.
-   - If `role_name === 'instructor'` &rarr; Redirects to `instructor/dashboard.php`.
-   - If `role_name === 'student'`:
-     - If `redirect_course` parameter is present &rarr; Redirects to `course_details.php?id={redirect_course}`.
-     - Otherwise &rarr; Redirects to `student/dashboard.php`.
-   - Default fallback &rarr; Redirects to `index.php`.
-
----
-
-### B. Student Registration & Dashboard Experience
-
-1. Visitor registers at `signup.php` (optionally retaining `redirect_course`).
-2. `signup_function.php` enforces the 5-tier password policy via `validateSignupInput()`, hashes the password with `PASSWORD_DEFAULT`, and inserts the record into `users` with `role_id = 3`.
-3. The student is automatically authenticated into the session and routed to `student/dashboard.php`.
-4. The dashboard provides a 4-tab interface:
-   - **Overview Tab:** Quick metrics (In Progress, Completed, Certificates), welcome banner, and recent course cards with "Course Details" and conditional "Submit Project" buttons.
-   - **In Progress Tab:** Enrolled active courses, completion percentages, lesson counters, and quick links to course details.
-   - **Completed Tab:** Courses where deliverables have been approved by instructors, showing completion dates and "View Official Certificate" links.
-   - **My Certificates Tab:** Showcase of earned certificates with verification codes, issue dates, and direct links to `student/certificate.php`.
-
----
-
-### C. 4-Step Course Creation Wizard & Moderation Submission
-
-Instructors publish structured courses using a guided 4-step wizard in `instructor/create_course.php`:
-
-1. **Step 1: Course Info & Cover:** Title, category, description, and thumbnail upload (JPG, PNG, WEBP).
-2. **Step 2: Sequential Curriculum Builder:**
-   - Adds lessons sequentially with module titles and MP4 video selectors.
-   - Client-side HTML5 Video API detects durations and calculates estimated ad breaks.
-   - Server-side `instructor/create_course_function.php` runs `ffprobe` to verify video duration.
-3. **Step 3: Deliverable & Rubric:** Selects format (`github_repo`, `file_upload`, `live_url`) and inputs grading rubrics.
-4. **Step 4: Preview & Submission to Moderation Queue:**
-   - Course is inserted with `status = 'pending_review'`.
-   - The course does **not** appear in the public catalog until an administrator approves it.
-   - In `instructor/dashboard.php`, the course displays a yellow **"Pending Admin Review"** badge.
-
----
-
-### D. Filesystem Storage Hierarchy & File Naming Syntax
-
-When an instructor publishes a course or an admin uploads an ad video, isolated directories prevent naming collisions:
-
-```
-uploads/
-├── ads/
-│   └── ad_{timestamp}_{uniqid}.{ext}
-└── instructors/
-    └── {instructor_id}/
-        └── {course_id}/
-            ├── thumbnail/
-            │   └── thumbnail_{timestamp}.{ext}
-            ├── lesson_1_{timestamp}.mp4
-            ├── lesson_2_{timestamp}.mp4
-            └── lesson_3_{timestamp}.mp4
-```
-
-#### Naming Syntax Rationale:
-- **`ad_{timestamp}_{uniqid}.{ext}` & `lesson_{n}_{timestamp}.mp4`**:
-  - **Collision Prevention:** Eliminates accidental file overwriting upon re-uploads.
-  - **Cache Invalidation:** Prevents browsers from serving stale cached video files.
-  - **Filesystem Sanitization:** Strips unsafe characters, spaces, and path traversal vectors.
-
----
-
-### E. Course Catalog & Exploration (`courses.php`)
-
-1. Accessible from navigation or search triggers.
-2. `courses_function.php` enforces quality control by querying **only** courses with `status = 'published'`. Courses in `pending_review`, `draft`, or `rejected` states are hidden from public listing.
-3. For logged-in students, queries `enrollments` to determine dynamic card states:
-   - Already enrolled: Shows green **"In Progress (View)"** button.
-   - Not enrolled: Shows blue **"View Course & Enroll"** button.
-4. Clicking any course card opens `course_details.php`.
-
----
-
-### F. Course Overview & Student Enrollment Flow
-
-1. **Course Overview (`course_details.php`):**
-   - Displays full curriculum with lesson timeline, duration badges, and sponsor tags.
-   - Details required final deliverable format and assessment guidelines.
-   - Displays sticky enrollment action card:
-     - Unenrolled student: Prominent **"Enroll in Course"** button.
-     - Enrolled student: Displays **"You are enrolled! (X% completed)"** banner with direct **"Start Lesson"** button pointing to `student/learn.php`.
-     - Guest: **"Log In to Enroll"** button preserving `redirect_course` parameter.
-2. **Enrollment Backend Processor (`student/enroll_function.php`):**
-   - Verifies student authentication.
-   - Inserts record into `enrollments` (`progress_percent = 0`, `status = 'in_progress'`) with `ON DUPLICATE KEY UPDATE`.
-   - Redirects to `course_details.php?id={course_id}&status=success&message=Successfully+enrolled!` so the learner can immediately begin learning.
-
----
-
-### G. Interactive Classroom & Dynamic Ad Monetization Engine
-
-The core learning and monetization loop is implemented across `student/learn.php`, `student/complete_lesson.php`, and `student/record_ad_activity.php`:
-
-1. **Dynamic Pre-Roll Sponsor Selection:**
-   - Classroom queries `sponsor_ads` for an `active` campaign (ordered randomly or by weight).
-   - If an ad is found, renders the video source from `uploads/ads/...` (or custom URL) and displays an overlay badge: *"Sponsored by {sponsor_name}"* with an optional *"Learn More &rarr;"* link to `click_url`.
-   - If no active campaign exists, falls back cleanly to `assets/ad/sample_ad.mp4`.
-2. **Mandatory 15-Second Viewing:**
-   - Video controls are locked during the sponsor session with a visual countdown timer.
-   - Fallback play overlay ensures reliable playback on mobile devices blocking autoplay.
-3. **Ad Monetization & Instructor Credit (`student/record_ad_activity.php`):**
-   - Dispatches AJAX request upon completion of the ad session.
-   - **Configurable Economics:** Reads `platform_settings` for `default_ad_cpm` (e.g. $0.0500), `instructor_rev_share_percent` (e.g. 70%), and `ad_interval_minutes` (e.g. 5 minutes).
-   - If the specific campaign defines a custom `cpm_rate`, that rate takes precedence.
-   - **Anti-Spam Cooldown:** Checks `ad_activity_logs` to ensure the student has not logged an impression for the same lesson within the configured cooldown interval.
-   - **Self-Preview Guard:** Prevents instructors from generating revenue while previewing their own courses.
-   - **Atomic Wallet Increment:** Within a database transaction, inserts an audit log into `ad_activity_logs`, increments `sponsor_ads.total_impressions`, and increments `instructor_wallets` (`total_earned` and `available_balance`) by the instructor's revenue share portion.
-4. **Lesson Playback & Sequential Completion (`student/complete_lesson.php`):**
-   - Ad player dismounts and the actual lesson video starts.
-   - On video completion, records completion in `lesson_completions` and recalculates course progress.
-   - When 100% progress is reached, enables final project deliverable submission.
-
----
-
-### H. Student Final Project Submission Flow
-
-1. **Completion Gate (`student/submit_exam.php` & `student/submit_exam_function.php`):**
-   - Access is restricted until `progress_percent >= 100` or `status = 'completed'`.
-   - Incomplete progress renders a lock notice displaying remaining percentage and resume link.
-2. **Deliverable Submission:**
-   - Depending on course `assessment_type`, accepts a GitHub URL, live application URL, or file archive upload (ZIP, RAR, PDF, TAR, GZ, JPG, PNG; saved into `assets/submissions/sub_{studentId}_{courseId}_{timestamp}.{ext}`).
-   - Sets submission record in `course_submissions` with `status = 'pending'`.
-   - Notifies student that deliverable has been submitted for manual instructor grading.
-
----
-
-### I. Instructor Review, Grading & Certificate Issuance
-
-Located in `instructor/review_submission_function.php`:
-
-1. **Submission Review Queue:** Instructors inspect student submissions from the "Student Submissions" tab on `instructor/dashboard.php`.
-2. **Action: Approve Project:**
-   - Sets `course_submissions.status = 'approved'` with optional instructor commentary.
-   - Updates student enrollment: `status = 'completed'`, `progress_percent = 100`, `completed_at = CURRENT_TIMESTAMP`.
-   - Generates unique certificate code: `ADS-{YEAR}-{HEX}` (e.g. `ADS-2026-B81A4C9F`).
-   - Inserts record into `certificates` table with `status = 'valid'`.
-3. **Action: Request Revision:**
-   - Sets `course_submissions.status = 'revision_needed'` with mandatory feedback.
-   - Sets `enrollments.status = 'in_progress'` and `completed_at = NULL`.
-   - Revokes any previously issued certificate via `DELETE FROM certificates`.
-   - Student resubmits their revised project from `student/submit_exam.php`.
-
----
-
-### J. Course Moderation & Quality Assurance Queue
-
-Located in `admin/moderate_course.php` and `admin/dashboard.php` ("Course Moderation" tab):
-
-1. **Moderation Queue Navigation:**
-   - Dedicated filter sub-tabs: **Pending Review**, **Published (Live)**, and **Needs Revisions / Rejected**.
-   - Prominent badge on the admin sidebar highlights outstanding unreviewed courses.
-2. **Course Inspection:**
-   - Admin inspects title, instructor, category, total lessons, deliverable rubric, and syllabus.
-3. **Action: Approve Course:**
-   - Updates `courses.status = 'published'`, `reviewed_at = CURRENT_TIMESTAMP`, `reviewed_by = adminId`.
-   - Course immediately becomes live and searchable in `courses.php`.
-4. **Action: Reject / Request Revisions:**
-   - Opens `#adminRejectCourseModal`.
-   - Admin provides required corrective feedback (e.g. missing lesson audio, insufficient syllabus, or vague project rubric).
-   - Sets `courses.status = 'rejected'` and logs `rejection_reason`.
-   - In Instructor Studio, instructor sees red **"Revisions Requested"** badge with the admin's exact feedback note.
-5. **Action: Delete Course (`admin/delete_course.php`):**
-   - Removes problematic course; database cascading constraints clean associated lessons, enrollments, and submissions.
-
----
-
-### K. Google AdSense Network Engine & Monetization Rules
-
-Located in `admin/manage_ads.php`, `admin/dashboard.php` ("Ads & Monetization" tab), and `mock_adsense/`:
-
-1. **Automated Ad Network Integration (`mock_adsense/`):**
-   - All video advertisements are sourced exclusively through the simulated Google AdSense for Video Network API (`mock_adsense/serve_ad.php`).
-   - Programmatically serves the single authentic Coca-Cola "Real Magic • Refresh Your Study Break" commercial campaign (`mock_adsense/assets/sample_ad.mp4`).
-   - Manual administrator ad creation and file uploads have been completely deprecated and removed to maintain automated programmatic delivery.
-2. **Network Feed Control & Status:**
-   - Administrators monitor connected Google AdSense inventory from the admin dashboard.
-   - Administrators can pause or activate the live ad network stream (`admin/manage_ads.php?action=toggle_status`).
-   - Accidental deletion and manual insertion are strictly locked down.
-3. **Platform Economics Configuration:**
-   - Admin configures global monetization parameters saved to `platform_settings`:
-     - Default Ad CPM Rate ($0.0500 per completed 15-second impression)
-     - Instructor Revenue Share Split % (65% Instructor / 35% Platform Treasury Margin)
-     - Ad Anti-Spam Cooldown Interval (Minutes between valid impressions per student per lesson)
-4. **Interactive AdSense Sandbox (`mock_adsense/`):**
-   - Accessible via the "AdSense Sandbox" button on the admin dashboard.
-   - Provides publisher diagnostics (Publisher ID: `pub-849201837492`), live auction test runner, and VAST 3.0 XML / JSON API feed inspections.
-
----
-
-### L. Certificate Anti-Fraud Registry & Revocation
-
-Located in `admin/revoke_certificate.php`, `admin/dashboard.php` ("Certificates & Logs" tab), and `student/certificate.php`:
-
-1. **Registry Search & Audit:**
-   - Searchable table of all issued platform credentials by Certificate ID, Student Name, or Course.
-   - Filter by status (`Valid` or `Revoked`).
-2. **Revocation Modal & Action:**
-   - Admin selects "Revoke" on compromised credentials (e.g. plagiarized project deliverable, academic dishonesty).
-   - Admin enters mandatory audit reason in `#adminRevokeCertModal`.
-   - Sets `certificates.status = 'revoked'`, `revoked_at = CURRENT_TIMESTAMP`, `revoked_by = adminId`, and stores `revocation_reason`.
-3. **Public Verification Display (`student/certificate.php`):**
-   - **Valid Credential:** Renders original green verified seal, course completion details, and print trigger.
-   - **Revoked Credential:** Renders an official red audit warning banner: *"OFFICIAL AUDIT NOTICE: THIS CERTIFICATE HAS BEEN REVOKED"*, prints the exact revocation date and reason, transforms the verified seal to a red *"REVOKED / INVALID CREDENTIAL"* badge, and overlays a prominent 45-degree angled **"REVOKED"** watermark across the certificate frame.
-4. **Restoration Action:**
-   - Admin can click "Restore" to reinstate an erroneously revoked certificate back to `valid` status.
-5. **Intelligent Role-Aware Return Routing:**
-   - `student/certificate_function.php` detects the active viewer's session role:
-     - Admin &rarr; Returns to `admin/dashboard.php#analytics`
-     - Instructor &rarr; Returns to `instructor/dashboard.php`
-     - Student &rarr; Returns to `student/dashboard.php`
-     - Guest &rarr; Returns to `index.php`
-   - Prevents role authentication collisions and accidental logouts when administrators audit student certificates.
-
----
-
-### M. Instructor Payout / Cash-Out System
-
-Located in `instructor/request_payout_function.php`:
-
-1. **Eligibility & Threshold:** Instructor must possess `available_balance >= $5.00`.
-2. **Transfer Method Validation:**
-   - **PayPal:** Enforces RFC email format validation.
-   - **GCash:** Validates account name and Philippine 11-digit mobile format (`/^(09|\+639)\d{9}$/`).
-   - **Bank Transfer:** Requires Bank Name, Account Name, and Account Number.
-3. **Atomic Balance Lock:** Executes a database transaction with `FOR UPDATE` row-locking on `instructor_wallets`. Deducts the requested withdrawal amount from `available_balance` and inserts a new record into `payout_requests` with `status = 'pending'`.
-
----
-
-### N. Administrator Cash-Out Review & Disbursement
-
-Located in `admin/dashboard.php` and `admin/process_payout_function.php`:
-
-1. **Admin Control Center:** Dashboard displays pending payout count, total pending payout value, and cumulative disbursed funds.
-2. **Review Dialog:** Admin inspects request details, instructor identity, and destination account.
-3. **Approval Flow:**
-   - Sets `payout_requests.status = 'completed'`, records admin ID, timestamp, and optional transaction reference (bank trace, PayPal ID, GCash ref).
-   - Increments `instructor_wallets.total_withdrawn` by the disbursed amount.
-4. **Rejection & Auto-Refund Flow:**
-   - Admin provides mandatory reason for rejection in `admin_notes`.
-   - Sets `payout_requests.status = 'rejected'`.
-   - Automatically refunds the locked amount back to `instructor_wallets.available_balance`.
-
----
-
-### O. Platform Treasury & Administrator Bank Cash-Out
-
-Located in `admin/dashboard.php` and `admin/admin_withdraw.php`:
-
-1. **Treasury Analytics:** The Administrator Control Center monitors:
-   - **Gross Ad Revenue:** Total revenue generated across all completed 15-second sponsor views.
-   - **Teacher Revenue Pool (65%):** Funds automatically credited to instructor wallets.
-   - **Platform Treasury Balance (35%):** Unwithdrawn liquid funds accumulated in the platform treasury (`platform_wallet` singleton).
-   - **Cumulative Admin Withdrawals:** Lifetime funds disbursed to administrative bank accounts.
-2. **Bank Cash-Out Modal:** Administrators trigger a withdrawal directly into commercial banking accounts (e.g. BDO, BPI, Metrobank, Chase, Wells Fargo).
-   - **Zero Minimum Threshold:** Administrators can withdraw any amount greater than $0.00 up to available balance.
-   - **Single-Click "Withdraw Max":** Instantly populates the input field with the maximum liquid treasury balance.
-3. **Internal Ledger Protocol (`admin_withdrawals`):**
-   - Executes an atomic PDO database transaction with row-locking (`FOR UPDATE`) on `platform_wallet`.
-   - Validates that requested funds do not exceed `available_balance`.
-   - Deducts funds from `platform_wallet.available_balance` and increments `total_withdrawn`.
-   - Generates a unique tracking reference code formatted as `BNK-{YEAR}-{HEX}` (e.g. `BNK-2026-F982DA10`).
-   - Inserts an immutable record into `admin_withdrawals` with status `completed`.
-4. **Administrator Bank Transfer Ledger:** A dedicated table in the Payouts tab records every historical platform withdrawal with banking details, administrator identity, notes, and trace codes.
-
----
-
-### P. User Administration & RBAC Role Management
-
-Located in `admin/change_role_function.php` and `admin/delete_user.php`:
-
-1. **User Directory:** Dual-tab view partitioning Students and Teachers with live search by name or email.
-2. **Inspect User Modal:** Deep-dive modal revealing registration date, enrollment counts, published courses, and wallet balance.
-3. **Role Change Modal (`change_role_function.php`):**
-   - Allows administrators to alter user roles:
-     - Student promoted to Instructor: Automatically provisions an `instructor_wallets` record.
-     - Instructor demoted to Student.
-   - **Root Admin Protection:** The active administrator is prevented from demoting or locking their own administrative account.
-4. **Safe Deletion (`delete_user.php`):**
-   - Deletes non-admin users with confirmation modal.
-   - Database constraint blocks deletion of users with `role_id = 1`.
-
----
-
-### Q. Platform Data Export Engine
-
-Located in `admin/export_data.php`:
-
-1. Accessible from sidebar shortcut or modal in Admin Control Center.
-2. Generates real-time, stream-downloadable CSV reports with UTF-8 BOM encoding for seamless Excel opening:
-   - **Users Report (`type=users`):** User ID, Full Name, Email, Role, Enrolled Courses, Published Courses, Wallet Balance, Joined Date.
-   - **Courses Report (`type=courses`):** Course ID, Title, Category, Instructor, Status, Total Lessons, Enrolled Students, Completed Students, Created Date.
-   - **Instructor Payouts Report (`type=payouts`):** Payout ID, Instructor, Amount, Method, Status, Transaction Reference, Created Date, Processed Date.
-   - **Administrator Bank Ledger (`type=admin_withdrawals`):** Reference ID, Admin Name, Admin Email, Amount, Destination Bank, Account Name, Account Number, Notes, Status, Created Date.
-   - **Certificates Report (`type=certificates`):** Certificate ID, Code, Student Name, Course Title, Status, Issued Date, Revoked Date, Revocation Reason.
-   - **Ad Activity Logs (`type=ad_logs`):** Log ID, Course Title, Lesson Title, Student Name, Instructor Name, Ad Campaign, Gross CPM, Teacher Share (65%), Platform Share (35%), Duration, Timestamp.
-   - **Sponsor Ads (`type=sponsor_ads`):** Campaign ID, Sponsor Name, Campaign Title, Video URL, CPM Rate, Status, Total Impressions, Created Date.
-
----
-
-### R. Global Logout Confirmation Modal (`assets/js/logout_modal.js`)
-
-- Included globally across all platform views.
-- Intercepts all clicks on links pointing to `logout.php`.
-- Renders an animated glassmorphic modal requesting user confirmation before session termination.
-- Supports keyboard navigation (`Escape` to cancel) and backdrop click dismissal.
-
----
-
-## 7. Input Validation Architecture
-
-Located in [`validation.php`](file:///home/ugenella/coding/xampp-projects/adsity/validation.php):
-
-- `validateRequired(string $value, string $label): ?string`: Checks that trimmed input is non-empty.
-- `validateEmailFormat(string $value): ?string`: Validates structure via `FILTER_VALIDATE_EMAIL`.
-- `validateMinLength(string $value, string $label, int $min): ?string`: Enforces minimum length constraint.
-- `validatePassword(string $password, int $minLength = 8): ?string`: Multi-criteria password validator enforcing:
+* **Required Field Check (`validateRequired`):** Ensures trimmed user input is non-empty.
+* **Email Format Check (`validateEmailFormat`):** Enforces RFC-compliant email structure using PHP's `FILTER_VALIDATE_EMAIL`.
+* **Minimum Length Check (`validateMinLength`):** Validates minimum character requirements for text fields.
+* **5-Tier Password Security Policy (`validatePassword`):**
   1. Minimum 8 characters in length.
   2. At least one uppercase letter (`[A-Z]`).
   3. At least one lowercase letter (`[a-z]`).
   4. At least one numeric digit (`[0-9]`).
   5. At least one special character (`[!@#$%^&*()\-_=+{};:,<.>]`).
-- `validatePasswordMatch(string $password, string $confirmPassword): ?string`: Verifies matching confirmation password.
-- `validateTerms(bool $termsAccepted): ?string`: Verifies agreement to platform Terms of Service.
-- `validateSignupInput(array $post): array`: Aggregates validation for student accounts (utilizes `validatePassword`).
-- `validateTeacherSignupInput(array $post): array`: Aggregates validation for instructor accounts (`role_id = 2`).
-- `validateLoginInput(array $post): array`: Validates email format and password presence for authentication.
+* **Password Match (`validatePasswordMatch`):** Verifies that the confirmation password matches the entered password.
+* **Terms of Service Consent (`validateTerms`):** Verifies that the user agreed to platform terms.
+* **Aggregated Validators:** Handles full form validation for student registration (`validateSignupInput`), instructor registration (`validateTeacherSignupInput`), and authentication (`validateLoginInput`).
 
 ---
 
-## 8. Setup & Local Testing Guide
+## 5. Setup & Local Testing Guide
 
 ### Prerequisites
-- XAMPP / LAMPP installed on Linux.
-- Apache web server running on Port `81`.
-- MariaDB database service running on Port `3307` (or socket `/opt/lampp/var/mysql/mysql.sock`).
-- FFmpeg (`ffprobe`) installed in system path for video duration detection.
-- Recommended PHP configuration (`/opt/lampp/etc/php.ini`):
-  - `upload_max_filesize = 100M` (or 250M)
-  - `post_max_size = 100M` (or 2000M)
+* XAMPP / LAMPP installed on Linux.
+* Apache web server running on Port `81`.
+* MariaDB database service running on Port `3307` (or socket `/opt/lampp/var/mysql/mysql.sock`).
+* FFmpeg (`ffprobe`) installed in system path for video duration detection.
+* Recommended PHP configuration (`/opt/lampp/etc/php.ini`):
+  * `upload_max_filesize = 100M` (or higher)
+  * `post_max_size = 100M` (or higher)
 
 ### Directory Permissions
 Ensure write permissions are configured for media upload directories:
@@ -793,23 +162,23 @@ chmod -R 775 assets/submissions/
 ```
 
 ### Database Initialization
-Import the complete 13-table schema and default seeds:
+Import the database schema and default seeds:
 ```bash
 /opt/lampp/bin/mysql -u root -S /opt/lampp/var/mysql/mysql.sock < database/schema.sql
 ```
 
-### Pre-configured Administrator Account
+### Default Administrator Credentials
 
-| Role | Email | Password | Target Dashboard |
+| Role | Email | Password | Dashboard URL |
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@adsity.org` | `admin123` | `http://localhost:81/projects/adsity/admin/dashboard.php` |
 
 > [!NOTE]
-> Instructors can be registered at `teach.php` and Students at `signup.php`. All newly generated passwords are encrypted with `PASSWORD_DEFAULT` (Bcrypt).
+> Instructors can be registered at [teach.php](file:///home/ugenella/coding/xampp-projects/adsity/teach.php) and Students at [signup.php](file:///home/ugenella/coding/xampp-projects/adsity/signup.php). All passwords are encrypted with `PASSWORD_DEFAULT` (Bcrypt).
 
 ---
 
-## 9. Summary of Vector Assets
+## 6. Vector Icons Reference
 
 All 30 vector icons are stored inside `assets/icons/`:
 
@@ -827,12 +196,12 @@ All 30 vector icons are stored inside `assets/icons/`:
 | `code.svg` | Programming languages (Python, JS, React) badge |
 | `dollar-sign.svg` | Ad revenue, instructor wallet, cash-out metrics |
 | `download.svg` | Download and print certificate actions, CSV data export |
-| `external-link.svg`| External platform links, sponsor click-through links |
+| `external-link.svg` | External platform links, sponsor click-through links |
 | `eye.svg` | View credential and details action buttons, user inspection |
 | `file-text.svg` | File upload deliverable indicator |
 | `github.svg` | GitHub repository deliverable badge |
 | `globe.svg` | Language and localization selector |
-| `graduation-cap.svg`| Instructor badges and teacher portal identifiers |
+| `graduation-cap.svg` | Instructor badges and teacher portal identifiers |
 | `layout.svg` | UI/UX design skill badge, dashboard overview icon |
 | `link.svg` | Blockchain technology badge, live URL deliverable icon |
 | `lock.svg` | Locked final project deliverable indicator |
@@ -845,4 +214,3 @@ All 30 vector icons are stored inside `assets/icons/`:
 | `user-check.svg` | Student KPI indicators in Admin dashboard |
 | `users.svg` | Total users KPI card and User Directory in Admin dashboard |
 | `video.svg` | Curriculum module and video indicator, sponsor ad engine |
-
