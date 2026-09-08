@@ -177,6 +177,7 @@ require_once __DIR__ . '/courses_function.php';
 		</div>
 	</footer>
 
+	<script src="assets/js/adsity-ui.js"></script>
 	<script src="assets/js/logout_modal.js"></script>
 </body>
 </html>

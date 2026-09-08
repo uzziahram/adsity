@@ -1,21 +1,16 @@
 <?php
 
-header('Content-Type: application/json');
+require_once __DIR__ . '/../helpers.php';
+ensureSessionStarted();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Authentication check
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized: Please log in as a student.']);
-    exit;
+// 1. Authentication check via reusable helper
+if (!isAuthenticated() || !hasRole('student')) {
+    sendJsonResponse(['success' => false, 'message' => 'Unauthorized: Please log in as a student.'], 401);
 }
 
 require_once __DIR__ . '/../database/config.php';
 
-$studentId = (int)$_SESSION['user_id'];
+$studentId = getCurrentUserId();
 
 // 2. Parse input (supports JSON or Form POST)
 $rawInput = file_get_contents('php://input');
@@ -25,9 +20,7 @@ $courseId = isset($data['course_id']) ? (int)$data['course_id'] : (int)($_POST['
 $lessonId = isset($data['lesson_id']) ? (int)$data['lesson_id'] : (int)($_POST['lesson_id'] ?? 0);
 
 if ($courseId <= 0 || $lessonId <= 0) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid course or lesson ID provided.']);
-    exit;
+    sendJsonResponse(['success' => false, 'message' => 'Invalid course or lesson ID provided.'], 400);
 }
 
 try {
@@ -39,9 +32,7 @@ try {
     $enrollment = $stmtEnr->fetch();
 
     if (!$enrollment) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'You are not enrolled in this course.']);
-        exit;
+        sendJsonResponse(['success' => false, 'message' => 'You are not enrolled in this course.'], 403);
     }
 
     // 4. Verify lesson exists and belongs to course
@@ -94,7 +85,7 @@ try {
     $stmtNext->execute([':cid' => $courseId, ':uid' => $studentId]);
     $nextLesson = $stmtNext->fetch();
 
-    echo json_encode([
+    sendJsonResponse([
         'success'           => true,
         'message'           => 'Lesson marked as completed!',
         'lesson_completed'  => [
@@ -114,7 +105,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-    exit;
+    error_log('Complete lesson error: ' . $e->getMessage());
+    sendJsonResponse(['success' => false, 'message' => 'A server error occurred while updating your lesson progress.'], 500);
 }

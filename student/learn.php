@@ -94,7 +94,8 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()));
+    error_log('Learn page error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while loading the classroom. Please try again.'));
     exit;
 }
 
@@ -429,6 +430,9 @@ if ($activeSponsorAd) {
 		</aside>
 
 	</div>
+
+	<!-- Reusable UI & Client-side Helpers -->
+	<script src="../assets/js/adsity-ui.js"></script>
 
 	<!-- Pass PHP State to Classroom JavaScript Controller -->
 	<script>

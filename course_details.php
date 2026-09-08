@@ -1,8 +1,7 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/validation.php';
+ensureSessionStarted();
 
 require_once __DIR__ . '/database/config.php';
 
@@ -62,7 +61,8 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: courses.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()));
+    error_log('Course details error: ' . $e->getMessage());
+    header('Location: courses.php?status=error&message=' . urlencode('An error occurred while loading the course details. Please try again.'));
     exit;
 }
 
@@ -413,6 +413,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 								</a>
 							<?php else: ?>
 								<form action="student/enroll_function.php" method="POST">
+									<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 									<input type="hidden" name="course_id" value="<?= $course['id'] ?>">
 									<button type="submit" class="btn-enroll-action btn-enroll-action--primary">
 										<span>Enroll in Course</span>
@@ -484,6 +485,7 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 		</div>
 	</footer>
 
+	<script src="assets/js/adsity-ui.js"></script>
 	<script src="assets/js/logout_modal.js"></script>
 </body>
 

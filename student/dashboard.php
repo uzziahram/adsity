@@ -522,75 +522,28 @@ $initials = strtoupper(substr($student['full_name'] ?? 'S', 0, 1));
 		<span id="toast-text">Certificate code copied!</span>
 	</div>
 
-	<!-- Interactive Tab Switching & Clipboard Scripts -->
+	<!-- Reusable UI & Client-side Helpers -->
+	<script src="../assets/js/adsity-ui.js"></script>
 	<script>
+		// Reusable tab switching with smooth scrolling & hash updates
 		function switchTab(tabId) {
-			// Update Tab Buttons
-			document.querySelectorAll('.nav-tab-btn').forEach(btn => {
-				if (btn.dataset.tab === tabId) {
-					btn.classList.add('active');
-				} else {
-					btn.classList.remove('active');
-				}
+			AdsityUI.switchTab(tabId, {
+				buttonSelector: '.nav-tab-btn',
+				panelSelector: '.tab-panel',
+				scrollToTop: true
 			});
-
-			// Update Tab Panels
-			document.querySelectorAll('.tab-panel').forEach(panel => {
-				if (panel.id === 'tab-' + tabId) {
-					panel.classList.add('active');
-				} else {
-					panel.classList.remove('active');
-				}
-			});
-
-			// Update URL hash without jumping
-			if (history.replaceState) {
-				history.replaceState(null, null, '#' + tabId);
-			}
-			window.scrollTo({ top: 0, behavior: 'smooth' });
 		}
 
-		// Copy certificate code to clipboard
+		// Reusable copy to clipboard with toast notification
 		function copyCertCode(code, btnElement) {
-			if (navigator.clipboard && navigator.clipboard.writeText) {
-				navigator.clipboard.writeText(code).then(() => {
-					showToast('Certificate code copied to clipboard!');
-					if (btnElement) {
-						const originalText = btnElement.innerText;
-						btnElement.innerText = 'Copied! ✓';
-						setTimeout(() => { btnElement.innerText = originalText; }, 2000);
-					}
-				});
-			} else {
-				// Fallback
-				const tempInput = document.createElement('input');
-				tempInput.value = code;
-				document.body.appendChild(tempInput);
-				tempInput.select();
-				document.execCommand('copy');
-				document.body.removeChild(tempInput);
-				showToast('Certificate code copied!');
-			}
+			AdsityUI.copyToClipboard(code, btnElement, 'Certificate code copied to clipboard!');
 		}
 
-		function showToast(message) {
-			const toast = document.getElementById('toast-notice');
-			const toastText = document.getElementById('toast-text');
-			if (toast && toastText) {
-				toastText.innerText = message;
-				toast.classList.add('show');
-				setTimeout(() => {
-					toast.classList.remove('show');
-				}, 2600);
-			}
-		}
-
-		// Check hash on page load (e.g. #in-progress, #completed, #certificates)
-		window.addEventListener('DOMContentLoaded', () => {
-			const hash = window.location.hash.replace('#', '');
-			if (hash && ['overview', 'in-progress', 'completed', 'certificates'].includes(hash)) {
-				switchTab(hash);
-			}
+		// Auto-switch tab on page load based on URL hash (e.g. #in-progress, #completed, #certificates)
+		AdsityUI.initHashRouting(['overview', 'in-progress', 'completed', 'certificates'], 'overview', {
+			buttonSelector: '.nav-tab-btn',
+			panelSelector: '.tab-panel',
+			scrollToTop: true
 		});
 	</script>
 	<script src="../assets/js/logout_modal.js"></script>

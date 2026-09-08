@@ -1,23 +1,17 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Guard: Only authenticated administrators can process platform bank withdrawals
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['admin_withdraw'])) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid withdrawal request.') . '#payouts');
-    exit;
+    redirect('dashboard.php?status=error&message=' . urlencode('Invalid withdrawal request.') . '#payouts');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#payouts');
 
 require_once __DIR__ . '/../database/config.php';
 
-$adminId       = (int)$_SESSION['user_id'];
+$adminId       = getCurrentUserId();
 $amount        = (float)($_POST['amount'] ?? 0);
 $bankName      = trim($_POST['bank_name'] ?? '');
 $accountName   = trim($_POST['account_name'] ?? '');
@@ -82,11 +76,11 @@ try {
     $stmtInsert->execute([
         ':aid'   => $adminId,
         ':amt'   => $amount,
-        ':bname' => htmlspecialchars($bankName),
-        ':aname' => htmlspecialchars($accountName),
-        ':anum'  => htmlspecialchars($accountNumber),
+        ':bname' => $bankName,
+        ':aname' => $accountName,
+        ':anum'  => $accountNumber,
         ':tx'    => $txRef,
-        ':notes' => $notes !== '' ? htmlspecialchars($notes) : null
+        ':notes' => $notes !== '' ? $notes : null
     ]);
 
     $pdo->commit();
@@ -99,6 +93,7 @@ try {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error processing withdrawal: ' . $e->getMessage()) . '#payouts');
+    error_log('Database error processing withdrawal: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('A database error occurred while processing your withdrawal. Please try again later.') . '#payouts');
     exit;
 }

@@ -1,17 +1,11 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with a student account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('student', '../login.php?status=error&message=' . urlencode('Please log in with a student account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
-$studentId = $_SESSION['user_id'];
+$studentId = getCurrentUserId();
 $courseId  = $_GET['course_id'] ?? ($_POST['course_id'] ?? null);
 $status    = $_GET['status'] ?? null;
 $message   = $_GET['message'] ?? null;
@@ -67,6 +61,11 @@ try {
 
     // Handle Form Submission
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['submit_assessment'])) {
+        if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+            header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('Invalid security token. Please refresh and try again.'));
+            exit;
+        }
+
         if (!$isCourseFinished) {
             header('Location: submit_exam.php?course_id=' . $courseId . '&status=error&message=' . urlencode('You cannot submit your project until you have finished all lessons in the course.'));
             exit;
@@ -146,7 +145,7 @@ try {
             $stmtUpdate->execute([
                 ':submission_type'  => $assessmentType,
                 ':submission_value' => $submissionVal,
-                ':notes'            => htmlspecialchars($notes),
+                ':notes'            => $notes,
                 ':id'               => $latestSubmission['id']
             ]);
         } else {
@@ -158,7 +157,7 @@ try {
                 ':course_id'        => $courseId,
                 ':submission_type'  => $assessmentType,
                 ':submission_value' => $submissionVal,
-                ':notes'            => htmlspecialchars($notes)
+                ':notes'            => $notes
             ]);
         }
 
@@ -167,6 +166,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Submit exam error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while submitting your deliverable. Please try again.'));
     exit;
 }

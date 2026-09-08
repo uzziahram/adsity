@@ -48,6 +48,7 @@ if ($code) {
         $stmt->execute();
         $certificate = $stmt->fetch();
     } catch (PDOException $e) {
+        error_log('Certificate lookup error: ' . $e->getMessage());
         $certificate = null;
     }
 }

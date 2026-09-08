@@ -1,12 +1,17 @@
 <?php
 
-session_start();
-
 require 'database/config.php';
 require 'validation.php';
 
+ensureSessionStarted();
+
 if (!isset($_POST['login'])) {
     header('Location: login.php');
+    exit;
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    header('Location: login.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
     exit;
 }
 
@@ -36,7 +41,6 @@ try {
 
     $passwordValid = $user && password_verify($inputPassword, $user['password']);
 
-
     // Immediately purge sensitive credentials and password hash from memory
     if ($user) {
         unset($user['password']);
@@ -47,6 +51,9 @@ try {
         header('Location: login.php?status=error&message=' . urlencode('Invalid email or password.'));
         exit;
     }
+
+    // Prevent session fixation by regenerating session ID
+    session_regenerate_id(true);
 
     // Set user session data
     $_SESSION['user_id']   = $user['id'];
@@ -79,6 +86,7 @@ try {
     header('Location: index.php?status=success&message=' . urlencode('Welcome back, ' . $user['full_name'] . '!'));
     exit;
 } catch (PDOException $e) {
-    header('Location: login.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Login error: ' . $e->getMessage());
+    header('Location: login.php?status=error&message=' . urlencode('A system error occurred during login. Please try again later.'));
     exit;
 }

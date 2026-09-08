@@ -1,21 +1,18 @@
 <?php
 
-session_start();
-
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('instructor', '../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
 if (!isset($_POST['delete_course'])) {
-    header('Location: dashboard.php');
-    exit;
+    redirect('dashboard.php');
 }
 
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
+
 $courseId     = $_POST['course_id'] ?? null;
-$instructorId = $_SESSION['user_id'];
+$instructorId = getCurrentUserId();
 
 if (!$courseId) {
     header('Location: dashboard.php?status=error&message=' . urlencode('Invalid course ID.'));
@@ -35,6 +32,7 @@ try {
     header('Location: dashboard.php?status=success&message=' . urlencode('Course deleted successfully.'));
     exit;
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Instructor delete course error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while deleting your course. Please try again.'));
     exit;
 }

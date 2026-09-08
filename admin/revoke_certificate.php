@@ -1,23 +1,17 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Guard: Only authenticated administrators can revoke certificates
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['certificate_id'], $_POST['action'])) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid certificate action request.') . '#analytics');
-    exit;
+    redirect('dashboard.php?status=error&message=' . urlencode('Invalid certificate action request.') . '#analytics');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#analytics');
 
 require_once __DIR__ . '/../database/config.php';
 
-$adminId = (int)$_SESSION['user_id'];
+$adminId = getCurrentUserId();
 $certId  = (int)$_POST['certificate_id'];
 $action  = trim($_POST['action']);
 $reason  = trim($_POST['revocation_reason'] ?? '');
@@ -55,7 +49,7 @@ try {
                                          revoked_by = :admin_id 
                                      WHERE id = :id");
         $stmtUpdate->execute([
-            ':reason'   => htmlspecialchars($reason),
+            ':reason'   => $reason,
             ':admin_id' => $adminId,
             ':id'       => $certId
         ]);
@@ -83,6 +77,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()) . '#analytics');
+    error_log('Admin certificate action error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while updating the certificate status. Please try again.') . '#analytics');
     exit;
 }

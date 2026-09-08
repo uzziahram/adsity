@@ -57,6 +57,7 @@ try {
     }
 
 } catch (PDOException $e) {
+    error_log('Courses catalog error: ' . $e->getMessage());
     $courses = [];
     $enrolledCourseIds = [];
 }

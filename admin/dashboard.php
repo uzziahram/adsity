@@ -639,6 +639,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 												<div style="display: inline-flex; align-items: center; gap: 6px;">
 													<?php if (($course['status'] ?? 'published') !== 'published'): ?>
 														<form method="POST" action="moderate_course.php" style="display: inline;">
+															<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 															<input type="hidden" name="course_id" value="<?= (int)$course['id'] ?>">
 															<input type="hidden" name="action" value="approve">
 															<button type="submit" class="btn-table-action btn-table-action--approve" title="Approve & Publish to Public Catalog">
@@ -1032,6 +1033,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 												</button>
 
 												<form method="POST" action="delete_user.php" onsubmit="return confirm('Are you sure you want to delete instructor <?= htmlspecialchars(addslashes($inst['full_name'])) ?>?');" style="display: inline;">
+													<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 													<input type="hidden" name="user_id" value="<?= htmlspecialchars($inst['id']) ?>">
 													<button type="submit" name="delete_user" class="btn-table-action btn-table-action--delete">
 														<img src="../assets/icons/trash.svg" width="12" height="12" alt="Delete">
@@ -1077,6 +1079,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 												</button>
 
 												<form method="POST" action="delete_user.php" onsubmit="return confirm('Are you sure you want to delete student <?= htmlspecialchars(addslashes($stu['full_name'])) ?>?');" style="display: inline;">
+													<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 													<input type="hidden" name="user_id" value="<?= htmlspecialchars($stu['id']) ?>">
 													<button type="submit" name="delete_user" class="btn-table-action btn-table-action--delete">
 														<img src="../assets/icons/trash.svg" width="12" height="12" alt="Delete">
@@ -1146,6 +1149,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 					</div>
 
 					<form method="POST" action="manage_ads.php" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px;">
+						<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 						<input type="hidden" name="action" value="update_settings">
 						<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; align-items: flex-end;">
 							<div>
@@ -1255,6 +1259,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 											<td style="text-align: right;">
 												<div style="display: inline-flex; align-items: center; gap: 6px;">
 													<form method="POST" action="manage_ads.php" style="display: inline;">
+														<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 														<input type="hidden" name="action" value="toggle_status">
 														<input type="hidden" name="ad_id" value="<?= (int)$ad['id'] ?>">
 														<?php if ($ad['status'] === 'active'): ?>
@@ -1377,6 +1382,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 														</button>
 													<?php else: ?>
 														<form method="POST" action="revoke_certificate.php" style="display: inline;" onsubmit="return confirm('Reinstate certificate \'<?= htmlspecialchars(addslashes($cert['certificate_code'])) ?>\' to Valid?');">
+															<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 															<input type="hidden" name="action" value="restore">
 															<input type="hidden" name="certificate_id" value="<?= (int)$cert['id'] ?>">
 															<button type="submit" class="btn-table-action btn-table-action--restore" title="Restore / Reinstate Certificate">
@@ -1530,6 +1536,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 
 				<!-- Active Processing Form (Only shown when pending) -->
 				<form id="adminPayoutActionForm" method="POST" action="process_payout_function.php">
+					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<input type="hidden" name="payout_id" id="modalPayoutIdInput" value="">
 					<input type="hidden" name="action" id="modalActionInput" value="">
 
@@ -1643,6 +1650,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 
 			<form method="POST" action="change_role_function.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="change_role" value="1">
 				<input type="hidden" name="user_id" id="changeRoleUserId" value="">
 
@@ -1689,6 +1697,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 
 			<form method="POST" action="delete_course.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="delete_course" value="1">
 				<input type="hidden" name="course_id" id="deleteCourseIdInput" value="">
 
@@ -1784,6 +1793,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 
 			<form method="POST" action="moderate_course.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="action" value="reject">
 				<input type="hidden" name="course_id" id="modalRejectCourseId" value="">
 
@@ -1827,6 +1837,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 
 			<form method="POST" action="revoke_certificate.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="action" value="revoke">
 				<input type="hidden" name="certificate_id" id="modalRevokeCertId" value="">
 
@@ -1878,6 +1889,7 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			</div>
 
 			<form method="POST" action="admin_withdraw.php">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="admin_withdraw" value="1">
 
 				<div class="admin-modal-body">
@@ -1951,49 +1963,29 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 	</div>
 
 	<!-- ==========================================================
-	     LOGOUT CONFIRMATION MODAL SCRIPT
+	     REUSABLE UI UTILITY LIBRARY & LOGOUT CONFIRMATION SCRIPT
 	     ========================================================== -->
+	<script src="../assets/js/adsity-ui.js"></script>
 	<script src="../assets/js/logout_modal.js"></script>
 
 	<!-- ==========================================================
 	     INTERACTIVE ADMIN CONTROLLER JS
 	     ========================================================== -->
 	<script>
-		// Tab Switching Logic with URL hash persistence
+		// Tab Switching Logic with URL hash persistence using reusable AdsityUI
 		function switchTab(tabId) {
 			const validTabs = ['overview', 'courses', 'payouts', 'users', 'ads', 'analytics'];
 			if (!validTabs.includes(tabId)) {
 				tabId = 'overview';
 			}
 
-			// Update Tab Panels
-			document.querySelectorAll('.admin-tab-panel').forEach(function(panel) {
-				panel.classList.remove('active');
+			AdsityUI.switchTab(tabId, {
+				buttonSelector: '.admin-nav-item',
+				panelSelector: '.admin-tab-panel',
+				scrollToTop: true,
+				closeMobileSidebar: false
 			});
-			const targetPanel = document.getElementById('tab-' + tabId);
-			if (targetPanel) {
-				targetPanel.classList.add('active');
-			}
-
-			// Update Left Sidebar Nav Items
-			document.querySelectorAll('.admin-nav-item').forEach(function(navItem) {
-				if (navItem.getAttribute('data-tab') === tabId) {
-					navItem.classList.add('active');
-				} else if (navItem.getAttribute('data-tab')) {
-					navItem.classList.remove('active');
-				}
-			});
-
-			// Update URL hash without jump
-			if (history.pushState) {
-				history.pushState(null, null, '#' + tabId);
-			} else {
-				location.hash = '#' + tabId;
-			}
-
-			// Close mobile sidebar if open
 			closeSidebarMobile();
-			window.scrollTo({ top: 0, behavior: 'smooth' });
 		}
 
 		// Check hash on initial page load
@@ -2234,23 +2226,15 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 				document.getElementById('modalHistoryMeta').textContent = 'Processed on ' + (data.processed_at || '—') + (data.processed_by_name ? ' by ' + data.processed_by_name : '');
 			}
 
-			var modal = document.getElementById('adminPayoutModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminPayoutModal');
 		}
 
 		function closeAdminPayoutModal() {
-			var modal = document.getElementById('adminPayoutModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminPayoutModal');
 		}
 
 		function handleAdminModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminPayoutModal') {
-				closeAdminPayoutModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminPayoutModal');
 		}
 
 		function submitAdminPayoutAction(action) {
@@ -2292,23 +2276,15 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			}
 			document.getElementById('inspectUserActivityBox').innerHTML = html;
 
-			const modal = document.getElementById('adminUserInspectModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminUserInspectModal');
 		}
 
 		function closeAdminUserInspectModal() {
-			const modal = document.getElementById('adminUserInspectModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminUserInspectModal');
 		}
 
 		function handleInspectModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminUserInspectModal') {
-				closeAdminUserInspectModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminUserInspectModal');
 		}
 
 		// --- Modal 3: Change User Role Modal ---
@@ -2317,23 +2293,15 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.getElementById('changeRoleUserName').textContent = userName;
 			document.getElementById('changeRoleSelect').value = currentRoleId;
 
-			const modal = document.getElementById('adminChangeRoleModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminChangeRoleModal');
 		}
 
 		function closeAdminChangeRoleModal() {
-			const modal = document.getElementById('adminChangeRoleModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminChangeRoleModal');
 		}
 
 		function handleChangeRoleModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminChangeRoleModal') {
-				closeAdminChangeRoleModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminChangeRoleModal');
 		}
 
 		// --- Modal 4: Delete Course Modal ---
@@ -2341,44 +2309,28 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.getElementById('deleteCourseIdInput').value = courseId;
 			document.getElementById('deleteCourseTitleDisplay').textContent = courseTitle + ' (ID #' + courseId + ')';
 
-			const modal = document.getElementById('adminDeleteCourseModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminDeleteCourseModal');
 		}
 
 		function closeAdminDeleteCourseModal() {
-			const modal = document.getElementById('adminDeleteCourseModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminDeleteCourseModal');
 		}
 
 		function handleDeleteCourseModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminDeleteCourseModal') {
-				closeAdminDeleteCourseModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminDeleteCourseModal');
 		}
 
 		// --- Modal 5: Export Platform Data Modal ---
 		function openAdminExportModal() {
-			const modal = document.getElementById('adminExportModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminExportModal');
 		}
 
 		function closeAdminExportModal() {
-			const modal = document.getElementById('adminExportModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminExportModal');
 		}
 
 		function handleExportModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminExportModal') {
-				closeAdminExportModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminExportModal');
 		}
 
 		// --- Modal 6: Reject Course Modal ---
@@ -2387,23 +2339,15 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.getElementById('modalRejectCourseTitle').textContent = courseTitle + ' (ID #' + courseId + ')';
 			document.getElementById('modalRejectReason').value = '';
 
-			const modal = document.getElementById('adminRejectCourseModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminRejectCourseModal');
 		}
 
 		function closeAdminRejectCourseModal() {
-			const modal = document.getElementById('adminRejectCourseModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminRejectCourseModal');
 		}
 
 		function handleRejectCourseModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminRejectCourseModal') {
-				closeAdminRejectCourseModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminRejectCourseModal');
 		}
 
 		// --- Modal 7: Revoke Certificate Modal ---
@@ -2411,52 +2355,30 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			document.getElementById('modalRevokeCertId').value = certId;
 			document.getElementById('modalRevokeCertCode').textContent = certCode;
 			document.getElementById('modalRevokeStudentName').textContent = studentName;
-			document.getElementById('modalRevokeReason').value = '';
+			document.getElementById('modalRejectReason') ? (document.getElementById('modalRejectReason').value = '') : null;
 
-			const modal = document.getElementById('adminRevokeCertModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('adminRevokeCertModal');
 		}
 
 		function closeAdminRevokeCertModal() {
-			const modal = document.getElementById('adminRevokeCertModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminRevokeCertModal');
 		}
 
 		function handleRevokeCertModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminRevokeCertModal') {
-				closeAdminRevokeCertModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminRevokeCertModal');
 		}
 
-		// Admin Bank Withdrawal Modal Handlers
+		// --- Modal 8: Admin Bank Withdrawal Modal ---
 		function openAdminBankWithdrawModal() {
-			const modal = document.getElementById('adminBankWithdrawModal');
-			if (modal) {
-				modal.style.display = 'flex';
-				document.body.style.overflow = 'hidden';
-				const amtInput = document.getElementById('adminWithdrawAmountInput');
-				if (amtInput) {
-					amtInput.focus();
-				}
-			}
+			AdsityUI.openModal('adminBankWithdrawModal');
 		}
 
 		function closeAdminBankWithdrawModal() {
-			const modal = document.getElementById('adminBankWithdrawModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('adminBankWithdrawModal');
 		}
 
 		function handleAdminBankWithdrawModalBackdrop(event) {
-			if (event.target && event.target.id === 'adminBankWithdrawModal') {
-				closeAdminBankWithdrawModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'adminBankWithdrawModal');
 		}
 
 		function setAdminWithdrawMax(maxVal) {
@@ -2466,25 +2388,8 @@ $adminInitial = strtoupper(substr($adminProfile['full_name'] ?? 'A', 0, 1));
 			}
 		}
 
-		// Keyboard ESC listener to close open modals
-		window.addEventListener('keydown', function(event) {
-			if (event.key === 'Escape') {
-				closeAdminPayoutModal();
-				closeAdminUserInspectModal();
-				closeAdminChangeRoleModal();
-				closeAdminDeleteCourseModal();
-				closeAdminExportModal();
-				closeAdminRejectCourseModal();
-				closeAdminRevokeCertModal();
-				closeAdminBankWithdrawModal();
-				closeSidebarMobile();
-			}
-		});
-
 		function escapeHtml(str) {
-			var div = document.createElement('div');
-			div.appendChild(document.createTextNode(str));
-			return div.innerHTML;
+			return AdsityUI.escapeHtml(str);
 		}
 	</script>
 </body>

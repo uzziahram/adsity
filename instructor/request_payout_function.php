@@ -1,24 +1,18 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Protect Instructor Portal: Must be logged in as instructor
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('instructor', '../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
-$instructorId = (int)$_SESSION['user_id'];
+$instructorId = getCurrentUserId();
 $redirectTarget = 'dashboard.php?status=error&message=';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    header('Location: ' . $redirectTarget . urlencode('Invalid request method.') . '#revenue');
-    exit;
+    redirect($redirectTarget . urlencode('Invalid request method.') . '#revenue');
 }
+
+verifyCsrfOrRedirect($redirectTarget . urlencode('Invalid security token. Please refresh the page and try again.') . '#revenue');
 
 $amount       = isset($_POST['amount']) ? round((float)$_POST['amount'], 2) : 0.00;
 $payoutMethod = trim($_POST['payout_method'] ?? '');
@@ -123,7 +117,7 @@ try {
         ':amount'  => $amount,
         ':method'  => $payoutMethod,
         ':details' => $detailsJson,
-        ':notes'   => !empty($notes) ? htmlspecialchars($notes) : null
+        ':notes'   => !empty($notes) ? $notes : null
     ]);
 
     $pdo->commit();
@@ -135,6 +129,7 @@ try {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    header('Location: ' . $redirectTarget . urlencode('Database error: ' . $e->getMessage()) . '#revenue');
+    error_log('Instructor request payout error: ' . $e->getMessage());
+    header('Location: ' . $redirectTarget . urlencode('An error occurred while submitting your payout request. Please try again.') . '#revenue');
     exit;
 }

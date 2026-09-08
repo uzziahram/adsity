@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
     header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
@@ -263,6 +264,7 @@ $initials = strtoupper(substr($instructorName, 0, 1));
 
 			<!-- Multi-Step Workstation Form -->
 			<form action="create_course_function.php" method="POST" enctype="multipart/form-data" id="courseForm" style="max-width: 1040px; margin: 0 auto;" novalidate>
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<input type="hidden" name="create_course" value="1">
 
 				<!-- ==========================================

@@ -447,6 +447,7 @@ $userRole   = $_SESSION['role_name'] ?? '';
 		</div>
 	</footer>
 
+	<script src="assets/js/adsity-ui.js"></script>
 	<script src="assets/js/logout_modal.js"></script>
 </body>
 

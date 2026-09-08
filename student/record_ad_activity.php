@@ -1,21 +1,16 @@
 <?php
 
-header('Content-Type: application/json');
+require_once __DIR__ . '/../helpers.php';
+ensureSessionStarted();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Authentication check
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized: Please log in as a student.']);
-    exit;
+// 1. Authentication check via reusable helper
+if (!isAuthenticated() || !hasRole('student')) {
+    sendJsonResponse(['success' => false, 'message' => 'Unauthorized: Please log in as a student.'], 401);
 }
 
 require_once __DIR__ . '/../database/config.php';
 
-$studentId = (int)$_SESSION['user_id'];
+$studentId = getCurrentUserId();
 
 // 2. Parse input (supports JSON or POST)
 $rawInput = file_get_contents('php://input');
@@ -27,9 +22,7 @@ $adId     = isset($data['ad_id']) ? (int)$data['ad_id'] : (int)($_POST['ad_id'] 
 $duration = isset($data['duration_watched']) ? max(1, (int)$data['duration_watched']) : 15;
 
 if ($courseId <= 0 || $lessonId <= 0) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid course or lesson ID provided.']);
-    exit;
+    sendJsonResponse(['success' => false, 'message' => 'Invalid course or lesson ID provided.'], 400);
 }
 
 try {
@@ -174,7 +167,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode([
+    sendJsonResponse([
         'success'          => true,
         'message'          => 'Ad activity recorded successfully and revenue split credited.',
         'instructor_earned'=> $instructorEarning,
@@ -187,6 +180,6 @@ try {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    error_log('Record ad activity error: ' . $e->getMessage());
+    sendJsonResponse(['success' => false, 'message' => 'A server error occurred while logging ad telemetry.'], 500);
 }

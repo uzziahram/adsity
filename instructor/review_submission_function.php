@@ -1,18 +1,11 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Protect Instructor Portal: Must be logged in as instructor
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('instructor', '../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
-$instructorId = (int)$_SESSION['user_id'];
+$instructorId = getCurrentUserId();
 
 // Determine default redirect target
 $redirectTo = $_POST['redirect_to'] ?? 'dashboard.php#submissions';
@@ -36,6 +29,10 @@ function redirectWithMessage($target, $status, $msg) {
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     redirectWithMessage($redirectTo, 'error', 'Invalid request method.');
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    redirectWithMessage($redirectTo, 'error', 'Invalid security token. Please refresh the page and try again.');
 }
 
 $submissionId = isset($_POST['submission_id']) ? (int)$_POST['submission_id'] : 0;
@@ -170,5 +167,6 @@ try {
     }
 
 } catch (PDOException $e) {
-    redirectWithMessage($redirectTo, 'error', 'Database error: ' . $e->getMessage());
+    error_log('Instructor review submission error: ' . $e->getMessage());
+    redirectWithMessage($redirectTo, 'error', 'An error occurred while grading this submission. Please try again.');
 }

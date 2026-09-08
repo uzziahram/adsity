@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 // Protect Instructor Portal: Must be logged in as instructor
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
@@ -159,6 +160,7 @@ try {
         'total_withdrawn'   => '0.00'
     ];
     $totalAdViews = 0;
+    error_log('Instructor dashboard error: ' . $e->getMessage());
     $status  = 'error';
-    $message = $e->getMessage();
+    $message = 'An error occurred while loading your instructor studio data.';
 }

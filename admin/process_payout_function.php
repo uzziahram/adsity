@@ -1,24 +1,18 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Protect Admin Panel: Must be logged in as admin
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
-$adminId = (int)$_SESSION['user_id'];
+$adminId = getCurrentUserId();
 $redirectTarget = 'dashboard.php?status=error&message=';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    header('Location: ' . $redirectTarget . urlencode('Invalid request method.') . '#payouts');
-    exit;
+    redirect($redirectTarget . urlencode('Invalid request method.') . '#payouts');
 }
+
+verifyCsrfOrRedirect($redirectTarget . urlencode('Invalid security token. Please refresh the page and try again.') . '#payouts');
 
 $payoutId             = isset($_POST['payout_id']) ? (int)$_POST['payout_id'] : 0;
 $action               = trim($_POST['action'] ?? '');
@@ -73,8 +67,8 @@ try {
                                           processed_at = CURRENT_TIMESTAMP 
                                       WHERE id = :pid");
         $stmtApprove->execute([
-            ':ref'      => !empty($transactionReference) ? htmlspecialchars($transactionReference) : null,
-            ':notes'    => !empty($adminNotes) ? htmlspecialchars($adminNotes) : 'Payout approved and funds disbursed.',
+            ':ref'      => !empty($transactionReference) ? $transactionReference : null,
+            ':notes'    => !empty($adminNotes) ? $adminNotes : 'Payout approved and funds disbursed.',
             ':admin_id' => $adminId,
             ':pid'      => $payoutId
         ]);
@@ -103,7 +97,7 @@ try {
                                          processed_at = CURRENT_TIMESTAMP 
                                      WHERE id = :pid");
         $stmtReject->execute([
-            ':notes'    => htmlspecialchars($adminNotes),
+            ':notes'    => $adminNotes,
             ':admin_id' => $adminId,
             ':pid'      => $payoutId
         ]);
@@ -128,6 +122,7 @@ try {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    header('Location: ' . $redirectTarget . urlencode('Database error: ' . $e->getMessage()) . '#payouts');
+    error_log('Admin process payout error: ' . $e->getMessage());
+    header('Location: ' . $redirectTarget . urlencode('An error occurred while processing the payout request. Please try again.') . '#payouts');
     exit;
 }

@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 // Protect Instructor Portal
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
@@ -135,7 +136,8 @@ try {
     $totalEarnedWallet = (float)($stmtWallet->fetchColumn() ?: 0);
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()));
+    error_log('Instructor course overview error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while loading the course overview.'));
     exit;
 }
 
@@ -645,24 +647,15 @@ $assessmentName = $assessmentTypeNames[$course['assessment_type']] ?? 'Project D
 		</div>
 	</footer>
 
-	<!-- Sidebar Mobile Drawer Script -->
+	<!-- Reusable UI & Client-side Helpers -->
+	<script src="../assets/js/adsity-ui.js"></script>
 	<script>
 		function toggleSidebar() {
-			var sidebar = document.getElementById('instructorSidebar');
-			var backdrop = document.getElementById('sidebarBackdrop');
-			if (sidebar && backdrop) {
-				sidebar.classList.toggle('open');
-				backdrop.classList.toggle('open');
-			}
+			AdsityUI.toggleSidebar('instructorSidebar', 'sidebarBackdrop');
 		}
 
 		function closeSidebar() {
-			var sidebar = document.getElementById('instructorSidebar');
-			var backdrop = document.getElementById('sidebarBackdrop');
-			if (sidebar && backdrop) {
-				sidebar.classList.remove('open');
-				backdrop.classList.remove('open');
-			}
+			AdsityUI.closeSidebar('instructorSidebar', 'sidebarBackdrop');
 		}
 
 		document.addEventListener('DOMContentLoaded', function() {

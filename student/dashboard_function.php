@@ -1,7 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 // Protect Student Dashboard: Must be logged in as student
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'student') {
@@ -104,6 +103,7 @@ try {
         $totalEnrolled    = $inProgressCount + $completedCount;
     }
 } catch (PDOException $e) {
+    error_log('Student dashboard error: ' . $e->getMessage());
     $status  = 'error';
-    $message = $e->getMessage();
+    $message = 'An error occurred while loading your student dashboard.';
 }

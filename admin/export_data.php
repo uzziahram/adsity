@@ -1,8 +1,7 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 // Protect Admin Panel: Must be logged in as admin
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
@@ -259,5 +258,6 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    die('Database error during export: ' . htmlspecialchars($e->getMessage()));
+    error_log('Database error during export: ' . $e->getMessage());
+    die('A database error occurred during export generation. Please try again later.');
 }

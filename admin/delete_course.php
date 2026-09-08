@@ -1,21 +1,15 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Protect Admin Panel: Must be logged in as admin
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
 if (!isset($_POST['delete_course'])) {
-    header('Location: dashboard.php#courses');
-    exit;
+    redirect('dashboard.php#courses');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#courses');
 
 $courseId = isset($_POST['course_id']) ? (int)$_POST['course_id'] : 0;
 
@@ -46,6 +40,7 @@ try {
     header('Location: dashboard.php?status=success&message=' . urlencode("Course '{$courseTitle}' (#{$courseId}) was successfully deleted.") . '#courses');
     exit;
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()) . '#courses');
+    error_log('Admin delete course error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while deleting the course. Please try again.') . '#courses');
     exit;
 }

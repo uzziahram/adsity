@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'instructor') {
     header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an instructor account.'));
@@ -17,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST)) {
 
 if (!isset($_POST['create_course'])) {
     header('Location: create_course.php');
+    exit;
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    header('Location: create_course.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
     exit;
 }
 
@@ -71,14 +77,14 @@ try {
             VALUES (:title, :description, :category, :thumbnail, :total_lessons, :instructor_id, :assessment_type, :assessment_instructions, 'pending_review')";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':title', htmlspecialchars($title));
-    $stmt->bindValue(':description', htmlspecialchars($description));
-    $stmt->bindValue(':category', htmlspecialchars($category));
+    $stmt->bindValue(':title', $title);
+    $stmt->bindValue(':description', $description);
+    $stmt->bindValue(':category', $category);
     $stmt->bindValue(':thumbnail', 'Web_Development_Basics.png');
     $stmt->bindValue(':total_lessons', $totalLessons, PDO::PARAM_INT);
     $stmt->bindValue(':instructor_id', $instructorId, PDO::PARAM_INT);
     $stmt->bindValue(':assessment_type', $assessmentType);
-    $stmt->bindValue(':assessment_instructions', htmlspecialchars($assessmentInstructions));
+    $stmt->bindValue(':assessment_instructions', $assessmentInstructions);
     $stmt->execute();
 
     $courseId = $pdo->lastInsertId();
@@ -169,9 +175,9 @@ try {
 
         $stmtLesson->bindValue(':course_id', $courseId, PDO::PARAM_INT);
         $stmtLesson->bindValue(':lesson_number', $lessonNumber, PDO::PARAM_INT);
-        $stmtLesson->bindValue(':title', htmlspecialchars($titleClean));
+        $stmtLesson->bindValue(':title', $titleClean);
         $stmtLesson->bindValue(':video_path', $videoPath);
-        $stmtLesson->bindValue(':duration', htmlspecialchars($duration));
+        $stmtLesson->bindValue(':duration', $duration);
         $stmtLesson->execute();
     }
 
@@ -179,6 +185,7 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    header('Location: create_course.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Instructor create course error: ' . $e->getMessage());
+    header('Location: create_course.php?status=error&message=' . urlencode('An error occurred while saving your course. Please try again.'));
     exit;
 }

@@ -1,8 +1,7 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 require_once __DIR__ . '/../database/config.php';
 
@@ -20,6 +19,12 @@ if (($_SESSION['role_name'] ?? '') !== 'student') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['course_id'])) {
     header('Location: ../courses.php');
+    exit;
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    $courseId = (int)$_POST['course_id'];
+    header('Location: ../course_details.php?id=' . $courseId . '&status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
     exit;
 }
 
@@ -55,6 +60,7 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    header('Location: ../courses.php?status=error&message=' . urlencode('Failed to enroll: ' . $e->getMessage()));
+    error_log('Enrollment error: ' . $e->getMessage());
+    header('Location: ../courses.php?status=error&message=' . urlencode('Failed to enroll in the course due to a system error. Please try again.'));
     exit;
 }

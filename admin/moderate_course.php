@@ -1,23 +1,17 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Guard: Only authenticated administrators can moderate courses
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['course_id'], $_POST['action'])) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid moderation request.') . '#courses');
-    exit;
+    redirect('dashboard.php?status=error&message=' . urlencode('Invalid moderation request.') . '#courses');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#courses');
 
 require_once __DIR__ . '/../database/config.php';
 
-$adminId  = (int)$_SESSION['user_id'];
+$adminId  = getCurrentUserId();
 $courseId = (int)$_POST['course_id'];
 $action   = trim($_POST['action']);
 $reason   = trim($_POST['rejection_reason'] ?? '');
@@ -68,7 +62,7 @@ try {
                                          reviewed_by = :admin_id 
                                      WHERE id = :id");
         $stmtUpdate->execute([
-            ':reason'   => htmlspecialchars($reason),
+            ':reason'   => $reason,
             ':admin_id' => $adminId,
             ':id'       => $courseId
         ]);
@@ -96,6 +90,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()) . '#courses');
+    error_log('Admin course moderation error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while updating course status. Please try again.') . '#courses');
     exit;
 }

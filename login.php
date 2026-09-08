@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/validation.php';
+ensureSessionStarted();
+
 $status         = $_GET['status'] ?? null;
 $message        = $_GET['message'] ?? null;
 $id             = $_GET['id'] ?? null;
@@ -72,6 +75,7 @@ $redirectCourse = isset($_GET['redirect_course']) ? (int)$_GET['redirect_course'
 				<?php endif; ?>
 
 				<form action="login_function.php" method="POST" class="auth-form">
+					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<?php if ($redirectCourse > 0): ?>
 						<input type="hidden" name="redirect_course" value="<?= $redirectCourse ?>">
 					<?php endif; ?>

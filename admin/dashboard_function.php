@@ -1,8 +1,7 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../validation.php';
+ensureSessionStarted();
 
 // Protect Admin Panel: Must be logged in as admin
 if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
@@ -362,6 +361,7 @@ try {
     $completedEnrollments       = 0;
     $platformCompletionRate     = 0;
     $totalCertificates          = 0;
+    error_log('Admin dashboard data fetch error: ' . $e->getMessage());
     $status                     = 'error';
-    $message                    = $e->getMessage();
+    $message                    = 'An error occurred while loading administrative dashboard metrics.';
 }

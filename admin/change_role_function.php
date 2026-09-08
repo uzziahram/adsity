@@ -1,25 +1,19 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Protect Admin Panel: Must be logged in as admin
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Please log in with an administrator account.'));
 
 require_once __DIR__ . '/../database/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['change_role'])) {
-    header('Location: dashboard.php#users');
-    exit;
+    redirect('dashboard.php#users');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#users');
 
 $userId       = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
 $newRoleId    = isset($_POST['new_role_id']) ? (int)$_POST['new_role_id'] : 0;
-$currentAdmin = (int)$_SESSION['user_id'];
+$currentAdmin = getCurrentUserId();
 
 if ($userId <= 0 || !in_array($newRoleId, [1, 2, 3], true)) {
     header('Location: dashboard.php?status=error&message=' . urlencode('Invalid user or role parameters.') . '#users');
@@ -74,6 +68,7 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode($e->getMessage()) . '#users');
+    error_log('Admin change role error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while updating the user role. Please try again.') . '#users');
     exit;
 }

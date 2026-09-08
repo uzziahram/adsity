@@ -269,6 +269,7 @@ require_once __DIR__ . '/submit_exam_function.php';
 				<?php endif; ?>
 
 				<form action="submit_exam.php" method="POST" enctype="multipart/form-data" class="auth-form" style="margin-top: 24px;">
+					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<input type="hidden" name="course_id" value="<?= htmlspecialchars($course['id']) ?>">
 
 					<?php if (($course['assessment_type'] ?? '') === 'github_repo'): ?>
@@ -363,6 +364,7 @@ require_once __DIR__ . '/submit_exam_function.php';
 		</div>
 	</footer>
 
+	<script src="../assets/js/adsity-ui.js"></script>
 	<script src="../assets/js/logout_modal.js"></script>
 </body>
 </html>

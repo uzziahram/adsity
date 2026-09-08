@@ -1,12 +1,16 @@
 <?php
-
-session_start();
-
 require 'database/config.php';
 require 'validation.php';
 
+ensureSessionStarted();
+
 if (!isset($_POST['signup'])) {
     header('Location: signup.php');
+    exit;
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    header('Location: signup.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
     exit;
 }
 
@@ -51,6 +55,9 @@ try {
 
     $newId = $pdo->lastInsertId();
 
+    // Prevent session fixation by regenerating session ID
+    session_regenerate_id(true);
+
     // Auto-login new student into session
     $_SESSION['user_id']   = $newId;
     $_SESSION['full_name'] = $result['data']['full_name'];
@@ -67,6 +74,7 @@ try {
     header('Location: student/dashboard.php');
     exit;
 } catch (PDOException $e) {
-    header('Location: signup.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Signup error: ' . $e->getMessage());
+    header('Location: signup.php?status=error&message=' . urlencode('A system error occurred while creating your account. Please try again later.'));
     exit;
 }

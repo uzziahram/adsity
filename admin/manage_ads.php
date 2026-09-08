@@ -1,19 +1,13 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 1. Guard: Only authenticated administrators can manage sponsor ads and monetization settings
-if (!isset($_SESSION['user_id']) || ($_SESSION['role_name'] ?? '') !== 'admin') {
-    header('Location: ../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
-    exit;
-}
+require_once __DIR__ . '/../helpers.php';
+requireAuth('admin', '../login.php?status=error&message=' . urlencode('Unauthorized: Administrator access required.'));
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Invalid ad management request.') . '#ads');
-    exit;
+    redirect('dashboard.php?status=error&message=' . urlencode('Invalid ad management request.') . '#ads');
 }
+
+verifyCsrfOrRedirect('dashboard.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.') . '#ads');
 
 require_once __DIR__ . '/../database/config.php';
 
@@ -83,6 +77,7 @@ try {
     }
 
 } catch (PDOException $e) {
-    header('Location: dashboard.php?status=error&message=' . urlencode('Database error: ' . $e->getMessage()) . '#ads');
+    error_log('Admin manage ads error: ' . $e->getMessage());
+    header('Location: dashboard.php?status=error&message=' . urlencode('An error occurred while updating ad monetization settings. Please try again.') . '#ads');
     exit;
 }

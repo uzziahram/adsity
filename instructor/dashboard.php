@@ -317,6 +317,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														View
 													</a>
 													<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course?');" style="display: inline;">
+														<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 														<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
 														<button type="submit" name="delete_course" class="btn-delete">
 															<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
@@ -532,6 +533,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 														View
 													</a>
 													<form method="POST" action="delete_course.php" onsubmit="return confirm('Are you sure you want to delete this course? This cannot be undone.');" style="display: inline;">
+														<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 														<input type="hidden" name="course_id" value="<?= htmlspecialchars($c['id']) ?>">
 														<button type="submit" name="delete_course" class="btn-delete">
 															<img src="../assets/icons/trash.svg" width="13" height="13" alt="Delete">
@@ -1005,6 +1007,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 
 				<!-- Grading Form -->
 				<form id="reviewGradingForm" method="POST" action="review_submission_function.php">
+					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<input type="hidden" name="submission_id" id="modalSubmissionId" value="">
 					<input type="hidden" name="action" id="modalActionInput" value="">
 					<input type="hidden" name="redirect_to" value="dashboard.php#submissions">
@@ -1044,55 +1047,22 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 		</div>
 	</div>
 
-	<!-- Tab Switching & Mobile Drawer Script -->
+	<!-- Reusable UI & Client-side Helpers -->
+	<script src="../assets/js/adsity-ui.js"></script>
 	<script>
 		function switchTab(tabId) {
-			// Update active tab buttons
-			document.querySelectorAll('.sidebar-nav-item[data-tab]').forEach(function(btn) {
-				if (btn.getAttribute('data-tab') === tabId) {
-					btn.classList.add('active');
-				} else {
-					btn.classList.remove('active');
-				}
+			AdsityUI.switchTab(tabId, {
+				buttonSelector: '.sidebar-nav-item[data-tab]',
+				panelSelector: '.instructor-tab-panel'
 			});
-
-			// Update active panels
-			document.querySelectorAll('.instructor-tab-panel').forEach(function(panel) {
-				panel.classList.remove('active');
-			});
-
-			var targetPanel = document.getElementById('tab-' + tabId);
-			if (targetPanel) {
-				targetPanel.classList.add('active');
-			}
-
-			// Update URL hash without jumping
-			if (history.pushState) {
-				history.pushState(null, null, '#' + tabId);
-			} else {
-				location.hash = '#' + tabId;
-			}
-
-			// Close mobile drawer if open
-			closeSidebar();
 		}
 
 		function toggleSidebar() {
-			var sidebar = document.getElementById('instructorSidebar');
-			var backdrop = document.getElementById('sidebarBackdrop');
-			if (sidebar && backdrop) {
-				sidebar.classList.toggle('open');
-				backdrop.classList.toggle('open');
-			}
+			AdsityUI.toggleSidebar('instructorSidebar', 'sidebarBackdrop');
 		}
 
 		function closeSidebar() {
-			var sidebar = document.getElementById('instructorSidebar');
-			var backdrop = document.getElementById('sidebarBackdrop');
-			if (sidebar && backdrop) {
-				sidebar.classList.remove('open');
-				backdrop.classList.remove('open');
-			}
+			AdsityUI.closeSidebar('instructorSidebar', 'sidebarBackdrop');
 		}
 
 		// Modal Logic
@@ -1147,23 +1117,15 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 				notesWrapper.style.display = 'none';
 			}
 
-			var modal = document.getElementById('reviewModal');
-			modal.style.display = 'flex';
-			document.body.style.overflow = 'hidden';
+			AdsityUI.openModal('reviewModal');
 		}
 
 		function closeReviewModal() {
-			var modal = document.getElementById('reviewModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('reviewModal');
 		}
 
 		function handleModalBackdropClick(event) {
-			if (event.target && event.target.id === 'reviewModal') {
-				closeReviewModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'reviewModal');
 		}
 
 		function submitReviewAction(action) {
@@ -1203,28 +1165,18 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 		// Payout Modal Logic
 		function openPayoutModal(availableBalance) {
 			if (availableBalance < 5.00) {
-				alert('Your available balance is $' + availableBalance.toFixed(2) + '. You must have at least $5.00 to request a withdrawal.');
+				AdsityUI.showToast('Your available balance is $' + availableBalance.toFixed(2) + '. You must have at least $5.00 to request a withdrawal.', 'warning');
 				return;
 			}
-			var modal = document.getElementById('payoutModal');
-			if (modal) {
-				modal.style.display = 'flex';
-				document.body.style.overflow = 'hidden';
-			}
+			AdsityUI.openModal('payoutModal');
 		}
 
 		function closePayoutModal() {
-			var modal = document.getElementById('payoutModal');
-			if (modal) {
-				modal.style.display = 'none';
-				document.body.style.overflow = '';
-			}
+			AdsityUI.closeModal('payoutModal');
 		}
 
 		function handlePayoutModalBackdrop(event) {
-			if (event.target && event.target.id === 'payoutModal') {
-				closePayoutModal();
-			}
+			AdsityUI.handleBackdropClick(event, 'payoutModal');
 		}
 
 		function setWithdrawAll(amt) {
@@ -1271,6 +1223,7 @@ $initials = strtoupper(substr($instructor['full_name'] ?? 'I', 0, 1));
 			</div>
 
 			<form action="request_payout_function.php" method="POST" id="payoutForm" class="review-modal-body">
+				<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 				<!-- Available Balance Card -->
 				<div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
 					<div>

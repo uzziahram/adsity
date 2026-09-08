@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/validation.php';
+ensureSessionStarted();
+
 $status  = $_GET['status'] ?? null;
 $message = $_GET['message'] ?? null;
 $id      = $_GET['id'] ?? null;
@@ -71,6 +74,7 @@ $id      = $_GET['id'] ?? null;
 				<?php endif; ?>
 
 				<form action="teach_function.php" method="POST" class="auth-form">
+					<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken()) ?>">
 					<div class="form-group">
 						<label for="full_name" class="form-label">Full Name</label>
 						<div class="form-input-wrapper">

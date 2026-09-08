@@ -1,12 +1,17 @@
 <?php
 
-session_start();
-
 require 'database/config.php';
 require 'validation.php';
 
+ensureSessionStarted();
+
 if (!isset($_POST['teach'])) {
     header('Location: teach.php');
+    exit;
+}
+
+if (!validateCsrfToken($_POST['csrf_token'] ?? '')) {
+    header('Location: teach.php?status=error&message=' . urlencode('Invalid security token. Please refresh the page and try again.'));
     exit;
 }
 
@@ -49,7 +54,16 @@ try {
     // Immediately purge sensitive credentials and plain-text passwords from memory
     unset($rawPassword, $hashedPassword, $_POST['password'], $_POST['confirm_password']);
 
-    $newId = $pdo->lastInsertId();
+    $newId = (int)$pdo->lastInsertId();
+
+    // Provision instructor wallet record ($0.00 initial balance)
+    $stmtWallet = $pdo->prepare("INSERT INTO instructor_wallets (instructor_id, total_earned, available_balance, total_withdrawn) 
+                                 VALUES (:id, 0.0000, 0.0000, 0.0000) 
+                                 ON DUPLICATE KEY UPDATE instructor_id = instructor_id");
+    $stmtWallet->execute([':id' => $newId]);
+
+    // Prevent session fixation by regenerating session ID
+    session_regenerate_id(true);
 
     // Set session data
     $_SESSION['user_id']   = $newId;
@@ -61,6 +75,7 @@ try {
     header('Location: instructor/dashboard.php?status=success&message=' . urlencode('Welcome to Adsity Instructor Studio, ' . $result['data']['full_name'] . '!'));
     exit;
 } catch (PDOException $e) {
-    header('Location: teach.php?status=error&message=' . urlencode($e->getMessage()));
+    error_log('Teacher signup error: ' . $e->getMessage());
+    header('Location: teach.php?status=error&message=' . urlencode('A system error occurred while creating your instructor account. Please try again later.'));
     exit;
 }
